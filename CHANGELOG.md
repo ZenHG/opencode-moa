@@ -12,13 +12,22 @@
 
 ## v0.0.2（2026-07-09）
 
-修复门童路由员降级链ask逻辑被跳过的问题。
+修复门童路由员降级链ask逻辑被跳过的问题；修复OpenCode Go provider导致的"Upstream request failed"错误。
 
 ### 修复
 
 - 门童路由员：工具层失败后必须停止执行后续流程，等待用户选择
 - 明确分支逻辑："成功→继续执行正常路由流程"、"失败→停止执行，ask用户"
 - 增加重要提示：防止LLM跳过ask直接派遣意见层agent
+- 修复所有agent的OpenCode Go provider错误：将17个agent从`opencode-go/`切换到`opencode/`（OpenCode Zen）
+- 配置全局默认model：`opencode/deepseek-v4-flash`，确保subagent继承正确的provider
+
+### 配置调整
+
+- 全局model：新增`opencode/deepseek-v4-flash`作为默认模型
+- 工具层agent：`opencode-go/deepseek-v4-flash` → `opencode/deepseek-v4-flash`
+- 工具人-mimo：`opencode-go/mimo-v2.5` → `opencode/mimo-v2.5`
+- 意见层/旗舰层/前端层：全部从`opencode-go/*`切换到`opencode/*`
 
 ### 文档
 
