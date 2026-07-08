@@ -1,113 +1,178 @@
 # OpenCode MoA
 
-19-agent Cost-Optimal MoA (Mixture of Agents) 配置，适用于 [OpenCode](https://opencode.ai)。
+> 19-agent Cost-Optimal Mixture of Agents — 让 OpenCode 自动调度最适合的模型处理每一步。
 
-搬砖用 flash 和 MiMo，意见用中端，融合用旗舰。每个模型只干自己最擅长的事。
+默认 OpenCode 用一个模型从头处理到尾。改一行字和设计一套架构用的是同一个 prompt、同一个温度、同一个上下文。
 
-## 架构概览
+**MoA 方案**把这件事拆开：搬砖用 Flash/MiMo，意见用中端模型，融合用旗舰模型。每个模型只干自己最擅长的事。
 
-`
-门童路由员 (flash)
-  ├── 工具层：工具人(flash) + 工具人-mimo(MiMo) + 视觉翻译官(MiMo)
-  ├── 中级意见：工程(Pro) + 创意(MiniMax) + 码农(flash) → 融合(Kimi)
-  ├── 旗舰意见：架构(Qwen3.7Max) + 规划(GLM) + 工程(Pro) → 融合(Kimi) → 实现(flash) → 质检(Pro)
-  └── 前端意见：还原(MiMo) + 逻辑(Qwen3.7Plus) + 动效(MiMoPro) → 总工(Kimi)
-`
-
-## 文件结构
-
-`
-opencode-moa/
-├── opencode.json                  # 配置入口（合并到已有配置）
-├── .opencode/
-│   ├── agents/                    # 19 个 agent 定义
-│   │   ├── 门童路由员.md           # primary，路由分发
-│   │   ├── 工具人.md              # flash，快速读文件
-│   │   ├── 工具人-mimo.md         # MiMo，可靠读文件
-│   │   ├── 闪电侠.md              # flash，简单任务执行
-│   │   ├── 视觉翻译官.md          # MiMo，截图转文字
-│   │   ├── 中级·工程.md           # Pro，工程视角意见
-│   │   ├── 中级·创意.md           # MiniMax，创意视角意见
-│   │   ├── 中级·码农.md           # flash，实战视角意见
-│   │   ├── 中级·融合.md           # Kimi，三意见融合
-│   │   ├── 旗舰·架构.md           # Qwen3.7Max，架构意见
-│   │   ├── 旗舰·规划.md           # GLM，规划意见
-│   │   ├── 旗舰·工程.md           # Pro，工程意见
-│   │   ├── 旗舰·融合.md           # Kimi，架构融合
-│   │   ├── 旗舰·实现.md           # flash，编码实现
-│   │   ├── 旗舰·质检.md           # Pro，方案验收
-│   │   ├── 前端·还原.md           # MiMo，UI还原
-│   │   ├── 前端·逻辑.md           # Qwen3.7Plus，组件架构
-│   │   ├── 前端·动效.md           # MiMoPro，动效方案
-│   │   └── 前端·总工.md           # Kimi，前端融合
-│   ├── commands/                  # 5 个一键命令
-│   │   ├── moa-quick.md           # 简单任务
-│   │   ├── moa-medium.md          # 中级 MoA
-│   │   ├── moa-flagship.md        # 旗舰 MoA
-│   │   ├── moa-frontend.md        # 前端 MoA
-│   │   └── moa-describe.md        # 截图转文字
-│   ├── skills/                    # 3 个可复用 skill
-│   │   ├── code-review-moa/       # MoA 代码评审
-│   │   ├── architecture-moa/      # MoA 架构设计
-│   │   └── frontend-moa/          # MoA 前端实现
-│   └── tests/                     # 验证脚本
-│       ├── run-all.ps1
-│       ├── T0-static-verify.ps1
-│       ├── T1-behavioral-guide.ps1
-│       └── T2-moa-smoke-guide.ps1
-└── docs/
-    └── opencode-moa.md            # 完整部署手册
-`
+---
 
 ## 快速部署
 
-1. 将 .opencode/ 目录复制到你的项目根目录
-2. 将 opencode.json 的内容合并到你项目的 opencode.json（保留已有配置）
-3. 重启 OpenCode
+### 方式一：AI 自动部署（推荐）
 
-**注意**：如果某些模型的 provider 未配置，将对应 agent 的 model 字段改为 model: default，OpenCode 会使用默认模型运行。
+1. 下载 [`docs/opencode-moa.md`](docs/opencode-moa.md)
+2. 在 OpenCode 中粘贴该文档内容，发送：
 
-## 使用方式
+> 请按这份部署手册，帮我把 19 个 agent、5 个命令、3 个 skill 全部部署到当前项目
 
-### 自动路由（推荐）
+3. AI 会自动创建所有文件。完成后**重启 OpenCode** 即可。
 
-直接描述需求，门童自动判定复杂度并编排：
+> 全程不需要手动创建任何文件。部署手册本身就是安装器。
 
-> 帮我写一个 Markdown 转 HTML 的函数
+### 方式二：手动安装
 
-### 一键命令
+```bash
+git clone https://github.com/ZenHG/opencode-moa.git
+cp -r opencode-moa/.opencode/ your-project/
+cat opencode-moa/opencode.json >> your-project/opencode.json
+# 重启 OpenCode
+```
+
+---
+
+## 架构
+
+```
+                     ┌─────────────────────┐
+                     │   门童路由员 (Flash)   │
+                     │  自动判定复杂度并编排    │
+                     └─────────┬───────────┘
+           ┌───────────────────┼───────────────────┐
+           ▼                   ▼                   ▼
+    ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+    │   工具层      │   │   意见层      │   │   融合层      │
+    │  Flash + MiMo │   │ 3 份并行意见  │   │ 取长补短输出  │
+    └──────────────┘   └──────────────┘   └──────────────┘
+```
+
+**三层分工：**
+
+| 层 | 谁干活 | 做什么 |
+|---|---|---|
+| 工具层 | Flash + MiMo (~80% 调用) | 读文件、搜代码、截图转文字 |
+| 意见层 | Pro / MiniMax / Qwen / MiMo-Pro (~18%) | 从不同视角出方案 |
+| 融合层 | Kimi / Qwen-Max / GLM (~2%) | 融合三份意见、质检验收 |
+
+**为什么是 3 份意见？** 两份容易变成"对 vs 错"的二元对立，三份天然形成"共识 + 分歧"结构，融合模型能识别哪些是共识直接保留、哪些是分歧取长补短。
+
+---
+
+## 三种使用方式
+
+### 1. 自动路由（推荐）
+
+直接说需求，门童自动判定复杂度并编排全流程：
+
+```
+你：帮我写一个 Markdown 转 HTML 的函数
+门童：判定为「中级」→ 工具人搜材料 → 3 中端意见并行 → 融合输出
+```
+
+### 2. 一键命令
 
 | 命令 | 场景 | 流程 |
-|------|------|------|
-| /moa-quick | 简单任务 | 闪电侠一步到位 |
-| /moa-medium | 函数模块、bug 修复 | 3 意见 → 融合 |
-| /moa-flagship | 系统架构、大型重构 | 3 旗舰意见 → 融合 → 实现 → 质检 |
-| /moa-frontend | UI 还原、CSS | 还原 + 逻辑 + 动效 → 总工 |
-| /moa-describe | 截图转文字 | 视觉翻译官 |
+|---|---|---|
+| `/moa-quick` | 简单任务、翻译、改配置 | 闪电侠一步到位 |
+| `/moa-medium` | 函数模块、bug 修复、单文件重构 | 3 意见 → 融合 |
+| `/moa-flagship` | 系统架构、大型重构 | 3 旗舰意见 → 融合 → 实现 → 质检 |
+| `/moa-frontend` | UI 还原、CSS、截图修复 | 还原 + 逻辑 + 动效 → 总工 |
+| `/moa-describe` | 截图/图片转文字 | 视觉翻译官 |
 
-### @ 直接调用
+### 3. @ 直接调用
 
-输入 @ 选择任意 agent 独立对话。
+输入 `@` 选择任意 agent 独立对话：
+
+- `@工具人` → 读文件、搜代码
+- `@闪电侠` → 简单任务一步到位
+- `@中级·工程` → 会问你是否先搜集材料，选「是」自动调工具人
+- `@视觉翻译官` → 截图转精确文字描述
+
+---
+
+## 19 个 Agent 角色
+
+```
+门童路由员 (Flash)
+ │
+ ├── 工具层 ──────────────────────────────────────
+ │   工具人      (Flash)        读代码搜文件
+ │   工具人-mimo (MiMo)        可靠读文件（保底+并行）
+ │   闪电侠      (Flash)        简单任务一步到位
+ │   视觉翻译官   (MiMo)        截图/UI图/报错图转文字
+ │
+ ├── 中级意见层 ──────────────────────────────────
+ │   中级·工程    (Pro)          工程视角方案
+ │   中级·创意    (MiniMax)      创意视角方案
+ │   中级·码农    (Flash)        实战视角方案
+ │   中级·融合    (Kimi)         三份方案取长补短
+ │
+ ├── 旗舰意见层 ──────────────────────────────────
+ │   旗舰·架构    (Qwen3.7Max)   顶层架构设计
+ │   旗舰·规划    (GLM)          结构化方案设计
+ │   旗舰·工程    (Pro)          大规模实现方案
+ │   旗舰·融合    (Kimi)         三份架构方案融合
+ │   旗舰·实现    (Flash)        按融合方案编码
+ │   旗舰·质检    (Pro)          方案 vs 代码验收
+ │
+ └── 前端意见层 ──────────────────────────────────
+     前端·还原    (MiMo)        像素级还原 UI
+     前端·逻辑    (Qwen3.7Plus) 组件架构与状态管理
+     前端·动效    (MiMo-Pro)    交互体验与动效
+     前端·总工    (Kimi)         三份前端方案择优
+```
+
+---
 
 ## 成本分层
 
 | 层级 | 模型 | 月配额 | 角色 |
-|------|------|--------|------|
-| 工具层 | Flash + MiMo | ~30 万次 | 读文件、搜代码、改代码 |
+|---|---|---|---|
+| 工具层 | Flash + MiMo | ~30 万次 | 读文件、搜代码、改代码（随便调） |
 | 意见层 | Pro / MiniMax / Qwen / MiMo-Pro | ~8.7 万次 | 出方案 |
-| 融合层 | Kimi / Qwen-Max / GLM | ~1.8 万次 | 融合、质检 |
+| 融合层 | Kimi / Qwen-Max / GLM | ~1.8 万次 | 融合、质检（只用在刀刃上） |
+
+> 所有模型 ID 仅作声明，可按需替换为你偏好的任何模型。
+
+---
 
 ## 安全边界
 
-- 全局 catch-all：未声明工具 → ask 弹窗
-- agent 权限：工具级 allow/deny 硬限制
-- task 白名单：门童只能调用指定 agent
-- 降级链：task 失败 → 重试 → 换同类 → 降级内置 agent
+| 防护层 | 位置 | 效果 |
+|---|---|---|
+| 全局 catch-all | opencode.json | 未声明工具 → ask 弹窗 |
+| agent 权限 | 各 agent frontmatter | 工具级 allow/deny 硬限制 |
+| task 白名单 | 门童 + opencode.json | 只能调用指定 agent |
+| 降级链 | 门童路由规则 | task 失败 → 重试 → 换同类 → 降级内置 agent |
 
-## 本地模型
+---
 
-支持 Ollama / LM Studio 等本地模型混用。详见 docs/opencode-moa.md 附录 A。
+## 本地模型接入
+
+支持 Ollama / LM Studio 等本地模型混用。例如：
+
+```yaml
+# .opencode/agents/中级·码农.md
+model: ollama-local/qwen3-coder
+```
+
+详见 [`docs/opencode-moa.md`](docs/opencode-moa.md) 附录 A。
+
+---
+
+## 验证
+
+部署后运行静态检查（需要 `pwsh`）：
+
+```bash
+pwsh .opencode/tests/T0-static-verify.ps1
+```
+
+预期输出：**41 PASS / 0 FAIL**。
+
+---
 
 ## 文档版本
 
-v3.4 | OpenCode >= 1.1.1
+v3.4 · OpenCode >= 1.1.1 · [MIT License](LICENSE)
