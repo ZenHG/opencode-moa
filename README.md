@@ -59,16 +59,51 @@ MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅。**首月 $
 ### 方式二：手动安装
 
 ```bash
+# 1. 克隆仓库
+git clone https://github.com/ZenHG/opencode-moa.git
+
+# 2. 复制 .opencode 目录（agent + 命令 + skill + 测试）
+cp -r opencode-moa/.opencode/ your-project/
+
+# 3. 替换 opencode.json（⚠️ 会覆盖已有配置，请先备份）
+cp opencode-moa/opencode.json your-project/opencode.json
+
+# 4. 重启 OpenCode
+```
+
+> ⚠️ **重要**：`opencode.json` 是完整替换，不是追加。如果已有自定义配置，请手动合并 `permission.task` 和 `agent` 部分。
+
+### 方式三：只部署 .opencode，不动配置
+
+如果你已有 `opencode.json`，只复制 agent/命令/skill：
+
+```bash
 git clone https://github.com/ZenHG/opencode-moa.git
 cp -r opencode-moa/.opencode/ your-project/
-cat opencode-moa/opencode.json >> your-project/opencode.json
+# 手动将 opencode.json 中的 permission.task 和 agent 部分合并到你的配置
 # 重启 OpenCode
 ```
+
+### 部署成功怎么判断？
+
+1. 重启 OpenCode 后，按 `Ctrl+.` 切换 agent，看到「门童路由员」
+2. 输入 `@工具人` 能正常响应
+3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 40 PASS
+
+### 部署失败常见原因
+
+| 症状 | 原因 | 解决 |
+|------|------|------|
+| 看不到「门童路由员」 | opencode.json 格式错误 | 用 JSON 校验器检查 |
+| `@工具人` 无响应 | agent 文件路径错误 | 确认 `.opencode/agents/` 下有 19 个 .md |
+| 报错 "model not found" | 模型 ID 不对 | 检查是否订阅了 OpenCode Go |
+| MCP 工具被拦截 | 正常行为 | 意见层被 `*_*:deny` 限制，工具层正常 |
 
 ### 不喜欢？一键回滚
 
 ```bash
 rm -rf your-project/.opencode/
+# 手动恢复你的 opencode.json
 ```
 
 ## 怎么用？

@@ -1004,6 +1004,21 @@ ls .opencode/commands/moa-*.md 2>/dev/null | wc -l
 
 > **完成部署**：以上全部验证通过后，**重启 opencode 使所有配置生效**。
 
+### 部署成功怎么判断？
+
+1. 重启 OpenCode 后，按 `Ctrl+.` 切换 agent，看到「门童路由员」
+2. 输入 `@工具人` 能正常响应
+3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 40 PASS
+
+### 部署失败常见原因
+
+| 症状 | 原因 | 解决 |
+|------|------|------|
+| 看不到「门童路由员」 | opencode.json 格式错误 | 用 JSON 校验器检查 |
+| `@工具人` 无响应 | agent 文件路径错误 | 确认 `.opencode/agents/` 下有 19 个 .md |
+| 报错 "model not found" | 模型 ID 不对 | 检查是否订阅了 OpenCode Go |
+| MCP 工具被拦截 | 正常行为 | 意见层被 `*_*:deny` 限制，工具层正常 |
+
 ---
 
 ## 附录 A：本地模型接入
