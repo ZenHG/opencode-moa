@@ -33,15 +33,30 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
 
-## 前置条件：订阅 OpenCode Go
+## 前置条件
 
-MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅。**首月 $5，之后 $10/月**。
+### 必需
 
-1. 登录 [OpenCode Zen](https://opencode.ai/auth)，订阅 Go，复制 API 密钥
-2. 在 OpenCode TUI 中运行 `/connect`，选择 `OpenCode Go`，粘贴密钥
-3. 运行 `/models` 确认模型列表可用
+| 条件 | 检查命令 | 说明 |
+|------|----------|------|
+| OpenCode 已安装 | `opencode --version` | 版本 ≥ 1.1.1，[安装](https://opencode.ai/install) |
+| OpenCode Go 订阅 | `/connect` 查看 | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月 |
+| Git 已安装 | `git --version` | 用于克隆仓库 |
+| OpenCode Go API Key | `/connect` 查看 | 在 Zen 控制台创建 |
 
-> 每个工作空间只能有一名成员订阅 Go。
+### 可选（安装脚本需要）
+
+| 条件 | 检查命令 | 说明 |
+|------|----------|------|
+| PowerShell Core | `pwsh --version` | install.ps1 需要，Windows 自带或 `brew install powershell` |
+| jq | `jq --version` | install.sh 合并 JSON 需要，`apt install jq` / `brew install jq` |
+
+> 没有 pwsh/jq 也没关系，可以用方式一（AI 自动部署）或方式三（手动合并）。
+
+### 桌面端 vs CLI
+
+- **CLI**：所有方式都支持
+- **桌面端**：方式一（AI 自动部署）最方便，方式二/三需要先在终端操作
 
 ## 30 秒部署
 
@@ -99,21 +114,81 @@ cp -r opencode-moa/.opencode/ your-project/
 2. 输入 `@工具人` 能正常响应
 3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 40 PASS
 
-### 部署失败常见原因
-
-| 症状 | 原因 | 解决 |
-|------|------|------|
-| 看不到「门童路由员」 | opencode.json 格式错误 | 用 JSON 校验器检查 |
-| `@工具人` 无响应 | agent 文件路径错误 | 确认 `.opencode/agents/` 下有 19 个 .md |
-| 报错 "model not found" | 模型 ID 不对 | 检查是否订阅了 OpenCode Go |
-| MCP 工具被拦截 | 正常行为 | 意见层被 `*_*:deny` 限制，工具层正常 |
-
-### 不喜欢？一键回滚
+### 一键回滚
 
 ```bash
 rm -rf your-project/.opencode/
-# 手动恢复你的 opencode.json
+# 手动恢复你的 opencode.json（安装脚本会自动备份 .bak 文件）
 ```
+
+## 常见问题（Q&A）
+
+### 安装相关
+
+**Q: 我已有 opencode.json，会不会覆盖？**
+A: 不会。安装脚本只合并 MoA 的 `permission`、`agent`、`default_agent` 配置，保留你已有的 `provider`、`model` 等设置。原文件会自动备份为 `.bak.时间戳`。
+
+**Q: Windows 没有 `cp` 命令怎么办？**
+A: 用 `Copy-Item` 或 `xcopy`：
+```powershell
+# PowerShell
+Copy-Item -Recurse -Force opencode-moa\.opencode .\.opencode
+# CMD
+xcopy opencode-moa\.opencode .\.opencode /E /I /Y
+```
+
+**Q: 没有 pwsh/jq 能装吗？**
+A: 可以。用方式一（AI 自动部署）或方式三（手动合并配置）。
+
+**Q: 桌面端怎么装？**
+A: 方式一最方便——把 `docs/opencode-moa.md` 拖进对话框，让 AI 自动部署。方式二/三需要先在终端（CMD/PowerShell/Terminal）操作。
+
+### 使用相关
+
+**Q: 看不到「门童路由员」？**
+A: 检查三点：
+1. `opencode.json` 是否在项目根目录（不是子目录）
+2. `.opencode/agents/` 下是否有 19 个 .md 文件
+3. 重启 OpenCode 后按 `Ctrl+.` 切换 agent
+
+**Q: `@工具人` 无响应？**
+A: 确认 `.opencode/agents/工具人.md` 存在且 frontmatter 格式正确。
+
+**Q: 报错 "model not found"？**
+A: 模型 ID 不对或未订阅 OpenCode Go。运行 `/models` 检查模型列表。
+
+**Q: MCP 工具被拦截？**
+A: 正常行为。意见层被 `*_*:deny` 限制，防止绕过工具层自行获取材料。工具层正常可用。
+
+**Q: 工具人报 Upstream request failed？**
+A: provider 瞬时抖动，MoA 会自动重试 1 次。持续失败会 ask 用户选择等/跳过/免费模型。
+
+**Q: 怎么切换回原来的 build/plan agent？**
+A: 按 `Ctrl+.` 切换，或输入 `/build`、`/plan`。MoA 不影响内置 agent。
+
+**Q: 我想用自己的模型，不走 Go 订阅？**
+A: 修改 agent 的 `model` 字段即可：
+```yaml
+# .opencode/agents/中级·工程.md
+model: anthropic/claude-sonnet-4-20250514
+```
+
+**Q: 部署后能删掉仓库吗？**
+A: 可以。MoA 已复制到你的项目 `.opencode/` 目录，原仓库可以删除。
+
+**Q: 多个项目怎么部署？**
+A: 每个项目单独部署。`.opencode/` 是项目级配置，不影响其他项目。
+
+### 降级相关
+
+**Q: 工具层全部挂了怎么办？**
+A: MoA 会 ask 用户：
+- A. 等几分钟再试
+- B. 跳过工具层，直接调意见层（成本较高）
+- C. 切换到免费模型（需手动操作）
+
+**Q: 免费模型在哪？**
+A: 按 `Ctrl+.` 切换到免费模型（DeepSeek V4 Flash Free 等）。免费模型上下文有限、可能较慢、数据可能被用于训练。
 
 ## 怎么用？
 

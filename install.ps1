@@ -1,31 +1,52 @@
 # install.ps1 — MoA 安装脚本（增量合并 opencode.json）
 # 用法: pwsh ./install.ps1
-# 会在当前目录下创建 .opencode/ 并合并 opencode.json
+# 兼容: Windows PowerShell 5.1+ / PowerShell Core 7+ (Linux/macOS)
+# 需要: 先将 .opencode/ 复制到当前目录
 
 $ErrorActionPreference = "Stop"
 
+function Write-Step($step, $msg) {
+    Write-Host "`n[$step] $msg" -ForegroundColor Yellow
+}
+
+function Write-Ok($msg) {
+    Write-Host "  ✓ $msg" -ForegroundColor Green
+}
+
+function Write-Skip($msg) {
+    Write-Host "  - $msg" -ForegroundColor Gray
+}
+
+function Write-Fail($msg) {
+    Write-Host "  ✗ $msg" -ForegroundColor Red
+}
+
 Write-Host "`n=== OpenCode MoA 安装 ===" -ForegroundColor Cyan
 
-# 检测项目目录
 $projectDir = Get-Location
-$opencodeJson = Join-Path $projectDir "opencode.json"
-$moaDir = Join-Path $projectDir ".opencode"
-$moaJson = Join-Path $projectDir "opencode-moa.json"
+$opencodeJson = Join-Path $projectDir.Path "opencode.json"
+$moaDir = Join-Path $projectDir.Path ".opencode"
 
-# 1. 复制 .opencode 目录
-Write-Host "`n[1/3] 复制 .opencode/ 目录..." -ForegroundColor Yellow
+# 1. 检查 .opencode 目录
+Write-Step "1/3" "检查 .opencode/ 目录..."
 if (Test-Path $moaDir) {
-    Write-Host "  .opencode/ 已存在，跳过" -ForegroundColor Gray
+    $agentCount = (Get-ChildItem "$moaDir/agents/*.md" -ErrorAction SilentlyContinue).Count
+    Write-Ok ".opencode/ 存在 ($agentCount agents)"
 } else {
-    Write-Host "  .opencode/ 不存在，请先从仓库复制" -ForegroundColor Red
-    Write-Host "  运行: git clone https://github.com/ZenHG/opencode-moa.git tmp; cp -r tmp/.opencode/ ." -ForegroundColor Gray
+    Write-Fail ".opencode/ 不存在"
+    Write-Host "  请先克隆仓库并复制 .opencode/ 到当前目录" -ForegroundColor Gray
+    Write-Host "  git clone https://github.com/ZenHG/opencode-moa.git tmp" -ForegroundColor Gray
+    if ($IsWindows -or $env:OS -eq "Windows_NT") {
+        Write-Host "  xcopy tmp\.opencode .\.opencode /E /I /Y" -ForegroundColor Gray
+    } else {
+        Write-Host "  cp -r tmp/.opencode/ ." -ForegroundColor Gray
+    }
     exit 1
 }
 
 # 2. 合并 opencode.json
-Write-Host "`n[2/3] 合并 opencode.json..." -ForegroundColor Yellow
+Write-Step "2/3" "合并 opencode.json..."
 
-# MoA 需要的配置
 $moaConfig = @{
     default_agent = "门童路由员"
     permission = @{
@@ -90,46 +111,52 @@ $moaConfig = @{
 }
 
 if (Test-Path $opencodeJson) {
-    Write-Host "  已有 opencode.json，执行增量合并" -ForegroundColor Gray
+    Write-Skip "已有 opencode.json，执行增量合并"
     
-    # 读取现有配置
-    $existing = Get-Content $opencodeJson -Raw | ConvertFrom-Json
+    try {
+        $existing = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
+        
+        if ($existing.provider) {
+            $moaConfig | Add-Member -NotePropertyName "provider" -NotePropertyValue $existing.provider -Force
+            Write-Ok "保留 provider 配置"
+        }
+        if ($existing.model) {
+            $moaConfig | Add-Member -NotePropertyName "model" -NotePropertyValue $existing.model -Force
+            Write-Ok "保留 model 配置"
+        }
+        if ($existing.small_model) {
+            $moaConfig | Add-Member -NotePropertyName "small_model" -NotePropertyValue $existing.small_model -Force
+        }
+    } catch {
+        Write-Host "  ⚠ 无法解析现有配置，将创建新配置" -ForegroundColor Yellow
+    }
     
-    # 保留用户的 provider 和 model 配置
-    if ($existing.provider) {
-        $moaConfig.provider = $existing.provider
-        Write-Host "  保留 provider 配置" -ForegroundColor Green
-    }
-    if ($existing.model) {
-        $moaConfig.model = $existing.model
-        Write-Host "  保留 model 配置" -ForegroundColor Green
-    }
-    if ($existing.small_model) {
-        $moaConfig.small_model = $existing.small_model
-    }
-    
-    # 备份原文件
-    $backup = "$opencodeJson.bak.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-    Copy-Item $opencodeJson $backup
-    Write-Host "  已备份原配置到 $backup" -ForegroundColor Green
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $backup = "${opencodeJson}.bak.${timestamp}"
+    Copy-Item $opencodeJson $backup -Force
+    Write-Ok "已备份到 $(Split-Path $backup -Leaf)"
 } else {
-    Write-Host "  opencode.json 不存在，创建新配置" -ForegroundColor Gray
+    Write-Skip "opencode.json 不存在，创建新配置"
 }
 
-# 写入合并后的配置
 $moaConfig | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
-Write-Host "  opencode.json 已更新" -ForegroundColor Green
+Write-Ok "opencode.json 已更新"
 
 # 3. 验证
-Write-Host "`n[3/3] 验证部署..." -ForegroundColor Yellow
-$agents = Get-ChildItem "$moaDir/agents/*.md" -ErrorAction SilentlyContinue
-$cmds = Get-ChildItem "$moaDir/commands/*.md" -ErrorAction SilentlyContinue
-$skills = Get-ChildItem "$moaDir/skills/*/SKILL.md" -ErrorAction SilentlyContinue
+Write-Step "3/3" "验证部署..."
 
-Write-Host "  Agents: $($agents.Count)" -ForegroundColor $(if ($agents.Count -eq 19) {'Green'} else {'Red'})
-Write-Host "  Commands: $($cmds.Count)" -ForegroundColor $(if ($cmds.Count -eq 5) {'Green'} else {'Red'})
-Write-Host "  Skills: $($skills.Count)" -ForegroundColor $(if ($skills.Count -eq 3) {'Green'} else {'Red'})
-Write-Host "  Config: ok" -ForegroundColor Green
+$agentFiles = Get-ChildItem "$moaDir/agents/*.md" -ErrorAction SilentlyContinue
+$cmdFiles = Get-ChildItem "$moaDir/commands/*.md" -ErrorAction SilentlyContinue
+$skillFiles = Get-ChildItem "$moaDir/skills/*/SKILL.md" -ErrorAction SilentlyContinue
+
+$agentCount = if ($agentFiles) { $agentFiles.Count } else { 0 }
+$cmdCount = if ($cmdFiles) { $cmdFiles.Count } else { 0 }
+$skillCount = if ($skillFiles) { $skillFiles.Count } else { 0 }
+
+if ($agentCount -eq 19) { Write-Ok "Agents: 19" } else { Write-Fail "Agents: $agentCount (期望 19)" }
+if ($cmdCount -eq 5) { Write-Ok "Commands: 5" } else { Write-Fail "Commands: $cmdCount (期望 5)" }
+if ($skillCount -eq 3) { Write-Ok "Skills: 3" } else { Write-Fail "Skills: $skillCount (期望 3)" }
+Write-Ok "Config: ok"
 
 Write-Host "`n=== 安装完成 ===" -ForegroundColor Cyan
 Write-Host "重启 OpenCode 使配置生效。" -ForegroundColor Yellow

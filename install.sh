@@ -1,45 +1,49 @@
 #!/bin/bash
 # install.sh — MoA 安装脚本（增量合并 opencode.json）
 # 用法: bash ./install.sh
-# 会在当前目录下创建 .opencode/ 并合并 opencode.json
+# 兼容: Linux / macOS / Windows (Git Bash / WSL / MSYS2)
+# 需要: 先将 .opencode/ 复制到当前目录
 
 set -e
 
-echo ""
-echo "=== OpenCode MoA 安装 ==="
+# 颜色
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+GRAY='\033[0;37m'
+NC='\033[0m'
 
-# 检测项目目录
+ok() { echo -e "  ${GREEN}✓ $1${NC}"; }
+skip() { echo -e "  ${GRAY}- $1${NC}"; }
+fail() { echo -e "  ${RED}✗ $1${NC}"; }
+
+echo ""
+echo -e "${CYAN}=== OpenCode MoA 安装 ===${NC}"
+
 PROJECT_DIR=$(pwd)
 OPENCODE_JSON="$PROJECT_DIR/opencode.json"
 MOA_DIR="$PROJECT_DIR/.opencode"
 
 # 1. 检查 .opencode 目录
 echo ""
-echo "[1/3] 检查 .opencode/ 目录..."
+echo -e "${YELLOW}[1/3] 检查 .opencode/ 目录...${NC}"
 if [ -d "$MOA_DIR" ]; then
-    echo "  .opencode/ 已存在"
+    AGENT_COUNT=$(ls "$MOA_DIR/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    ok ".opencode/ 存在 ($AGENT_COUNT agents)"
 else
-    echo "  .opencode/ 不存在，请先从仓库复制"
-    echo "  运行: git clone https://github.com/ZenHG/opencode-moa.git tmp && cp -r tmp/.opencode/ ."
+    fail ".opencode/ 不存在"
+    echo "  请先克隆仓库并复制 .opencode/ 到当前目录"
+    echo "  git clone https://github.com/ZenHG/opencode-moa.git tmp"
+    echo "  cp -r tmp/.opencode/ ."
     exit 1
 fi
 
 # 2. 合并 opencode.json
 echo ""
-echo "[2/3] 合并 opencode.json..."
+echo -e "${YELLOW}[2/3] 合并 opencode.json...${NC}"
 
-if [ -f "$OPENCODE_JSON" ]; then
-    echo "  已有 opencode.json，备份原文件"
-    BACKUP="$OPENCODE_JSON.bak.$(date +%Y%m%d-%H%M%S)"
-    cp "$OPENCODE_JSON" "$BACKUP"
-    echo "  已备份到 $BACKUP"
-    
-    # 检查是否有 jq
-    if command -v jq &> /dev/null; then
-        echo "  使用 jq 合并配置"
-        # 保留用户配置，合并 MoA 配置
-        jq -s '.[0] * .[1]' "$OPENCODE_JSON" <(cat <<'EOF'
-{
+MOA_JSON='{
   "default_agent": "门童路由员",
   "permission": {
     "*": "ask",
@@ -100,33 +104,57 @@ if [ -f "$OPENCODE_JSON" ]; then
   "compaction": { "auto": true, "reserved": 10000 },
   "share": "manual",
   "snapshot": true
-}
-EOF
-        ) > "$OPENCODE_JSON.tmp" && mv "$OPENCODE_JSON.tmp" "$OPENCODE_JSON"
-        echo "  配置已合并（保留用户 provider）"
+}'
+
+if [ -f "$OPENCODE_JSON" ]; then
+    skip "已有 opencode.json，备份原文件"
+    BACKUP="$OPENCODE_JSON.bak.$(date +%Y%m%d-%H%M%S)"
+    cp "$OPENCODE_JSON" "$BACKUP"
+    ok "已备份到 $(basename "$BACKUP")"
+    
+    if command -v jq &> /dev/null; then
+        # 提取用户配置（provider, model, small_model）
+        USER_PROVIDER=$(jq '.provider // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
+        USER_MODEL=$(jq '.model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
+        USER_SMALL=$(jq '.small_model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
+        
+        # 合并：MoA 配置 + 用户配置
+        echo "$MOA_JSON" | jq \
+            --argjson provider "${USER_PROVIDER:-null}" \
+            --argjson model "${USER_MODEL:-null}" \
+            --argjson small "${USER_SMALL:-null}" \
+            '. + (if $provider != null then {provider: $provider} else {} end) +
+             (if $model != null then {model: $model} else {} end) +
+             (if $small != null then {small_model: $small} else {} end)' \
+            > "$OPENCODE_JSON"
+        ok "配置已合并（保留用户 provider/model）"
     else
-        echo "  未安装 jq，请手动合并 opencode.json"
-        echo "  参考: https://github.com/ZenHG/opencode-moa#方式二手动安装"
+        fail "未安装 jq，无法自动合并"
+        echo "  请手动合并 opencode.json，或安装 jq："
+        echo "  apt install jq / brew install jq / choco install jq"
+        echo "  参考: https://github.com/ZenHG/opencode-moa#方式三手动安装"
+        exit 1
     fi
 else
-    echo "  opencode.json 不存在，请先配置 OpenCode"
-    echo "  运行: /connect 配置 provider，然后重新运行此脚本"
+    skip "opencode.json 不存在，请先配置 OpenCode"
+    echo "  运行 /connect 配置 provider，然后重新运行此脚本"
     exit 1
 fi
 
 # 3. 验证
 echo ""
-echo "[3/3] 验证部署..."
-AGENT_COUNT=$(ls "$MOA_DIR/agents/"*.md 2>/dev/null | wc -l)
-CMD_COUNT=$(ls "$MOA_DIR/commands/"*.md 2>/dev/null | wc -l)
-SKILL_COUNT=$(find "$MOA_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l)
+echo -e "${YELLOW}[3/3] 验证部署...${NC}"
 
-echo "  Agents: $AGENT_COUNT"
-echo "  Commands: $CMD_COUNT"
-echo "  Skills: $SKILL_COUNT"
-echo "  Config: ok"
+AGENT_COUNT=$(ls "$MOA_DIR/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
+CMD_COUNT=$(ls "$MOA_DIR/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
+SKILL_COUNT=$(find "$MOA_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+
+[ "$AGENT_COUNT" -eq 19 ] && ok "Agents: 19" || fail "Agents: $AGENT_COUNT (期望 19)"
+[ "$CMD_COUNT" -eq 5 ] && ok "Commands: 5" || fail "Commands: $CMD_COUNT (期望 5)"
+[ "$SKILL_COUNT" -eq 3 ] && ok "Skills: 3" || fail "Skills: $SKILL_COUNT (期望 3)"
+ok "Config: ok"
 
 echo ""
-echo "=== 安装完成 ==="
-echo "重启 OpenCode 使配置生效。"
-echo "按 Ctrl+. 切换到「门童路由员」开始使用。"
+echo -e "${CYAN}=== 安装完成 ===${NC}"
+echo -e "${YELLOW}重启 OpenCode 使配置生效。${NC}"
+echo -e "${YELLOW}按 Ctrl+. 切换到「门童路由员」开始使用。${NC}"
