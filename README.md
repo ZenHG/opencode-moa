@@ -56,33 +56,42 @@ MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅。**首月 $
 
 > 全程不需要手动创建任何文件。部署手册本身就是安装器。
 
-### 方式二：手动安装
+### 方式二：一键安装脚本（推荐）
+
+```bash
+# 克隆仓库
+git clone https://github.com/ZenHG/opencode-moa.git
+
+# 进入你的项目目录
+cd your-project
+
+# 从仓库复制 .opencode 目录
+cp -r ../opencode-moa/.opencode/ .
+
+# 运行安装脚本（自动合并配置，保留你的 API key）
+# Windows:
+pwsh ../opencode-moa/install.ps1
+# Linux/macOS:
+bash ../opencode-moa/install.sh
+```
+
+> 安装脚本会自动备份原 `opencode.json`，只合并 MoA 配置，保留你的 provider 和 API key。
+
+### 方式三：手动安装
 
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# 2. 复制 .opencode 目录（agent + 命令 + skill + 测试）
+# 2. 复制 .opencode 目录
 cp -r opencode-moa/.opencode/ your-project/
 
-# 3. 替换 opencode.json（⚠️ 会覆盖已有配置，请先备份）
-cp opencode-moa/opencode.json your-project/opencode.json
-
-# 4. 重启 OpenCode
+# 3. 手动合并 opencode.json（不要直接替换！）
+# 打开 opencode.json，将 MoA 的 permission.task 和 agent 部分合并进去
+# 保留你已有的 provider 和 model 配置
 ```
 
-> ⚠️ **重要**：`opencode.json` 是完整替换，不是追加。如果已有自定义配置，请手动合并 `permission.task` 和 `agent` 部分。
-
-### 方式三：只部署 .opencode，不动配置
-
-如果你已有 `opencode.json`，只复制 agent/命令/skill：
-
-```bash
-git clone https://github.com/ZenHG/opencode-moa.git
-cp -r opencode-moa/.opencode/ your-project/
-# 手动将 opencode.json 中的 permission.task 和 agent 部分合并到你的配置
-# 重启 OpenCode
-```
+> ⚠️ **不要** 用 `cat >>` 追加，会导致 JSON 格式错误。**不要** 直接替换，会丢失 API key。
 
 ### 部署成功怎么判断？
 
