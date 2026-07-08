@@ -3,7 +3,7 @@ name: opencode-moa
 description: 19-agent Cost-Optimal MoA 配置。性价比模型充当工具人，中端模型出意见，旗舰模型做融合。一次性部署，部署后可删除。
 ---
 
-# OpenCode MoA 部署手册 v3.5
+# OpenCode MoA 部署手册 v0.0.1
 
 ---
 
@@ -1067,4 +1067,4 @@ model: ollama-local/qwen3-coder
 
 ---
 
-> **文档版本**：v3.5 | **对应 opencode**：>= 1.1.1
+> **文档版本**：v0.0.1 | **对应 opencode**：>= 1.1.1

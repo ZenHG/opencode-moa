@@ -1,6 +1,7 @@
-.opencode/tests/
 node_modules/
 .env
 .env.*
 .DS_Store
 Thumbs.db
+opencode.json1
+user_config.json
