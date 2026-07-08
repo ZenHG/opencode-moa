@@ -176,3 +176,192 @@ pwsh .opencode/tests/T0-static-verify.ps1
 ## 文档版本
 
 v3.4 · OpenCode >= 1.1.1 · [MIT License](LICENSE)
+# OpenCode MoA
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.1.1-orange.svg)](https://opencode.ai)
+
+> **一个模型写所有代码，就像一个人同时当产品经理、前端、后端和测试。**
+> MoA 让 OpenCode 自动调度不同模型处理不同环节——搬砖用便宜的，决策用聪明的，融合用最强的。
+
+**19 个 agent · 5 个命令 · 3 个 skill · 零成本增加**
+
+```
+原来：你 → 单一模型 → 一个答案（好不好全看运气）
+现在：你 → 门童路由 → 工具层（快+便宜）
+                 → 意见层（3 个不同视角并行）
+                 → 融合层（取长补短，一份最优解）
+```
+
+## 为什么需要 MoA？
+
+OpenCode 默认用同一个模型从头处理到尾。但写一行配置和设计一套架构，需要的思考深度完全不同。
+
+| 场景 | 默认方式 | MoA 方式 |
+|---|---|---|
+| 改个函数名 | 用旗舰模型，杀鸡用牛刀 | Flash 模型，0.3 秒搞定 |
+| 设计系统架构 | 单一视角，容易遗漏 | 3 个模型并行出方案，融合后取长补短 |
+| UI 还原 | 一个模型猜布局 | 还原+逻辑+动效三个专家分工 |
+| 日常 bug | 模型可能遗漏上下文 | 工具层先搜全代码，再让意见层出方案 |
+
+**结果：简单任务省 80% token，复杂任务多视角覆盖不遗漏。**
+
+## 30 秒部署
+
+### 方式一：AI 自动部署（推荐）
+
+1. 下载 [`docs/opencode-moa.md`](docs/opencode-moa.md)
+2. 在 OpenCode 中粘贴该文档，发送：
+
+> 请按这份部署手册，帮我把 19 个 agent、5 个命令、3 个 skill 全部部署到当前项目
+
+3. AI 会自动创建所有文件。完成后**重启 OpenCode** 即可。
+
+> 全程不需要手动创建任何文件。部署手册本身就是安装器。
+
+### 方式二：手动安装
+
+```bash
+git clone https://github.com/ZenHG/opencode-moa.git
+cp -r opencode-moa/.opencode/ your-project/
+cat opencode-moa/opencode.json >> your-project/opencode.json
+# 重启 OpenCode
+```
+
+### 不喜欢？一键回滚
+
+```bash
+rm -rf your-project/.opencode/
+# 还原 opencode.json
+```
+
+## 怎么用？
+
+**什么都不用学，直接说话就行。** 门童会自动判断任务复杂度，调度对应的 agent 链。
+
+| 你说的话 | 门童做的事 | 用到的 agent |
+|---|---|---|
+| "把这个变量名改了" | 判定为简单任务 | 闪电侠（Flash） |
+| "写个用户认证模块" | 工具层搜材料 → 3 中端并行 → 融合 | 工具人 + 中级三剑客 + 融合 |
+| "设计微服务架构" | 工具层搜材料 → 3 旗舰并行 → 融合 → 编码 → 质检 | 全链路 6 个 agent |
+| "还原这个截图的 UI" | 三前端专家并行 → 总工择优 | 前端四人组 |
+| 带截图的消息 | 视觉翻译官转文字 → 正常路由 | 视觉翻译官 |
+
+**也可以直接 @ 调用：**
+
+```
+@闪电侠 帮我写个 hello world
+@工具人 搜一下项目里所有 TODO
+@旗舰·架构 设计一个消息队列方案
+```
+
+**或用一键命令：**
+
+| 命令 | 场景 |
+|---|---|
+| `/moa-quick` | 简单任务、翻译、改配置 |
+| `/moa-medium` | 函数模块、bug 修复、单文件重构 |
+| `/moa-flagship` | 系统架构、大型重构 |
+| `/moa-frontend` | UI 还原、CSS、截图修复 |
+| `/moa-describe` | 截图/图片转文字 |
+
+## 架构
+
+```
+                    门童路由员（Flash · 0.1 温度）
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+     工具层            意见层            融合层
+   Flash + MiMo     3 份并行意见      取长补短
+   （~80% 调用）    （~18% 调用）     （~2% 调用）
+```
+
+**三层分工，各司其职：**
+
+- **工具层**（Flash + MiMo）—— 读代码、搜文件、截图转文字。便宜快，随便调
+- **意见层**（Pro / MiniMax / Qwen / MiMo-Pro）—— 从不同视角出方案。三份意见天然形成"共识 + 分歧"结构
+- **融合层**（Kimi / Qwen-Max / GLM）—— 识别共识直接保留，分歧取长补短。只用在刀刃上
+
+**为什么是 3 份意见？** 两份容易变成"对 vs 错"的二元对立。三份让融合模型能区分共识和分歧，输出真正融合的最优解。
+
+## 19 个 Agent
+
+```
+门童路由员 (Flash)
+ │
+ ├── 工具层 ──────────────────────────────────────
+ │   工具人      (Flash)        读代码搜文件
+ │   工具人-mimo (MiMo)        可靠读文件（保底+并行）
+ │   闪电侠      (Flash)        简单任务一步到位
+ │   视觉翻译官   (MiMo)        截图/UI图/报错图转文字
+ │
+ ├── 中级意见层 ──────────────────────────────────
+ │   中级·工程    (Pro)          工程视角方案
+ │   中级·创意    (MiniMax)      创意视角方案
+ │   中级·码农    (Flash)        实战视角方案
+ │   中级·融合    (Kimi)         三份方案取长补短
+ │
+ ├── 旗舰意见层 ──────────────────────────────────
+ │   旗舰·架构    (Qwen3.7Max)   顶层架构设计
+ │   旗舰·规划    (GLM)          结构化方案设计
+ │   旗舰·工程    (Pro)          大规模实现方案
+ │   旗舰·融合    (Kimi)         三份架构方案融合
+ │   旗舰·实现    (Flash)        按融合方案编码
+ │   旗舰·质检    (Pro)          方案 vs 代码验收
+ │
+ └── 前端意见层 ──────────────────────────────────
+     前端·还原    (MiMo)        像素级还原 UI
+     前端·逻辑    (Qwen3.7Plus) 组件架构与状态管理
+     前端·动效    (MiMo-Pro)    交互体验与动效
+     前端·总工    (Kimi)         三份前端方案择优
+```
+
+## 成本
+
+| 层级 | 模型 | 月配额 | 调用频率 |
+|---|---|---|---|
+| 工具层 | Flash + MiMo | ~30 万次 | ~80%（随便调） |
+| 意见层 | Pro / MiniMax / Qwen / MiMo-Pro | ~8.7 万次 | ~18% |
+| 融合层 | Kimi / Qwen-Max / GLM | ~1.8 万次 | ~2%（刀刃上） |
+
+> 所有模型 ID 仅作声明，可替换为你偏好的任何模型。
+
+## 安全
+
+| 防护 | 效果 |
+|---|---|
+| 全局 catch-all | 未声明的工具调用 → 弹窗确认 |
+| Agent 权限隔离 | 每个 agent 只能用允许的工具 |
+| task 白名单 | 门童只能调用声明过的 agent |
+| 降级链 | 任务失败 → 重试 → 换同类 → 降级内置 agent |
+| 一键回滚 | 删掉 `.opencode/` 目录即可还原 |
+
+## 本地模型
+
+支持 Ollama / LM Studio 等本地模型混用：
+
+```yaml
+# .opencode/agents/中级·码农.md
+model: ollama-local/qwen3-coder
+```
+
+详见 [`docs/opencode-moa.md`](docs/opencode-moa.md) 附录 A。
+
+## 验证
+
+部署后运行静态检查（需要 `pwsh`）：
+
+```bash
+pwsh .opencode/tests/T0-static-verify.ps1
+# 预期：41 PASS / 0 FAIL
+```
+
+## 贡献
+
+欢迎提交 PR 和 Issue。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+## License
+
+[MIT](LICENSE) · [OpenCode MoA](https://github.com/ZenHG/opencode-moa)

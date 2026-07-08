@@ -1,0 +1,28 @@
+name: Support
+description: 部署或使用中遇到问题
+labels: ["support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        部署过程中遇到问题？先看看是不是这些常见情况。
+  - type: dropdown
+    id: phase
+    attributes:
+      label: 卡在哪一步？
+      options:
+        - 下载文档
+        - 粘贴给 OpenCode 的 AI
+        - AI 执行部署时报错
+        - 部署完成但 agent 没生效
+        - 重启后报错
+        - 测试不通过
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 具体情况
+      description: 描述你遇到的问题和看到的错误信息
+    validations:
+      required: true

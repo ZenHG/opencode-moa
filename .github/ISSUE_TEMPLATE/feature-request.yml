@@ -1,0 +1,35 @@
+name: Feature Request
+description: Suggest a new agent, command, or skill
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        有新想法？告诉我们你想要什么。
+  - type: dropdown
+    id: type
+    attributes:
+      label: 类型
+      options:
+        - 新 Agent
+        - 新命令（/moa-*）
+        - 新 Skill
+        - 改进现有 Agent
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 描述
+      description: 你想要什么，为什么需要
+    validations:
+      required: true
+  - type: textarea
+    id: model
+    attributes:
+      label: 建议使用的模型
+      description: 如果涉及新 agent，建议用哪个模型
+      placeholder: "opencode-go/deepseek-v4-flash"
+    validations:
+      required: false

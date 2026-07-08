@@ -1,0 +1,53 @@
+name: Bug Report
+description: Report a bug in OpenCode MoA
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请填写以下信息帮助我们定位问题。
+  - type: input
+    id: opencode-version
+    attributes:
+      label: OpenCode 版本
+      description: 运行 `opencode --version` 获取
+      placeholder: "1.1.1"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 清楚地描述你遇到的问题
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 逐步描述如何触发这个问题
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 错误日志
+      description: 贴上相关的错误输出
+      render: shell
+  - type: dropdown
+    id: agent
+    attributes:
+      label: 涉及的 Agent
+      options:
+        - 门童路由员
+        - 工具层（工具人/闪电侠/视觉翻译官）
+        - 中级意见层
+        - 旗舰意见层
+        - 前端意见层
+        - 不确定
+    validations:
+      required: false

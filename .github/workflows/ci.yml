@@ -1,0 +1,17 @@
+name: Layer 0 Static Verify
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+jobs:
+  static-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-powershell@v1
+        with:
+          pwsh-version: '7.x'
+      - name: Run T0 static verify
+        shell: pwsh
+        run: pwsh .opencode/tests/T0-static-verify.ps1
