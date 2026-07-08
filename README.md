@@ -215,8 +215,8 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 ### 方式一：AI 自动部署（推荐）
 
-1. 下载 [`docs/opencode-moa.md`](docs/opencode-moa.md)
-2. 在 OpenCode 中粘贴该文档，发送：
+1. 下载 [`docs/opencode-moa.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.md)
+2. 在 OpenCode 中上传该文档，发送：
 
 > 请按这份部署手册，帮我把 19 个 agent、5 个命令、3 个 skill 全部部署到当前项目
 
@@ -240,6 +240,8 @@ rm -rf your-project/.opencode/
 ```
 
 ## 怎么用？
+
+OpenCode 原有两个内置 agent：**build**（全功能开发）和 **plan**（只读分析）。部署 MoA 后，新增**门童路由员**作为默认入口——它不写代码、不改文件，只根据任务复杂度自动调度其他 19 个 agent。
 
 **什么都不用学，直接说话就行。** 门童会自动判断任务复杂度，调度对应的 agent 链。
 
