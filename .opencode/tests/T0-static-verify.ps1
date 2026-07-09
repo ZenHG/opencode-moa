@@ -18,7 +18,7 @@ Write-Host "`n=== 基础设施 ===" -ForegroundColor Yellow
 Check "agents dir" (Test-Path "$agentDir")
 Check "commands dir" (Test-Path "$cmdDir")
 Check "skills dir" (Test-Path "$skillDir")
-Check "opencode.json" (Test-Path (Join-Path $base "opencode.json"))
+Check "user_config.json" (Test-Path (Join-Path $base "user_config.json"))
 
 Write-Host "`n=== Agent count ===" -ForegroundColor Yellow
 $agents = Get-ChildItem "$agentDir/*.md" -ErrorAction SilentlyContinue
@@ -30,7 +30,7 @@ Check "Command files = 5" ($cmds.Count -eq 5)
 
 Write-Host "`n=== Skill count ===" -ForegroundColor Yellow
 $skills = Get-ChildItem "$skillDir/*/SKILL.md" -ErrorAction SilentlyContinue
-Check "Skill files = 3" ($skills.Count -eq 3)
+Check "Skill files = 4" ($skills.Count -eq 4)
 
 Write-Host "`n=== Command prefix ===" -ForegroundColor Yellow
 $moaCmds = Get-ChildItem "$cmdDir/moa-*.md" -ErrorAction SilentlyContinue
@@ -64,7 +64,7 @@ foreach ($name in $expectedModels.Keys) {
     $file = Join-Path $agentDir "$name.md"
     if (Test-Path $file) {
         $content = Get-Content $file -Raw -Encoding utf8
-        $hasModel = $content -match "model:\s*opencode-go/$($expectedModels[$name])"
+        $hasModel = $content -match "model:\s*opencode/$($expectedModels[$name])"
         Check "$($name) model=$($expectedModels[$name])" $hasModel
     } else {
         Check "$($name) file exists" $false

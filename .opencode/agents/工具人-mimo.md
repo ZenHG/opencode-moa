@@ -1,7 +1,7 @@
 ---
 description: 工具人，MiMo模型保底
 mode: subagent
-model: opencode-go/mimo-v2.5
+model: opencode/mimo-v2.5
 temperature: 0.1
 reasoningEffort: Medium
 permission:
