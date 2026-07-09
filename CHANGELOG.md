@@ -29,8 +29,13 @@
 - 工具人-mimo：`opencode-go/mimo-v2.5` → `opencode/mimo-v2.5`
 - 意见层/旗舰层/前端层：全部从`opencode-go/*`切换到`opencode/*`
 
+### 测试
+
+- 静态检查脚本 `.opencode/tests/T0-static-verify.ps1` 同步：模型断言 `opencode-go/` → `opencode/`，否则 CI 静态检查报错拦截推送
+
 ### 文档
 
+- 部署手册同步：opencode-moa.md 全量 19 个 agent 的 `opencode-go/*` → `opencode/*`（含 2 处示例配置）
 - 部署手册同步：opencode-moa.md 门童路由员模板更新
 
 ---
