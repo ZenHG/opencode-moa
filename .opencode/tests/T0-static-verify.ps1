@@ -64,7 +64,7 @@ foreach ($name in $expectedModels.Keys) {
     $file = Join-Path $agentDir "$name.md"
     if (Test-Path $file) {
         $content = Get-Content $file -Raw -Encoding utf8
-        $hasModel = $content -match "model:\s*opencode/$($expectedModels[$name])"
+        $hasModel = $content -match "model:\s*opencode-go/$($expectedModels[$name])"
         Check "$($name) model=$($expectedModels[$name])" $hasModel
     } else {
         Check "$($name) file exists" $false

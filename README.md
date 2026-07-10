@@ -40,9 +40,9 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 | 条件 | 检查命令 | 说明 |
 |------|----------|------|
 | OpenCode 已安装 | `opencode --version` | 版本 ≥ 1.1.1，[安装](https://opencode.ai/install) |
-| OpenCode Go 订阅 | `/connect` 查看 | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月 |
+| OpenCode Go 订阅 | opencode.ai 控制台 | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月 |
 | Git 已安装 | `git --version` | 用于克隆仓库 |
-| OpenCode Go API Key | `/connect` 查看 | 在 Zen 控制台创建 |
+| OpenCode Go API Key | opencode.ai 控制台创建 | 在 Zen 控制台（opencode.ai）创建 |
 
 ### 可选（安装脚本需要）
 
@@ -155,7 +155,7 @@ A: 检查三点：
 A: 确认 `.opencode/agents/工具人.md` 存在且 frontmatter 格式正确。
 
 **Q: 报错 "model not found"？**
-A: 模型 ID 格式应为 `provider/model-id`（如 `opencode/kimi-k2.7-code`）。先确认已通过 `/connect` 认证对应 provider，再用 `/models` 查看可用模型列表。
+A: 模型 ID 格式应为 `provider/model-id`（如 `opencode-go/kimi-k2.7-code`）。在配置文件（系统级 `~/.config/opencode/opencode.json` 或项目 `opencode.json`）注册对应的 provider，然后在 TUI 内用 `/models` 查看可用模型。
 
 **Q: 怎么切换回原来的 build/plan agent？**
 A: 按 `Ctrl+.` 切换，或输入 `/build`、`/plan`。MoA 不影响内置 agent。

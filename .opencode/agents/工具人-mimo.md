@@ -1,7 +1,7 @@
----
+﻿---
 description: 工具人，MiMo模型保底
 mode: subagent
-model: opencode/mimo-v2.5
+model: opencode-go/mimo-v2.5
 temperature: 0.1
 reasoningEffort: Medium
 permission:
@@ -17,3 +17,4 @@ permission:
     ERROR_PROVIDER: provider返回502/503/timeout（连接瞬断）
     ERROR_AUTH: 认证失败
     ERROR_UNKNOWN: 其他错误
+

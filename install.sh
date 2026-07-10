@@ -137,7 +137,7 @@ if [ -f "$OPENCODE_JSON" ]; then
     fi
 else
     skip "opencode.json 不存在，请先配置 OpenCode"
-    echo "  运行 /connect 配置 provider，然后重新运行此脚本"
+    echo "  请先在 opencode.json 中配置 Go provider，然后重新运行此脚本"
     exit 1
 fi
 

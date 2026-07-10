@@ -25,10 +25,15 @@
 - 修复仓库模板 `opencode.json`：移除指向 JSON Schema 的非法 `"": "https://opencode.ai/config.json"` extends（会导致加载失败），改为 `$schema`。
 - README 模型前缀示例 `opencode-go/` → `opencode/`，与部署手册统一。
 - 19 个 agent 保持 `opencode/`（与部署手册一致），未回退。
+- 与官方命名对齐：agent 模型前缀 `opencode/` → `opencode-go/`，自定义 provider 名 `opencode` → `opencode-go`。官方 Go 文档规定模型 ID 格式为 `opencode-go/<model>`。现独立命名不顶内置 Zen provider，避免冲突。
+- `.gitignore`：补 `user_config*.json`（含 key 的副本文件）、`opencode.json1*`（改名副本）、`*.zip`，防误提交泄露。
 
 ### 文档
 
-- 新增 `docs/PLAN-fix-provider.md`：完整根因分析与修复方案。
+- 新增 `docs/PLAN-fix-provider.md`：完整根因分析与修复方案（后删除，命名已过时）。
+- 删除 `docs/PLAN-fix-provider.md`。
+- 重写 `docs/TROUBLESHOOTING.md`：删除回退方案节，全篇 `opencode` → `opencode-go`，去 `/connect` 误导。
+- 重写 `docs/opencode-moa.md` Provider 节：非交互配置文件鉴权为主，TUI `/connect` 为备选，+ 错误兜底说明。
 
 ---
 
