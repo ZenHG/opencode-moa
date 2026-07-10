@@ -93,7 +93,7 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 1. 重启 OpenCode
 2. 按 `Ctrl+.` 切换 agent，看到「门童路由员」
 3. 输入 `@工具人` 能正常响应
-4. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 40 PASS
+4. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 41 PASS
 
 ## 安全约束
 

@@ -112,7 +112,7 @@ cp -r opencode-moa/.opencode/ your-project/
 
 1. 重启 OpenCode 后，按 `Ctrl+.` 切换 agent，看到「门童路由员」
 2. 输入 `@工具人` 能正常响应
-3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 40 PASS
+3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 41 PASS
 
 ### 一键回滚
 
@@ -383,7 +383,7 @@ model: ollama-local/qwen3-coder
 
 ```bash
 pwsh .opencode/tests/T0-static-verify.ps1
-# 预期：40 PASS / 0 FAIL
+# 预期：41 PASS / 0 FAIL
 ```
 
 ## 贡献

@@ -37,6 +37,8 @@
 - 安装脚本 `install.ps1` / `install.sh`：合并配置后交互提示输入 Go API Key，非交互环境自动跳过。
 - `docs/opencode-moa.md` Provider 节部署指令强化：直接 ask 用户输入 key，覆盖安全顾虑，不给选项不跳过。
 - `T0-static-verify.ps1`：skill 计数排除自引用的 opencode-moa 元 skill，本地/远程 CI 统一。
+- 部署 Block 0 加 Provider 前置检查提醒；Block 5 加 user_config.json 独立保存说明；Block 6 加认证文件检查。
+- 全文档 PASS 预期 40 → 41（含 T0 改进后）。
 
 ---
 
