@@ -34,6 +34,9 @@
 - 删除 `docs/PLAN-fix-provider.md`。
 - 重写 `docs/TROUBLESHOOTING.md`：删除回退方案节，全篇 `opencode` → `opencode-go`，去 `/connect` 误导。
 - 重写 `docs/opencode-moa.md` Provider 节：非交互配置文件鉴权为主，TUI `/connect` 为备选，+ 错误兜底说明。
+- 安装脚本 `install.ps1` / `install.sh`：合并配置后交互提示输入 Go API Key，非交互环境自动跳过。
+- `docs/opencode-moa.md` Provider 节部署指令强化：直接 ask 用户输入 key，覆盖安全顾虑，不给选项不跳过。
+- `T0-static-verify.ps1`：skill 计数排除自引用的 opencode-moa 元 skill，本地/远程 CI 统一。
 
 ---
 

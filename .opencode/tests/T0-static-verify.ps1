@@ -29,8 +29,8 @@ $cmds = Get-ChildItem "$cmdDir/*.md" -ErrorAction SilentlyContinue
 Check "Command files = 5" ($cmds.Count -eq 5)
 
 Write-Host "`n=== Skill count ===" -ForegroundColor Yellow
-$skills = Get-ChildItem "$skillDir/*/SKILL.md" -ErrorAction SilentlyContinue
-Check "Skill files = 3" ($skills.Count -eq 3)
+$skills = Get-ChildItem "$skillDir/*/SKILL.md" -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch "[/\\]opencode-moa[/\\]SKILL\.md$" }
+Check "Skill files = 3 (excl. meta)" ($skills.Count -eq 3)
 
 Write-Host "`n=== Command prefix ===" -ForegroundColor Yellow
 $moaCmds = Get-ChildItem "$cmdDir/moa-*.md" -ErrorAction SilentlyContinue
