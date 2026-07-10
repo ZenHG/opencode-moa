@@ -10,23 +10,100 @@
 
 ---
 
-## v0.0.3（2026-07-10）
+## v0.0.5（2026-07-10）
 
-修复工具层（子代理）连不上 OpenCode Go provider 的根因。
+审计 opencode-moa 是否误导 AI / 用户，修复一批会导致「部署后 19 agent 全连不上」与泄露凭据的问题。
+
+### 致命（P0）
+
+- **install.ps1 / install.sh 非交互 / 无 key 分支**：原逻辑生成 `user_config.json` 并提示用户填 key。但 OpenCode 仅加载 `opencode.json` 与系统级 `~/.config/opencode/opencode.json`，**不加载 `user_config.json`**，且该分支根本不往 `opencode.json` 注入 provider —— 跑完脚本 19 个 agent 全部连不上。已改为：**无 key 时直接把 `opencode-go` provider（apiKey 占位符 `<YOUR_GO_API_KEY>`）合并进 `opencode.json`**，并提示用户替换 key；彻底移除 `user_config.json` 生成。
+- **`opencode.json11` 含明文 Go API Key 且 schema 错误**（`llm.model/base_url/api_key` 非 OpenCode 格式）：既泄密又误导。已删除工作区文件；该 key 视为已泄露，需到 opencode.ai/auth 轮换。
+
+### 高（P1）
+
+- **T0 静态测试不校验 `reasoningEffort` 取值**：原只数 `=19`，大写 `Medium` 会 PASS，重打包发布会复现 v0.0.3/0.0.4 的 400 根因。已新增检查：每个 `reasoningEffort` 必须落在网关小写枚举 `low/medium/high/max/xhigh/none/minimal`，否则 FAIL。
+
+### 低（P2）
+
+- 手册 Provider 块（`docs/opencode-moa.md:69-77`）与 install 脚本模型 `name` 由显示名改为 slug（API 实际按 map key=slug 调用，显示名仅别名；本次统一以避免与真实配置不一致）。
+- 9 个编排层 agent（门童路由员、中级·工程/创意/码农、旗舰·工程/架构/规划、前端·逻辑/动效）的 `hidden: true` 已从手册约定**实际应用**到 `.opencode/agents/*.md`（v0.0.4 标记「待应用」已结清）。
+- 创建 `.opencode/local/` 目录占位（手册方式 A 引用 `{file:.opencode/local/opencode-go.key}` 不再因目录缺失报错）。
+
+### 高（P1）
+
+- **reasoning 矩阵在 opencode ≥ 1.3.4 静默失效**：自定义 `@ai-sdk/openai-compatible` provider 默认不再把 reasoning 参数透传到请求体（[issue #20815](https://github.com/anomalyco/opencode/issues/20815)），`reasoningEffort` 矩阵等于摆设且不报错。已在 Provider 配置块 `options` 加 `"forceReasoning": true`；并把手册必需版本从 ≥ 1.1.1 提到 **≥ 1.3.4**（reasoning 透传修复；1.1.1 仅能跑通基础、矩阵失效）。README badge 与前置条件表同步更新。
+
+### 低（P2）
+
+- **Windows 系统级路径辟谣**：钉死为 `%USERPROFILE%\.config\opencode\opencode.json`，明确否定网上误传的 `%APPDATA%\opencode`（按错路径会「部署成功但全 agent 连不上」且无明显报错）；手册新增各平台真实路径表，README 加跨平台提示。
+- **验证脚本跨平台**：Block 6 原 bash（`ls` / `wc` / `grep` / `find`）在 Windows 原生 CMD / PowerShell 跑不了，补 PowerShell 原生版，并加「bash 仅 Linux / macOS / WSL / Git Bash」提示。
+- **`instructions` 不再写死**：`["AGENTS.md"]` 改为默认注释，仅当项目根**已存在** `AGENTS.md` 才启用——消除无该文件项目的启动告警，且不替项目强加约定文件。
+- **`T0-static-verify.ps1` 随部署生成**：手册新增 Block 5.5 把脚本完整写入 `.opencode/tests/`，解决「手册引用但该文件不随仓库分发、其他用户照跑找不到」；脚本对**系统级 key** 判定为 PASS（key 检查从硬 FAIL 改为 lenient，匹配系统级部署方式）。
+- 手册与 README 的「41 PASS」旧话术统一改为准确预期（全部 PASS / FAIL=0 / 系统级 key 时 WARN 也算过）。
+
+### 高（P1）
+
+- **Provider 改为「存在 + 真实 key」硬门（抓空壳）**：实测极端场景——系统级 `opencode.json` 被删 / 系统目录为空 / provider 缺失或占位符 key——部署仍能写出完整 19 文件，却运行时全 agent 连不上，且旧检查只 WARN 不红。已做：
+  - Block 0 新增 **Provider 硬门**：部署后必须断言项目 `opencode.json` 或系统级 `~/.config/opencode/opencode.json`（二选一，同目录只留一个）含 `provider.opencode-go` 且 `apiKey` 非 `<YOUR_GO_API_KEY>`/非空，否则 AI 必须重建 provider，不许宣布成功。
+  - Block 0 的 `opencode` 二进制检查**软化**：桌面端子 shell / 沙箱常因 PATH 不同误报 not found，改为仅 WARN，不阻断文件部署、更不因此跳过 provider。
+  - **Provider 默认写项目级 `opencode.json`**（自包含，抗系统目录被删/为空）；系统级降级为多项目共享可选项。
+
+### 低（P2）
+
+- **T0 增 provider 真实 key 校验**：Block 5.5 脚本现 grep 项目/系统级 `.json`/`.jsonc` 中的 `opencode-go` 且 `apiKey` 为真实值（`sk-*` 或 `{file:}` 引用）且非占位符/空，否则 FAIL——直接抓住「系统级被删 / 没重建」式空壳。
+- **T0 skills 误判修复**：从「总数 == 3」改为校验 **3 个指定目录存在**（`code-review-moa` / `architecture-moa` / `frontend-moa`），避免仓库自带 `opencode-moa` 元 skill 导致端用户复制后变 4 而**误 FAIL**。
+- **同层双文件警告修正**：原写「`.jsonc` 优先、`.json` 被忽略」来自第三方插件文档，**官方未定义同目录双文件优先级**。已改为准确表述：OpenCode 同时支持 `.json`/`.jsonc`，但同目录两份并存优先级未定义、内容还可能冲突，安全做法是只留一个且含有效 provider + 真实 key。
+- **速查表补空壳成因**：新增「系统级被删/目录为空」「同目录双 `.json`+`.jsonc`」「占位符 key」三行，对应处理均指向重建 provider / 只留一个 / 替换真实 key，并注明 T0 现会 FAIL 拦截。
+- 方案存档：`docs/PLAN-moa-hardening.md`。
+
+## v0.0.4（2026-07-10）
+
+修复 v0.0.3 误诊后仍未消除的 `Upstream request failed`（真实根因：agent `reasoningEffort` 透传参数被网关拒绝）。
 
 ### 根因
 
-子代理 `model: opencode/<model>` 解析走 OpenCode 的 provider 注册表；加载的配置里没有带凭证的 `opencode` provider，只有内置 console `opencode`（无 key → 降级 `public` → 付费 Go 模型被禁用），导致 "OpenCode Go provider error / Upstream request failed"。主会话能工作是因为 `user_config.json` 的 legacy `llm` 块写死了 `base_url+key`，但该凭证不共享给子代理。
+见 v0.0.3「根因（更正）」。`reasoningEffort` 大写取值、以及部分模型不支持的档位，导致网关返回 HTTP 400 `invalid_request_error`，被包装成 `Upstream request failed`。
 
-### 修复
+### 修复（均已落地）
 
-- 在系统级配置 `~/.config/opencode/opencode.json`（及 `.jsonc`）注册自定义 `provider.opencode`（openai-compatible）→ `https://opencode.ai/zen/go/v1` + Go key + 9 个模型，使 `opencode/<model>` 解析到带凭证的端点（已实测 9 模型全部返回 OK）。
-- 修复项目运行时 `user_config.json`：原文件是两个 JSON 对象拼接的非法文件，合并为单个合法对象，加入 `provider.opencode`，移除非法的 `"": "https://opencode.ai/config.json"` extends。
-- 修复仓库模板 `opencode.json`：移除指向 JSON Schema 的非法 `"": "https://opencode.ai/config.json"` extends（会导致加载失败），改为 `$schema`。
-- README 模型前缀示例 `opencode-go/` → `opencode/`，与部署手册统一。
-- 19 个 agent 保持 `opencode/`（与部署手册一致），未回退。
-- 与官方命名对齐：agent 模型前缀 `opencode/` → `opencode-go/`，自定义 provider 名 `opencode` → `opencode-go`。官方 Go 文档规定模型 ID 格式为 `opencode-go/<model>`。现独立命名不顶内置 Zen provider，避免冲突。
-- `.gitignore`：补 `user_config*.json`（含 key 的副本文件）、`opencode.json1*`（改名副本）、`*.zip`，防误提交泄露。
+- 19 个 agent `reasoningEffort` 取值全部改小写；意见/旗舰层按模型最高支持档提档：minimax-m3 / glm-5.2 / deepseek-v4-pro / mimo-v2.5-pro → `max`，qwen3.7-max/plus → `xhigh`（该模型 `max` 反而 400），kimi-k2.7-code → `high`（最高只到 high），工具/快任务层 → `medium`。
+- 9 模型 `reasoning_effort` 支持矩阵实测写入 `docs/opencode-moa.md`（各档 OK/400/500 + 4 条规则）。
+- 19 个 agent 新增 `max_tokens` 分档：工具/快任务层 2048，意见/旗舰/实现层 8192。
+- `@` 菜单显示上限约 10 行会截断编排层 agent：约定编排层（旗舰×6、中级·融合、前端·总工、工具人-mimo）设 `hidden: true`（仅隐藏 @ 菜单、不阻止 Task 调用），约定已写入手册；agent 文件待应用。
+- 参数生效实测：reasoning_effort（reasoning tokens 359→536）、max_tokens（5 vs 60）、temperature（0.1 确定性 vs 1.0 离散）、stop/top_p（网关接受）全部确认透传生效。
+
+### 配置加载机制核实（deployer 发现正确）
+
+官方配置文档确认 OpenCode **仅加载** `opencode.json`（项目级）与 `~/.config/opencode/opencode.json`（系统级，含 `.jsonc`），**不加载 `user_config.json`**。据此：
+
+- v0.0.3 整条 `user_config.json` 路线（含"主会话靠 user_config.json 的 legacy `llm` 块"归因）**错误**；deployer 判定正确。
+- 实际生效机制 = 系统级 `~/.config/opencode/opencode.json(c)` 注册 `provider.opencode-go`（带 key）+ 项目级 `opencode.json`（permissions / agent / default_agent）。子代理模型 `opencode-go/<model>` 经系统级 provider 解析。
+- 仓库内 `user_config.json` / `user_config - 副本.json` 为死文件（且被 `.gitignore` 排除），建议删除。
+- 部署手册 `Block 0` 的 "`user_config.json` 已创建且含有效 key 或占位符" 引用同样需更正为系统级 `opencode.json`，否则会误导用户走错误路线。
+
+---
+
+## v0.0.3（2026-07-10）
+
+建立 OpenCode Go provider 的带凭证配置（子代理连通的必要前置），并修正配置合法性。注意：本版原把 `Upstream request failed` 的根因归为"provider 无凭证→降级 public"，属误诊；真实根因见 v0.0.4。
+
+### 根因（更正）
+
+报错 `Error from provider (Console Go): Upstream request failed`（HTTP 400 `invalid_request_error`）的真正来源是 **agent 定义里的 `Additional` 透传参数网关不接受**，不是 provider 没配凭证。实测证据：
+- 配置中 `opencode-go` provider 带有效 key，直连 `https://opencode.ai/zen/go/v1/chat/completions` 对合法请求返回 200；
+- 缓存日志显示请求 `providerID: opencode-go`、`modelID: deepseek-v4-flash`、`statusCode: 400`，responseBody 为 `invalid_request_error`；
+- 复现：请求体带 `reasoning_effort: "Medium"`（大写）即 400；改为小写 `medium` 即 200。temperature / top_p / max_tokens / stop / penalties 网关均接受。
+
+即 OpenCode Go 网关（后端内部 provider 名 `Console Go`）**只认小写 `reasoning_effort` 取值（low/medium/high/max/xhigh）**；大写 `Medium/High` 及 `extreme/adaptive/auto` 等一律 400，且不支持的取值不会降级、直接硬失败。provider/凭证注册是必要前置（见修复项），但不是本次报错的成因。
+
+### 修复（均已落地）
+
+- 【前置·必要】系统级 `~/.config/opencode/opencode.json`（及 `.jsonc`）注册自定义 `provider.opencode-go`（openai-compatible）→ `https://opencode.ai/zen/go/v1` + Go key + 9 个模型，使 `opencode-go/<model>` 解析到带凭证端点（已实测 9 模型全部 200）。这是子代理能连通的必要前提，但非本次报错根因。
+- ⚠️ 原写"修复项目运行时 `user_config.json`"——经官方配置文档核实，`user_config.json` **不是 OpenCode 加载的配置文件**（仅加载 `opencode.json` 项目级与 `~/.config/opencode/opencode.json` 系统级），该路线整体错误，详见 v0.0.4。仓库内 `user_config.json` / `user_config - 副本.json` 为死文件，建议删除（已被 `.gitignore` 排除）。
+- 修复仓库模板 `opencode.json`：移除非法 `"": "https://opencode.ai/config.json"` extends（会导致加载失败），改为 `$schema`。
+- 19 个 agent 模型前缀统一为 `opencode-go/<model>`（与官方 Go 文档 ID 格式一致，独立命名不顶内置 Zen provider）。
+- `.gitignore`：补 `user_config*.json`（含 key 的副本文件）、`opencode.json1*`（改名副本）、`*.zip`，防误提交泄露 key。
+- 真实根因修复见 v0.0.4：`reasoningEffort` 取值改小写并按模型最高支持档设置。
 
 ### 文档
 

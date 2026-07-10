@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.1.1-orange.svg)](https://opencode.ai)
+[![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
 > **一个对话入口，19 个专业模型自动协作。简单任务用 Flash（便宜），复杂任务才调旗舰（贵）。成本降低 90%，代码质量显著提升。**
 
@@ -39,7 +39,7 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 | 条件 | 检查命令 | 说明 |
 |------|----------|------|
-| OpenCode 已安装 | `opencode --version` | 版本 ≥ 1.1.1，[安装](https://opencode.ai/install) |
+| OpenCode 已安装 | `opencode --version` | **≥ 1.3.4**（reasoning 透传修复；1.1.1 仅能跑通基础、矩阵失效），[安装](https://opencode.ai/install) |
 | OpenCode Go 订阅 | opencode.ai 控制台 | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月 |
 | Git 已安装 | `git --version` | 用于克隆仓库 |
 | OpenCode Go API Key | opencode.ai 控制台创建 | 在 Zen 控制台（opencode.ai）创建 |
@@ -57,6 +57,8 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 - **CLI**：所有方式都支持
 - **桌面端**：方式一（AI 自动部署）最方便，方式二/三需要先在终端操作
+
+> ⚠️ **系统级 key 路径（跨平台）**：放 `~/.config/opencode/opencode.json`（Linux/macOS）或 `C:\Users\<你>\.config\opencode\opencode.json`（Windows，`%USERPROFILE%\.config\opencode`，**不是** `%APPDATA%\opencode`）。按错路径会「部署成功但全 agent 连不上」。详见 [`docs/opencode-moa.md`](docs/opencode-moa.md) 的 Provider 配置节。
 
 ## 30 秒部署
 
@@ -112,7 +114,7 @@ cp -r opencode-moa/.opencode/ your-project/
 
 1. 重启 OpenCode 后，按 `Ctrl+.` 切换 agent，看到「门童路由员」
 2. 输入 `@工具人` 能正常响应
-3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 41 PASS
+3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`（部署时由手册 Block 5.5 生成），预期全部 PASS（FAIL=0；key 走系统级时 WARN 也算过）
 
 ### 一键回滚
 
@@ -383,7 +385,7 @@ model: ollama-local/qwen3-coder
 
 ```bash
 pwsh .opencode/tests/T0-static-verify.ps1
-# 预期：41 PASS / 0 FAIL
+# 预期：全部 PASS / FAIL=0（key 走系统级时 WARN 也算过）
 ```
 
 ## 贡献

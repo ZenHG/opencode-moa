@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # install.sh — MoA 安装脚本（增量合并 opencode.json）
 # 用法: bash ./install.sh
 # 兼容: Linux / macOS / Windows (Git Bash / WSL / MSYS2)
@@ -19,40 +19,31 @@ skip() { echo -e "  ${GRAY}- $1${NC}"; }
 fail() { echo -e "  ${RED}✗ $1${NC}"; }
 
 gen_placeholder() {
-    local f="$PROJECT_DIR/user_config.json"
-    if [ -f "$f" ]; then
-        skip "user_config.json 已存在，未覆盖"
+    if jq -e '.provider["opencode-go"]' "$OPENCODE_JSON" >/dev/null 2>&1; then
+        skip "opencode-go provider 已存在，未覆盖"
         return
     fi
-    cat > "$f" << 'PLACEHOLDER'
-{
-  "model": "opencode-go/deepseek-v4-flash",
-  "provider": {
-    "opencode-go": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "OpenCode Go (MoA)",
-      "options": {
-        "baseURL": "https://opencode.ai/zen/go/v1",
-        "apiKey": "<YOUR_GO_API_KEY>"
-      },
-      "models": {
-        "deepseek-v4-flash": { "name": "DeepSeek V4 Flash" },
-        "mimo-v2.5": { "name": "MiMo V2.5" },
-        "mimo-v2.5-pro": { "name": "MiMo V2.5 Pro" },
-        "minimax-m3": { "name": "MiniMax M3" },
-        "glm-5.2": { "name": "GLM 5.2" },
-        "qwen3.7-max": { "name": "Qwen3.7 Max" },
-        "qwen3.7-plus": { "name": "Qwen3.7 Plus" },
-        "kimi-k2.7-code": { "name": "Kimi K2.7 Code" },
-        "deepseek-v4-pro": { "name": "DeepSeek V4 Pro" }
-      }
-    }
-  }
-}
-PLACEHOLDER
-    ok "已生成 user_config.json（占位符）"
-    echo "  打开 user_config.json，把 <YOUR_GO_API_KEY> 替换成你的真实 key（opencode.ai/auth 创建）"
-    echo "  然后重启 OpenCode"
+    echo "  ⚠ 未提供 key。写入占位符 <YOUR_GO_API_KEY> 到 opencode.json。"
+    jq --arg key "<YOUR_GO_API_KEY>" '
+        .provider["opencode-go"] = {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "OpenCode Go (MoA)",
+            "options": { "baseURL": "https://opencode.ai/zen/go/v1", "apiKey": $key },
+            "models": {
+                "deepseek-v4-flash": {"name": "deepseek-v4-flash"},
+                "mimo-v2.5": {"name": "mimo-v2.5"},
+                "mimo-v2.5-pro": {"name": "mimo-v2.5-pro"},
+                "minimax-m3": {"name": "minimax-m3"},
+                "glm-5.2": {"name": "glm-5.2"},
+                "qwen3.7-max": {"name": "qwen3.7-max"},
+                "qwen3.7-plus": {"name": "qwen3.7-plus"},
+                "kimi-k2.7-code": {"name": "kimi-k2.7-code"},
+                "deepseek-v4-pro": {"name": "deepseek-v4-pro"}
+            }
+        } | .model = "opencode-go/deepseek-v4-flash"' "$OPENCODE_JSON" > "${OPENCODE_JSON}.tmp" && mv "${OPENCODE_JSON}.tmp" "$OPENCODE_JSON"
+    ok "opencode-go provider 已写入（占位符 key），请替换 <YOUR_GO_API_KEY>"
+    echo "  编辑 opencode.json 的 provider.opencode-go.apiKey 填入真实 key，再重启 OpenCode。"
+    echo "  OpenCode 仅加载 opencode.json 与系统级 ~/.config/opencode/opencode.json，不加载 user_config.json。"
 }
 
 echo ""
@@ -196,15 +187,15 @@ if [ -z "$HAS_GO" ]; then
                     "apiKey": $key
                 },
                 "models": {
-                    "deepseek-v4-flash": {"name": "DeepSeek V4 Flash"},
-                    "mimo-v2.5": {"name": "MiMo V2.5"},
-                    "mimo-v2.5-pro": {"name": "MiMo V2.5 Pro"},
-                    "minimax-m3": {"name": "MiniMax M3"},
-                    "glm-5.2": {"name": "GLM 5.2"},
-                    "qwen3.7-max": {"name": "Qwen3.7 Max"},
-                    "qwen3.7-plus": {"name": "Qwen3.7 Plus"},
-                    "kimi-k2.7-code": {"name": "Kimi K2.7 Code"},
-                    "deepseek-v4-pro": {"name": "DeepSeek V4 Pro"}
+                    "deepseek-v4-flash": {"name": "deepseek-v4-flash"},
+                    "mimo-v2.5": {"name": "mimo-v2.5"},
+                    "mimo-v2.5-pro": {"name": "mimo-v2.5-pro"},
+                    "minimax-m3": {"name": "minimax-m3"},
+                    "glm-5.2": {"name": "glm-5.2"},
+                    "qwen3.7-max": {"name": "qwen3.7-max"},
+                    "qwen3.7-plus": {"name": "qwen3.7-plus"},
+                    "kimi-k2.7-code": {"name": "kimi-k2.7-code"},
+                    "deepseek-v4-pro": {"name": "deepseek-v4-pro"}
                 }
             } | .model = "opencode-go/deepseek-v4-flash"' "$OPENCODE_JSON" > "${OPENCODE_JSON}.tmp" && mv "${OPENCODE_JSON}.tmp" "$OPENCODE_JSON"
             ok "opencode-go provider 已配置"

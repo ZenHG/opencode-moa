@@ -79,6 +79,18 @@ foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
 }
 Check "reasoningEffort = 19" ($reCount -eq 19)
 
+Write-Host "`n=== reasoningEffort value (must be lowercase gateway enum) ===" -ForegroundColor Yellow
+$validRE = @('low','medium','high','max','xhigh','none','minimal')
+$reBad = 0
+foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
+    $c = Get-Content $f.FullName -Raw -Encoding utf8
+    foreach ($m in [regex]::Matches($c, '(?m)^\s*reasoningEffort:\s*(\S+)\s*$')) {
+        $v = $m.Groups[1].Value.TrimEnd(',')
+        if ($validRE -notcontains $v) { $reBad++ }
+    }
+}
+Check "reasoningEffort values all valid lowercase" ($reBad -eq 0)
+
 Write-Host "`n=== task: count ===" -ForegroundColor Yellow
 $taskCount = 0
 foreach ($f in (Get-ChildItem "$agentDir/*.md")) {

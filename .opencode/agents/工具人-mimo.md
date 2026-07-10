@@ -3,7 +3,8 @@ description: 工具人，MiMo模型保底
 mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.1
-reasoningEffort: Medium
+reasoningEffort: medium
+max_tokens: 2048
 permission:
   edit: deny
   bash: deny

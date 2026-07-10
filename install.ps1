@@ -1,4 +1,4 @@
-# install.ps1 — MoA 安装脚本（增量合并 opencode.json）
+﻿# install.ps1 — MoA 安装脚本（增量合并 opencode.json）
 # 用法: pwsh ./install.ps1
 # 兼容: Windows PowerShell 5.1+ / PowerShell Core 7+ (Linux/macOS)
 # 需要: 先将 .opencode/ 复制到当前目录
@@ -161,15 +161,15 @@ if ($needKey) {
                 apiKey  = $apiKey
             }
             models = @{
-                "deepseek-v4-flash" = @{ name = "DeepSeek V4 Flash" }
-                "mimo-v2.5"        = @{ name = "MiMo V2.5" }
-                "mimo-v2.5-pro"    = @{ name = "MiMo V2.5 Pro" }
-                "minimax-m3"       = @{ name = "MiniMax M3" }
-                "glm-5.2"          = @{ name = "GLM 5.2" }
-                "qwen3.7-max"      = @{ name = "Qwen3.7 Max" }
-                "qwen3.7-plus"     = @{ name = "Qwen3.7 Plus" }
-                "kimi-k2.7-code"   = @{ name = "Kimi K2.7 Code" }
-                "deepseek-v4-pro"  = @{ name = "DeepSeek V4 Pro" }
+                "deepseek-v4-flash" = @{ name = "deepseek-v4-flash" }
+                "mimo-v2.5"        = @{ name = "mimo-v2.5" }
+                "mimo-v2.5-pro"    = @{ name = "mimo-v2.5-pro" }
+                "minimax-m3"       = @{ name = "minimax-m3" }
+                "glm-5.2"          = @{ name = "glm-5.2" }
+                "qwen3.7-max"      = @{ name = "qwen3.7-max" }
+                "qwen3.7-plus"     = @{ name = "qwen3.7-plus" }
+                "kimi-k2.7-code"   = @{ name = "kimi-k2.7-code" }
+                "deepseek-v4-pro"  = @{ name = "deepseek-v4-pro" }
             }
         }
         $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -179,42 +179,35 @@ if ($needKey) {
         $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
         Write-Ok "opencode-go provider 已配置"
     } else {
-        Write-Host "  ⚠ 跳过交互输入。生成占位符文件 user_config.json（无 key）。" -ForegroundColor Yellow
-        $placeholderFile = Join-Path $projectDir.Path "user_config.json"
-        if (-not (Test-Path $placeholderFile)) {
-            $placeholder = @{
-                provider = @{
-                    "opencode-go" = @{
-                        npm  = "@ai-sdk/openai-compatible"
-                        name = "OpenCode Go (MoA)"
-                        options = @{
-                            baseURL = "https://opencode.ai/zen/go/v1"
-                            apiKey  = "<YOUR_GO_API_KEY>"
-                        }
-                        models = @{
-                            "deepseek-v4-flash" = @{ name = "DeepSeek V4 Flash" }
-                            "mimo-v2.5"        = @{ name = "MiMo V2.5" }
-                            "mimo-v2.5-pro"    = @{ name = "MiMo V2.5 Pro" }
-                            "minimax-m3"       = @{ name = "MiniMax M3" }
-                            "glm-5.2"          = @{ name = "GLM 5.2" }
-                            "qwen3.7-max"      = @{ name = "Qwen3.7 Max" }
-                            "qwen3.7-plus"     = @{ name = "Qwen3.7 Plus" }
-                            "kimi-k2.7-code"   = @{ name = "Kimi K2.7 Code" }
-                            "deepseek-v4-pro"  = @{ name = "DeepSeek V4 Pro" }
-                        }
-                    }
-                }
-                model = "opencode-go/deepseek-v4-flash"
-            }
-            $placeholder | ConvertTo-Json -Depth 10 | Set-Content $placeholderFile -Encoding UTF8
-            Write-Ok "已生成 user_config.json（占位符）"
-            Write-Host "  -> 打开 user_config.json，把 <YOUR_GO_API_KEY> 替换成你的真实 key（opencode.ai/auth 创建）" -ForegroundColor Gray
-            Write-Host "  -> 然后重启 OpenCode" -ForegroundColor Gray
-        } else {
-            Write-Skip "user_config.json 已存在，未覆盖"
+            Write-Host "  ⚠ 未提供 key。已在 opencode.json 写入占位符 <YOUR_GO_API_KEY>。" -ForegroundColor Yellow
+    Write-Host "  -> 请编辑 opencode.json 的 provider.opencode-go.apiKey 填入真实 key（opencode.ai/auth 创建），再重启 OpenCode。" -ForegroundColor Gray
+    Write-Host "  -> OpenCode 仅加载 opencode.json 与系统级 ~/.config/opencode/opencode.json，不加载 user_config.json。" -ForegroundColor Gray
+    $placeholderProvider = @{
+        npm  = "@ai-sdk/openai-compatible"
+        name = "OpenCode Go (MoA)"
+        options = @{
+            baseURL = "https://opencode.ai/zen/go/v1"
+            apiKey  = "<YOUR_GO_API_KEY>"
+        }
+        models = @{
+            "deepseek-v4-flash" = @{ name = "deepseek-v4-flash" }
+            "mimo-v2.5"        = @{ name = "mimo-v2.5" }
+            "mimo-v2.5-pro"    = @{ name = "mimo-v2.5-pro" }
+            "minimax-m3"       = @{ name = "minimax-m3" }
+            "glm-5.2"          = @{ name = "glm-5.2" }
+            "qwen3.7-max"      = @{ name = "qwen3.7-max" }
+            "qwen3.7-plus"     = @{ name = "qwen3.7-plus" }
+            "kimi-k2.7-code"   = @{ name = "kimi-k2.7-code" }
+            "deepseek-v4-pro"  = @{ name = "deepseek-v4-pro" }
         }
     }
-}
+    $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
+    if (-not $merged.provider) { $merged | Add-Member -NotePropertyName 'provider' -NotePropertyValue @{} -Force }
+    $merged.provider | Add-Member -NotePropertyName 'opencode-go' -NotePropertyValue $placeholderProvider -Force
+    if (-not $merged.model) { $merged | Add-Member -NotePropertyName 'model' -NotePropertyValue 'opencode-go/deepseek-v4-flash' -Force }
+    $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
+    Write-Ok "opencode-go provider 已写入（占位符 key）"
+    }
 
 # 3. 验证
 Write-Step "3/3" "验证部署..."
