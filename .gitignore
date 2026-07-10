@@ -3,5 +3,26 @@ node_modules/
 .env.*
 .DS_Store
 Thumbs.db
-opencode.json1
+
+# 用户私密配置 — 不要提交
 user_config.json
+*.local.json
+*.local.ts
+*.local.js
+
+# 敏感凭证
+*.key
+*.pem
+*.cert
+*.p12
+
+# IDE / 编辑器
+.vscode/settings.json
+.idea/
+
+# SkillHub 上传临时目录
+skillhub-upload/
+
+# OS
+Desktop.ini
+ehthumbs.db

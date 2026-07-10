@@ -155,13 +155,7 @@ A: 检查三点：
 A: 确认 `.opencode/agents/工具人.md` 存在且 frontmatter 格式正确。
 
 **Q: 报错 "model not found"？**
-A: 模型 ID 不对或未订阅 OpenCode Go。运行 `/models` 检查模型列表。
-
-**Q: MCP 工具被拦截？**
-A: 正常行为。意见层被 `*_*:deny` 限制，防止绕过工具层自行获取材料。工具层正常可用。
-
-**Q: 工具人报 Upstream request failed？**
-A: provider 瞬时抖动，MoA 会自动重试 1 次。持续失败会 ask 用户选择等/跳过/免费模型。
+A: 模型 ID 格式应为 `provider/model-id`（如 `opencode/kimi-k2.7-code`）。先确认已通过 `/connect` 认证对应 provider，再用 `/models` 查看可用模型列表。
 
 **Q: 怎么切换回原来的 build/plan agent？**
 A: 按 `Ctrl+.` 切换，或输入 `/build`、`/plan`。MoA 不影响内置 agent。
@@ -188,7 +182,7 @@ A: MoA 会 ask 用户：
 - C. 切换到免费模型（需手动操作）
 
 **Q: 免费模型在哪？**
-A: 按 `Ctrl+.` 切换到免费模型（DeepSeek V4 Flash Free 等）。免费模型上下文有限、可能较慢、数据可能被用于训练。
+A: 输入 `/models` 选择带 "Free" 标签的模型（如 DeepSeek V4 Flash Free、MiMo-V2.5 Free、Big Pickle 等）。免费模型上下文有限、可能较慢、数据可能被用于训练。
 
 ## 怎么用？
 

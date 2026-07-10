@@ -10,6 +10,28 @@
 
 ---
 
+## v0.0.3（2026-07-10）
+
+修复工具层（子代理）连不上 OpenCode Go provider 的根因。
+
+### 根因
+
+子代理 `model: opencode/<model>` 解析走 OpenCode 的 provider 注册表；加载的配置里没有带凭证的 `opencode` provider，只有内置 console `opencode`（无 key → 降级 `public` → 付费 Go 模型被禁用），导致 "OpenCode Go provider error / Upstream request failed"。主会话能工作是因为 `user_config.json` 的 legacy `llm` 块写死了 `base_url+key`，但该凭证不共享给子代理。
+
+### 修复
+
+- 在系统级配置 `~/.config/opencode/opencode.json`（及 `.jsonc`）注册自定义 `provider.opencode`（openai-compatible）→ `https://opencode.ai/zen/go/v1` + Go key + 9 个模型，使 `opencode/<model>` 解析到带凭证的端点（已实测 9 模型全部返回 OK）。
+- 修复项目运行时 `user_config.json`：原文件是两个 JSON 对象拼接的非法文件，合并为单个合法对象，加入 `provider.opencode`，移除非法的 `"": "https://opencode.ai/config.json"` extends。
+- 修复仓库模板 `opencode.json`：移除指向 JSON Schema 的非法 `"": "https://opencode.ai/config.json"` extends（会导致加载失败），改为 `$schema`。
+- README 模型前缀示例 `opencode-go/` → `opencode/`，与部署手册统一。
+- 19 个 agent 保持 `opencode/`（与部署手册一致），未回退。
+
+### 文档
+
+- 新增 `docs/PLAN-fix-provider.md`：完整根因分析与修复方案。
+
+---
+
 ## v0.0.2（2026-07-09）
 
 修复门童路由员降级链ask逻辑被跳过的问题；修复OpenCode Go provider导致的"Upstream request failed"错误。
