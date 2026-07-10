@@ -142,6 +142,47 @@ if (Test-Path $opencodeJson) {
 $moaConfig | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
 Write-Ok "opencode.json 已更新"
 
+# 2.5 检查 opencode-go provider，如有需要提示输入 key
+$needKey = $true
+try {
+    $check = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($check.provider -and $check.provider.'opencode-go') { $needKey = $false }
+} catch {}
+if ($needKey) {
+    Write-Host "`n⚠️ 未检测到 opencode-go provider。19 个 agent 全部使用 opencode-go/<model>，需要 Go API Key。" -ForegroundColor Yellow
+    Write-Host "  可以在 opencode.ai/auth 创建后输入（非交互环境直接跳过）。" -ForegroundColor Gray
+    try { $apiKey = Read-Host "`n请输入你的 OpenCode Go API Key（留空跳过）" } catch { $apiKey = "" }
+    if ($apiKey) {
+        $providerBlock = @{
+            npm  = "@ai-sdk/openai-compatible"
+            name = "OpenCode Go (MoA)"
+            options = @{
+                baseURL = "https://opencode.ai/zen/go/v1"
+                apiKey  = $apiKey
+            }
+            models = @{
+                "deepseek-v4-flash" = @{ name = "DeepSeek V4 Flash" }
+                "mimo-v2.5"        = @{ name = "MiMo V2.5" }
+                "mimo-v2.5-pro"    = @{ name = "MiMo V2.5 Pro" }
+                "minimax-m3"       = @{ name = "MiniMax M3" }
+                "glm-5.2"          = @{ name = "GLM 5.2" }
+                "qwen3.7-max"      = @{ name = "Qwen3.7 Max" }
+                "qwen3.7-plus"     = @{ name = "Qwen3.7 Plus" }
+                "kimi-k2.7-code"   = @{ name = "Kimi K2.7 Code" }
+                "deepseek-v4-pro"  = @{ name = "DeepSeek V4 Pro" }
+            }
+        }
+        $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
+        if (-not $merged.provider) { $merged | Add-Member -NotePropertyName 'provider' -NotePropertyValue @{} -Force }
+        $merged.provider | Add-Member -NotePropertyName 'opencode-go' -NotePropertyValue $providerBlock -Force
+        if (-not $merged.model) { $merged | Add-Member -NotePropertyName 'model' -NotePropertyValue 'opencode-go/deepseek-v4-flash' -Force }
+        $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
+        Write-Ok "opencode-go provider 已配置"
+    } else {
+        Write-Host "  ⚠ 跳过。重启后工具层 agent 可能无法连接，可在 opencode.json 或 user_config.json 中补配。" -ForegroundColor Yellow
+    }
+}
+
 # 3. 验证
 Write-Step "3/3" "验证部署..."
 

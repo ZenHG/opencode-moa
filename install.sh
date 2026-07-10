@@ -141,6 +141,44 @@ else
     exit 1
 fi
 
+# 2.5 检查 opencode-go provider，交互环境提示输入 key
+HAS_GO=$(jq '.provider["opencode-go"] // empty' "$OPENCODE_JSON" 2>/dev/null)
+if [ -z "$HAS_GO" ]; then
+    echo ""
+    echo -e "${YELLOW}⚠️ 未检测到 opencode-go provider。19 个 agent 全部使用 opencode-go/<model>，需要 Go API Key。${NC}"
+    if [ -t 0 ]; then
+        echo "  可以在 opencode.ai/auth 创建后输入（直接回车跳过）："
+        printf "  Go API Key: "
+        read API_KEY
+        if [ -n "$API_KEY" ]; then
+            jq --arg key "$API_KEY" '.provider["opencode-go"] = {
+                "npm": "@ai-sdk/openai-compatible",
+                "name": "OpenCode Go (MoA)",
+                "options": {
+                    "baseURL": "https://opencode.ai/zen/go/v1",
+                    "apiKey": $key
+                },
+                "models": {
+                    "deepseek-v4-flash": {"name": "DeepSeek V4 Flash"},
+                    "mimo-v2.5": {"name": "MiMo V2.5"},
+                    "mimo-v2.5-pro": {"name": "MiMo V2.5 Pro"},
+                    "minimax-m3": {"name": "MiniMax M3"},
+                    "glm-5.2": {"name": "GLM 5.2"},
+                    "qwen3.7-max": {"name": "Qwen3.7 Max"},
+                    "qwen3.7-plus": {"name": "Qwen3.7 Plus"},
+                    "kimi-k2.7-code": {"name": "Kimi K2.7 Code"},
+                    "deepseek-v4-pro": {"name": "DeepSeek V4 Pro"}
+                }
+            } | .model = "opencode-go/deepseek-v4-flash"' "$OPENCODE_JSON" > "${OPENCODE_JSON}.tmp" && mv "${OPENCODE_JSON}.tmp" "$OPENCODE_JSON"
+            ok "opencode-go provider 已配置"
+        else
+            echo "  ⚠ 跳过。重启后工具层 agent 可能无法连接，可稍后在 opencode.json 中补配。"
+        fi
+    else
+        echo "  ⚠ 非交互环境，跳过 provider 配置。重启后 agent 可能无法连接。"
+    fi
+fi
+
 # 3. 验证
 echo ""
 echo -e "${YELLOW}[3/3] 验证部署...${NC}"
