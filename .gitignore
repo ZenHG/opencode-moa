@@ -16,6 +16,9 @@ opencode.json1*
 # 压缩包（含 skill 打包，非源码）
 *.zip
 
+# 本地临时目录（存放 key 文件等）
+.opencode/local/
+
 # 敏感凭证
 *.key
 *.pem
