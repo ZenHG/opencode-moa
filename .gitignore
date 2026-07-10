@@ -4,11 +4,17 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# 用户私密配置 — 不要提交
-user_config.json
+# 用户私密配置 — 不要提交（含副本，避免误提交 Go key）
+user_config*.json
 *.local.json
 *.local.ts
 *.local.js
+
+# 本地改名/临时配置副本
+opencode.json1*
+
+# 压缩包（含 skill 打包，非源码）
+*.zip
 
 # 敏感凭证
 *.key
