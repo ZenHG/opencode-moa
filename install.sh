@@ -18,6 +18,43 @@ ok() { echo -e "  ${GREEN}✓ $1${NC}"; }
 skip() { echo -e "  ${GRAY}- $1${NC}"; }
 fail() { echo -e "  ${RED}✗ $1${NC}"; }
 
+gen_placeholder() {
+    local f="$PROJECT_DIR/user_config.json"
+    if [ -f "$f" ]; then
+        skip "user_config.json 已存在，未覆盖"
+        return
+    fi
+    cat > "$f" << 'PLACEHOLDER'
+{
+  "model": "opencode-go/deepseek-v4-flash",
+  "provider": {
+    "opencode-go": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "OpenCode Go (MoA)",
+      "options": {
+        "baseURL": "https://opencode.ai/zen/go/v1",
+        "apiKey": "<YOUR_GO_API_KEY>"
+      },
+      "models": {
+        "deepseek-v4-flash": { "name": "DeepSeek V4 Flash" },
+        "mimo-v2.5": { "name": "MiMo V2.5" },
+        "mimo-v2.5-pro": { "name": "MiMo V2.5 Pro" },
+        "minimax-m3": { "name": "MiniMax M3" },
+        "glm-5.2": { "name": "GLM 5.2" },
+        "qwen3.7-max": { "name": "Qwen3.7 Max" },
+        "qwen3.7-plus": { "name": "Qwen3.7 Plus" },
+        "kimi-k2.7-code": { "name": "Kimi K2.7 Code" },
+        "deepseek-v4-pro": { "name": "DeepSeek V4 Pro" }
+      }
+    }
+  }
+}
+PLACEHOLDER
+    ok "已生成 user_config.json（占位符）"
+    echo "  打开 user_config.json，把 <YOUR_GO_API_KEY> 替换成你的真实 key（opencode.ai/auth 创建）"
+    echo "  然后重启 OpenCode"
+}
+
 echo ""
 echo -e "${CYAN}=== OpenCode MoA 安装 ===${NC}"
 
@@ -172,10 +209,12 @@ if [ -z "$HAS_GO" ]; then
             } | .model = "opencode-go/deepseek-v4-flash"' "$OPENCODE_JSON" > "${OPENCODE_JSON}.tmp" && mv "${OPENCODE_JSON}.tmp" "$OPENCODE_JSON"
             ok "opencode-go provider 已配置"
         else
-            echo "  ⚠ 跳过。重启后工具层 agent 可能无法连接，可稍后在 opencode.json 中补配。"
+            echo "  ⚠ 跳过交互输入，生成占位符文件。" 
+            gen_placeholder
         fi
     else
-        echo "  ⚠ 非交互环境，跳过 provider 配置。重启后 agent 可能无法连接。"
+        echo "  ⚠ 非交互环境，生成占位符文件。"
+        gen_placeholder
     fi
 fi
 

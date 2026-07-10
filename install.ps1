@@ -179,7 +179,40 @@ if ($needKey) {
         $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
         Write-Ok "opencode-go provider 已配置"
     } else {
-        Write-Host "  ⚠ 跳过。重启后工具层 agent 可能无法连接，可在 opencode.json 或 user_config.json 中补配。" -ForegroundColor Yellow
+        Write-Host "  ⚠ 跳过交互输入。生成占位符文件 user_config.json（无 key）。" -ForegroundColor Yellow
+        $placeholderFile = Join-Path $projectDir.Path "user_config.json"
+        if (-not (Test-Path $placeholderFile)) {
+            $placeholder = @{
+                provider = @{
+                    "opencode-go" = @{
+                        npm  = "@ai-sdk/openai-compatible"
+                        name = "OpenCode Go (MoA)"
+                        options = @{
+                            baseURL = "https://opencode.ai/zen/go/v1"
+                            apiKey  = "<YOUR_GO_API_KEY>"
+                        }
+                        models = @{
+                            "deepseek-v4-flash" = @{ name = "DeepSeek V4 Flash" }
+                            "mimo-v2.5"        = @{ name = "MiMo V2.5" }
+                            "mimo-v2.5-pro"    = @{ name = "MiMo V2.5 Pro" }
+                            "minimax-m3"       = @{ name = "MiniMax M3" }
+                            "glm-5.2"          = @{ name = "GLM 5.2" }
+                            "qwen3.7-max"      = @{ name = "Qwen3.7 Max" }
+                            "qwen3.7-plus"     = @{ name = "Qwen3.7 Plus" }
+                            "kimi-k2.7-code"   = @{ name = "Kimi K2.7 Code" }
+                            "deepseek-v4-pro"  = @{ name = "DeepSeek V4 Pro" }
+                        }
+                    }
+                }
+                model = "opencode-go/deepseek-v4-flash"
+            }
+            $placeholder | ConvertTo-Json -Depth 10 | Set-Content $placeholderFile -Encoding UTF8
+            Write-Ok "已生成 user_config.json（占位符）"
+            Write-Host "  -> 打开 user_config.json，把 <YOUR_GO_API_KEY> 替换成你的真实 key（opencode.ai/auth 创建）" -ForegroundColor Gray
+            Write-Host "  -> 然后重启 OpenCode" -ForegroundColor Gray
+        } else {
+            Write-Skip "user_config.json 已存在，未覆盖"
+        }
     }
 }
 
