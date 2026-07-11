@@ -1,0 +1,25 @@
+#!/bin/sh
+# 发版前最后一道提醒：push master 且含 CHANGELOG 改动时确认
+# 交互终端下会等待确认；CI / 非交互环境自动放行。
+master_push=0
+while read -r lref lobj rref robj; do
+  [ "$lref" = "refs/heads/master" ] && master_push=1
+done
+[ "$master_push" -eq 0 ] && exit 0
+
+remote="$1"
+if git diff --quiet "$remote/master" HEAD -- CHANGELOG.md 2>/dev/null; then
+  exit 0
+fi
+
+VER=$(grep -m1 -E '^## +v[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+[ -z "$VER" ] && exit 0
+
+echo "🚀 即将发版：$VER"
+echo "   CHANGELOG.md 有改动，push 后会自动：打 tag + 建 Release + 上传 zip/tar.gz 归档。"
+if [ -t 1 ]; then
+  printf "   按 Enter 继续发版，Ctrl+C 取消："
+  read -r _ || exit 1
+else
+  echo "   （非交互环境，自动继续）"
+fi

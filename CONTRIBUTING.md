@@ -41,6 +41,16 @@ pwsh .opencode/tests/T0-static-verify.ps1
 - **回滚**：`git push -d origin vX.Y.Z` 删 tag，并在 Releases 页删对应 Release（不会自动撤回）。
 - **CHANGELOG 铁律**：保持单语、文件名固定、顶部第一条 `## v` 必须是版本号；非版本标题（如 `## 路线图`）放版本节**之下**，解析器自动忽略。
 
+### 本地发版提醒（防忘，可选）
+
+仓库带 `hooks/pre-commit` 与 `hooks/pre-push`：改了 `CHANGELOG.md` 会在提交时提示、在 push `master` 时交互确认（Enter 发版 / Ctrl+C 取消）。启用（一次性）：
+
+```bash
+git config core.hooksPath hooks
+```
+
+> 仅本机生效，不影响 CI；非交互环境（如自动化推送）自动放行。
+
 ## 多语言规范
 
 本项目面向多语言用户，但**包版本号单一、贯穿所有语言**，不按语言拆 repo / tag / Release。
