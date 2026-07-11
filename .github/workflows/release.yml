@@ -4,28 +4,38 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - master
 
 permissions:
   contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (full history for tag enumeration)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build release archive (no .git, no ignored files)
+      - name: Ensure release exists for every v* tag
+        shell: bash
         run: |
-          git archive --format=zip --output=opencode-moa-${GITHUB_REF_NAME}.zip HEAD
-          git archive --format=tar.gz --output=opencode-moa-${GITHUB_REF_NAME}.tar.gz HEAD
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          files: |
-            opencode-moa-${{ github.ref_name }}.zip
-            opencode-moa-${{ github.ref_name }}.tar.gz
+          for tag in $(git tag -l 'v*' | sort -V); do
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "skip  $tag (release already exists)"
+              continue
+            fi
+            echo "create $tag"
+            git archive --format=zip       --output="opencode-moa-$tag.zip"     "$tag"
+            git archive --format=tar.gz    --output="opencode-moa-$tag.tar.gz"  "$tag"
+            gh release create "$tag" \
+              --generate-notes \
+              --title "$tag" \
+              "opencode-moa-$tag.zip" \
+              "opencode-moa-$tag.tar.gz"
+          done
