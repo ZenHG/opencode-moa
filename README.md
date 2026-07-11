@@ -1,361 +1,365 @@
 # OpenCode MoA
 
-> 🌐 语言 / Languages: [中文](README.md) · [English](README.en.md)
+> 🌐 Languages: [中文](README.zh.md) · English
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> **一个对话入口，19 个专业模型自动协作。简单任务用 Flash（便宜），复杂任务才调旗舰（贵）。成本降低 90%，代码质量显著提升。**
+> **One conversation entry point, 19 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship), code quality significantly up.**
 
-OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**同时思考同一个问题**，然后融合出单一模型无法达到的输出质量。你不需要换工具、不需要写代码、不需要 API 额度——只需要把文件放进项目，重启 OpenCode。
+OpenCode MoA is a Mixture of Agents configuration package for OpenCode. It lets multiple models **think about the same problem simultaneously**, then fuse into an output quality a single model can't reach. You don't need to switch tools, write code, or have an API quota — just drop the files into your project and restart OpenCode.
 
-**19 个 agent · 5 个命令 · 3 个 skill · 30 秒部署**
+**19 agents · 5 commands · 3 skills · 30-second deploy**
 
-## 为什么需要这个？
+## Why do you need this?
 
-默认 OpenCode 只有一个模型从头处理到尾。改一行字和设计一套系统架构用的是同一个 prompt、同一个温度、同一个上下文。没有分工。
+By default OpenCode uses a single model from start to finish. Changing one character and designing a system architecture use the same prompt, same temperature, same context. No division of labor.
 
-**三个问题：**
+**Three problems:**
 
-1. **成本失控** — 简单任务也用贵模型，月账单居高不下
-2. **质量瓶颈** — 单一模型只有一种思维方式，容易陷入盲区
-3. **没有容错** — 模型挂了就卡死，没有降级方案
+1. **Cost out of control** — simple tasks also use the expensive model, monthly bill stays high
+2. **Quality bottleneck** — a single model has only one way of thinking, easily stuck in blind spots
+3. **No fault tolerance** — if the model dies it freezes, no fallback
 
-**MoA 的解法：**
+**MoA's solution:**
 
 ```
-你：帮我设计一个消息队列方案
+You: help me design a message queue solution
 
-    ┌─ 旗舰·架构 (Qwen3.7 Max) ─── 从架构师视角出方案
-    ├─ 旗舰·规划 (GLM)        ─── 从产品经理视角出方案
-    ├─ 旗舰·工程 (MiniMax M3) ─ 从实现者视角出方案
-    └─ 旗舰·融合 (Kimi)       ─── 取长补短，一份最优解
+    ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
+    ├─ flag-plan (GLM)        ─── plan from the PM's view
+    ├─ flag-eng (MiniMax M3) ─── plan from the implementer's view
+    └─ flag-fuse (Kimi)       ─── take the best of each, one optimal solution
 ```
 
-三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
+Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
 
-## 前置条件
+## Prerequisites
 
-### 必需
+### Required
 
-| 条件                  | 检查命令                 | 说明                                                                                                                                                          |
-| ------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenCode 已安装        | `opencode --version` | **≥ 1.3.4**（agent 级 `reasoningEffort`/`hidden`/`task` 支持；`openai-compatible` provider 原生透传 reasoning，无需 `forceReasoning`），[安装](https://opencode.ai/install) |
-| OpenCode Go 订阅      | opencode.ai 控制台      | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月                                                                                                               |
-| Git 已安装             | `git --version`      | 用于克隆仓库                                                                                                                                                      |
-| OpenCode Go API Key | opencode.ai 控制台创建    | 在 Zen 控制台（opencode.ai）创建                                                                                                                                    |
+| Requirement         | Check command                  | Notes                                                                                                                                                                                                 |
+| ------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenCode installed  | `opencode --version`           | **>= 1.3.4** (agent-level `reasoningEffort`/`hidden`/`task` support; `openai-compatible` provider transparently passes reasoning, no `forceReasoning` needed), [install](https://opencode.ai/install) |
+| OpenCode Go plan    | opencode.ai console            | [Subscribe](https://opencode.ai/auth), first month $5, then $10/month                                                                                                                                 |
+| Git installed       | `git --version`                | Used to clone the repo                                                                                                                                                                                |
+| OpenCode Go API Key | created in opencode.ai console | Created in the Zen console (opencode.ai)                                                                                                                                                              |
 
-### 可选（安装脚本需要）
+### Optional (needed by install scripts)
 
-| 条件              | 检查命令             | 说明                                                         |
-| --------------- | ---------------- | ---------------------------------------------------------- |
-| PowerShell Core | `pwsh --version` | install.ps1 需要，Windows 自带或 `brew install powershell`       |
-| jq              | `jq --version`   | install.sh 合并 JSON 需要，`apt install jq` / `brew install jq` |
+| Requirement     | Check command    | Notes                                                                     |
+| --------------- | ---------------- | ------------------------------------------------------------------------- |
+| PowerShell Core | `pwsh --version` | needed by install.ps1, bundled with Windows or `brew install powershell`  |
+| jq              | `jq --version`   | needed by install.sh for JSON merge, `apt install jq` / `brew install jq` |
 
-> 没有 pwsh/jq 也没关系，可以用方式一（AI 自动部署）或方式三（手动合并）。
+> No pwsh/jq is fine — you can use Method 1 (AI auto-deploy) or Method 3 (manual merge).
 
-### 桌面端 vs CLI
+### Desktop vs CLI
 
-- **CLI**：所有方式都支持
-- **桌面端**：方式一（AI 自动部署）最方便，方式二/三需要先在终端操作
+- **CLI**: all methods supported
+- **Desktop**: Method 1 (AI auto-deploy) is most convenient; Methods 2/3 require terminal operation first
 
-> ⚠️ **系统级 key 路径容易放错**——正确写法见下方「部署前必读」。按错路径会「部署成功但全 agent 连不上」。
+> ⚠️ **System-level key path is easy to place wrong** — correct spelling in "Read before deploy" below. Wrong path leads to "deployment succeeds but all agents can't connect".
 
-> ⚠️ **部署前必读：key 路径别放错**
-> provider + key 放**项目级 `opencode.json`**（默认，自包含）或**系统级**共享路径，**二选一**即可。
-> 若用系统级，正确路径是：
+> ⚠️ **Read before deploy: don't misplace the key path**
+> Put the provider + key in either the **project-level `opencode.json`** (default, self-contained) or the **system-level** shared path — pick **one**.
+> If using system-level, the correct path is:
 > 
 > - Linux/macOS `~/.config/opencode/opencode.json`
-> - Windows `%USERPROFILE%\.config\opencode\opencode.json`（**不是** `%APPDATA%\opencode`）
->   放错系统级路径会「部署成功但全 agent 连不上」。
+> - Windows `%USERPROFILE%\.config\opencode\opencode.json` (**not** `%APPDATA%\opencode`)
+>   Wrong system-level path leads to "deployment succeeds but all agents can't connect".
 
-## 30 秒部署
+## 30-second deploy
 
-### 方式一：AI 自动部署（推荐）
+### Method 1: AI auto-deploy (recommended)
 
-1. 下载 [`docs/opencode-moa.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.md)
-2. 在 OpenCode 中上传该文档，发送：
+1. Download [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md)
+2. Upload that document in OpenCode and send:
 
-> 请按这份部署手册，帮我把 19 个 agent、5 个命令、3 个 skill 全部部署到当前项目
+> Deploy all 19 agents, 5 commands, and 3 skills from this manual into the current project
 
-3. AI 会自动创建所有文件。完成后**重启 OpenCode** 即可。
+3. The AI creates all files automatically. **Restart OpenCode** when done.
 
-> 全程不需要手动创建任何文件。部署手册本身就是安装器。
+> No need to manually create any file. The deployment manual is itself the installer.
 
-### 方式二：一键安装脚本（脚本版 · CLI 友好）
+### Method 2: one-click install script (script version · CLI-friendly)
 
 ```bash
-# 克隆仓库
+# clone the repo
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# 进入你的项目目录
+# enter your project directory
 cd your-project
 
-# 从仓库复制 .opencode 目录
+# copy the .opencode directory from the repo
 cp -r ../opencode-moa/.opencode/ .
 
-# 运行安装脚本（自动合并配置，保留你的 API key）
+# run the install script (auto-merge config, keeps your API key)
 # Windows:
 pwsh ../opencode-moa/install.ps1
 # Linux/macOS:
 bash ../opencode-moa/install.sh
 ```
 
-> 安装脚本会自动备份原 `opencode.json`，只合并 MoA 配置，保留你的 provider 和 API key。
+> The install script auto-backs up your original `opencode.json`, only merging MoA config while keeping your provider and API key.
+>
+> Note: this method copies the repo's bundled `.opencode/` as-is — its agents have **Chinese display names**. If you want English-named agents (so you can `@english-name`), use Method 1 instead.
 
-### 方式三：手动安装
+### Method 3: manual install
 
 ```bash
-# 1. 克隆仓库
+# 1. clone the repo
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# 2. 复制 .opencode 目录
+# 2. copy the .opencode directory
 cp -r opencode-moa/.opencode/ your-project/
 
-# 3. 手动合并 opencode.json（不要直接替换！）
-# 打开 opencode.json，将 MoA 的 permission.task 和 agent 部分合并进去
-# 保留你已有的 provider 和 model 配置
+# 3. manually merge opencode.json (do NOT replace directly!)
+# open opencode.json, merge MoA's permission.task and agent sections in
+# keep your existing provider and model config
 ```
 
-> ⚠️ **不要** 用 `cat >>` 追加，会导致 JSON 格式错误。**不要** 直接替换，会丢失 API key。
+> ⚠️ **Do not** use `cat >>` to append — it corrupts JSON format. **Do not** replace directly — you'll lose your API key.
+>
+> Note: this method copies the repo's bundled `.opencode/` as-is — its agents have **Chinese display names**. If you want English-named agents (so you can `@english-name`), use Method 1 instead.
 
-### 部署成功怎么判断？
+### How to tell deployment succeeded?
 
-1. 重启 OpenCode 后，按 `Tab` 循环切换 agent（Win 桌面端亦可用 `Ctrl+.`），看到「门童路由员」
-2. 输入 `@工具人` 能正常响应
-3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`（部署时由手册 Block 5.5 生成），预期全部 PASS（FAIL=0；key 走系统级时 WARN 也算过）
+1. After restarting OpenCode, press `Tab` to cycle agents (Windows desktop client: `Ctrl+.` also works) and see "concierge-router"
+2. Type `@tool-handler` and it responds
+3. Run the verification script: `pwsh .opencode/tests/T0-static-verify.ps1` (generated by manual Block 5.5 during deploy), expected all PASS (FAIL=0; with system-level key, WARN also counts as pass)
 
-### 一键回滚
+### One-click rollback
 
 ```bash
 rm -rf your-project/.opencode/
-# 手动恢复你的 opencode.json（安装脚本会自动备份 .bak 文件）
+# manually restore your opencode.json (the install script auto-backs up a .bak file)
 ```
 
-## 怎么用？
+## How to use?
 
-**什么都不用学，直接说话就行。** 门童路由员会自动判断任务复杂度，调度对应的 agent 链。
+**Learn nothing — just talk.** The concierge-router automatically judges task complexity and dispatches the corresponding agent chain.
 
-| 你说的话         | 门童做的事                          | 用到的 agent        |
-| ------------ | ------------------------------ | ---------------- |
-| "把这个变量名改了"   | 判定为简单任务                        | 闪电侠（Flash）       |
-| "写个用户认证模块"   | 工具层搜材料 → 3 中端并行 → 融合           | 工具人 + 中级三剑客 + 融合 |
-| "设计微服务架构"    | 工具层搜材料 → 3 旗舰并行 → 融合 → 编码 → 质检 | 全链路 6 个 agent    |
-| "还原这个截图的 UI" | 三前端专家并行 → 总工择优                 | 前端四人组            |
-| 带截图的消息       | 视觉翻译官转文字 → 正常路由                | 视觉翻译官            |
+| What you say                         | What the doorman does                                            | Agents used                |
+| ------------------------------------ | ---------------------------------------------------------------- | -------------------------- |
+| "rename this variable"               | judged as a simple task                                          | swift (Flash)                |
+| "write a user auth module"           | tool layer gathers → 3 mid-tier parallel → fuse                  | tool-handler + mid-tier trio + fuse |
+| "design a microservice architecture" | tool layer gathers → 3 flagship parallel → fuse → implement → QA | full-chain 6 agents        |
+| "restore this screenshot's UI"       | 3 frontend experts parallel → lead picks best                    | frontend quartet           |
+| message with screenshot              | vision-translator converts to text → normal routing                          | vision-translator                      |
 
-**直接 @ 调用：**
-
-```
-@闪电侠 帮我写个 hello world
-@工具人 搜一下项目里所有 TODO
-@旗舰·架构 设计一个消息队列方案
-```
-
-**一键命令：**
-
-| 命令              | 场景                |
-| --------------- | ----------------- |
-| `/moa-quick`    | 简单任务、翻译、改配置       |
-| `/moa-medium`   | 函数模块、bug 修复、单文件重构 |
-| `/moa-flagship` | 系统架构、大型重构         |
-| `/moa-frontend` | UI 还原、CSS、截图修复    |
-| `/moa-describe` | 截图/图片转文字          |
-
-## 架构
+**Direct `@` calls:**
 
 ```
-                      门童路由员（Flash）
-                             │
-               ┌─────────────┼─────────────┐
-               ▼             ▼             ▼
-            工具层          意见层          融合层
-         Flash + MiMo    3 份并行意见      取长补短
-         （~80% 调用）   （~18% 调用）    （~2% 调用）
+@swift help me write a hello world
+@tool-handler search all TODOs in the project
+@flag-arch design a message queue solution
 ```
 
-**工具层**（Flash + MiMo）—— 读代码、搜文件、截图转文字。便宜快，随便调。
+**One-click commands:**
 
-**意见层**（MiniMax / DeepSeek Pro / Qwen / MiMo-Pro）—— 从不同视角出方案。三份意见天然形成"共识 + 分歧"结构。
+| Command         | Scenario                                       |
+| --------------- | ---------------------------------------------- |
+| `/moa-quick`    | simple task, translation, config change        |
+| `/moa-medium`   | function module, bug fix, single-file refactor |
+| `/moa-flagship` | system architecture, large refactor            |
+| `/moa-frontend` | UI restore, CSS, screenshot fix                |
+| `/moa-describe` | screenshot/image to text                       |
 
-**融合层**（Kimi / Qwen-Max / GLM）—— 识别共识直接保留，分歧取长补短。只用在刀刃上。
-
-## 19 个 Agent
+## Architecture
 
 ```
-门童路由员 (Flash)
+                       concierge-router (Flash)
+                              │
+                ┌─────────────┼─────────────┐
+                ▼             ▼             ▼
+             Tool layer      Opinion layer      Fusion layer
+          Flash + MiMo    3 parallel opinions   take the best
+          (~80% calls)   (~18% calls)         (~2% calls)
+```
+
+**Tool layer** (Flash + MiMo) — read code, search files, screenshot to text. Cheap and fast, call freely.
+
+**Opinion layer** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — plans from different perspectives. Three opinions naturally form a "consensus + divergence" structure.
+
+**Fusion layer** (Kimi / Qwen-Max / GLM) — keep consensus, take the best on divergence. Used only where it matters.
+
+## 19 Agents
+
+```
+concierge-router (Flash)
  │
- ├── 工具层 ──────────────────────────────────────
- │   工具人      (Flash)        读代码搜文件
- │   工具人-mimo (MiMo)        可靠读文件（保底+并行）
- │   闪电侠      (Flash)        简单任务一步到位
- │   视觉翻译官   (MiMo)        截图/UI图/报错图转文字
+ ├── Tool layer ──────────────────────────────────────
+ │   tool-handler      (Flash)        read code, search files
+ │   tool-handler-mimo (MiMo)         reliable file read (fallback + parallel)
+ │   swift      (Flash)        simple tasks in one shot
+ │   vision-translator   (MiMo)        screenshot/UI/error image to text
  │
- ├── 中级意见层 ──────────────────────────────────
- │   中级·工程    (MiniMax M3)   工程视角方案
- │   中级·创意    (DeepSeek Pro) 创意视角方案
- │   中级·码农    (Flash)        实战视角方案
- │   中级·融合    (Kimi)         三份方案取长补短
+ ├── Mid-tier opinion layer ──────────────────────────
+ │   mid-eng    (MiniMax M3)   engineering view
+ │   mid-creative    (DeepSeek Pro) creative view
+ │   mid-coder    (Flash)        pragmatic view
+ │   mid-fuse    (Kimi)         fuse three plans
  │
- ├── 旗舰意见层 ──────────────────────────────────
- │   旗舰·架构    (Qwen3.7 Max)   顶层架构设计
- │   旗舰·规划    (GLM)          结构化方案设计
- │   旗舰·工程    (MiniMax M3)   大规模实现方案
- │   旗舰·融合    (Kimi)         三份架构方案融合
- │   旗舰·实现    (Flash)        按融合方案编码
- │   旗舰·质检    (DeepSeek Pro) 方案 vs 代码验收
+ ├── Flagship opinion layer ──────────────────────────
+ │   flag-arch    (Qwen3.7 Max)   top-level architecture
+ │   flag-plan    (GLM)          structured planning
+ │   flag-eng    (MiniMax M3)   large-scale implementation
+ │   flag-fuse    (Kimi)         fuse three architecture plans
+ │   flag-impl    (Flash)        implement per fused plan
+ │   flag-qa    (DeepSeek Pro) plan vs code acceptance
  │
- └── 前端意见层 ──────────────────────────────────
-     前端·还原    (MiMo)        像素级还原 UI
-     前端·逻辑    (Qwen3.7 Plus) 组件架构与状态管理
-     前端·动效    (MiMo-Pro)    交互体验与动效
-     前端·总工    (Kimi)        三份前端方案择优
+ └── Frontend opinion layer ──────────────────────────
+      fe-restore    (MiMo)         pixel-perfect UI restore
+      fe-logic    (Qwen3.7 Plus)  component architecture & state mgmt
+      fe-motion    (MiMo-Pro)     interaction & motion
+      fe-lead    (Kimi)         pick best of three frontend plans
 ```
 
-## 容错设计
+## Fault tolerance design
 
-### 降级链
+### Fallback chain
 
-工具层挂了不会卡死，自动降级：
+The tool layer failing doesn't freeze — it auto-downgrades:
 
 ```
-工具人 (Flash) 失败 → 立即重试1次
-  → 重试成功 → 正常返回
-  → 重试失败 → 工具人-mimo (MiMo) 失败 → 立即重试1次
-    → 重试成功 → 正常返回
-    → 重试失败 → ask 用户：
-      A. 等几分钟再试
-      B. 跳过工具层，直接调意见层（成本较高）
-      C. 切换到免费模型处理
+tool-handler (Flash) failed → immediate retry once
+  → retry succeeds → return normally
+  → retry fails → tool-handler-mimo (MiMo) failed → immediate retry once
+    → retry succeeds → return normally
+    → retry fails → ask user:
+      A. wait a few minutes and retry
+      B. skip tool layer, call opinion layer directly (higher cost)
+      C. switch to free model
 ```
 
-> 大多数 provider 错误（502/503/timeout）是瞬时的，快速重试一次通常能成功。
+> Most provider errors (502/503/timeout) are transient; a quick retry usually succeeds.
 
-### MCP 权限隔离
+### MCP permission isolation
 
-意见层 agent 被禁止访问 MCP 工具，防止绕过工具层自行获取材料：
+Opinion-layer agents are forbidden from MCP tools, preventing them from bypassing the tool layer to fetch material themselves:
 
-- 工具层：可以调用 MCP（读代码、搜文件）
-- 意见层：`read: deny` + MCP 被拦截，只能基于工具层提供的材料出方案
-- 融合层：同上，只能基于三份意见融合
+- Tool layer: can call MCP (read code, search files)
+- Opinion layer: `read: deny` + MCP blocked, can only plan based on material from the tool layer
+- Fusion layer: same, can only fuse based on the three opinions
 
-### 无材料保底
+### No-material fallback
 
-意见层被调用但没有材料时（工具层全部失败），会 ask 用户：
+When the opinion layer is called but has no material (tool layer fully failed), it asks the user:
 
-- 选"直接出方案" → 基于需求描述纯逻辑推演（不读代码）
-- 选"等工具层恢复" → 输出 WAITING，等工具层恢复后重试
+- Choose "give plan directly" → pure logical reasoning based on the requirement description (no code read)
+- Choose "wait for tool layer" → output WAITING, retry after tool layer recovers
 
-### 错误分类
+### Error classification
 
-工具层失败时输出明确的错误类别，不再盲目重试：
+The tool layer outputs a clear error category on failure, instead of blindly retrying:
 
-- `ERROR_PROVIDER` — 服务端 502/503/timeout
-- `ERROR_AUTH` — 认证失败
-- `ERROR_UNKNOWN` — 其他错误
+- `ERROR_PROVIDER` — server 502/503/timeout
+- `ERROR_AUTH` — auth failure
+- `ERROR_UNKNOWN` — other errors
 
-## 成本
+## Cost
 
-### 为什么省 ~90%
+### Why ~90% saved
 
-MoA 按调用量加权混合计费：~80% 走工具层 Flash、~18% 走中端、~2% 走旗舰。用本节成本表的单价估算有效输出单价：
+MoA bills by a call-volume-weighted mix: ~80% tool-layer Flash, ~18% mid-tier, ~2% flagship. Estimate the effective output unit price with the per-unit prices in this section's cost table:
 
-| 层级  | 占比  | 输出单价/1M                                                         | 加权     |
-| --- | --- | --------------------------------------------------------------- | ------ |
-| 工具层 | 80% | $0.28                                                           | $0.224 |
-| 意见层 | 18% | ~$2.00（MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 均值） | $0.36  |
-| 融合层 | 2%  | ~$5.30（Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 均值）              | $0.106 |
+| Layer      | Share | Output unit price /1M                                             | Weighted |
+| ---------- | ----- | ----------------------------------------------------------------- | -------- |
+| Tool layer | 80%   | $0.28                                                             | $0.224   |
+| Opinion    | 18%   | ~$2.00 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 avg) | $0.36    |
+| Fusion     | 2%    | ~$5.30 (Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 avg)              | $0.106   |
 
-混合有效输出单价 ≈ **$0.69 / 1M**。对比「全程最贵旗舰 GLM $7.50」→ 约 9% → **省 ~90%**；对比「全程单中端 DeepSeek Pro $3.48」→ 约 20% → **省 ~80%**。hero 的「省 90%」即旗舰基线下的真实值。
+Blended effective output unit price ≈ **$0.69 / 1M**. Compared to "all-flagship GLM $7.50" → about 9% → **~90% saved**; compared to "all-mid-tier DeepSeek Pro $3.48" → about 20% → **~80% saved**. The "save 90%" claim is the real value against the flagship baseline.
 
-### OpenCode Go 订阅
+### OpenCode Go plan
 
-MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅，**首月 $5，之后 $10/月**。
+MoA is based on the [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) plan, **first month $5, then $10/month**.
 
-**使用限制：**
+**Usage limits:**
 
-| 时间窗口   | 额度  |
-| ------ | --- |
-| 每 5 小时 | $12 |
-| 每周     | $30 |
-| 每月     | $60 |
+| Time window   | Quota |
+| ------------- | ----- |
+| Every 5 hours | $12   |
+| Weekly        | $30   |
+| Monthly       | $60   |
 
-限制按美元价值定义。便宜模型（Flash）可用更多次，贵模型（GLM）可用较少次。
+Limits are defined by dollar value. Cheap models (Flash) can be used more often, expensive models (GLM) less often.
 
-### 各层级月配额
+### Monthly quota per layer
 
-| 层级  | 模型              | 单价（输入/输出 per 1M） | 月配额       | 调用频率  |
-| --- | --------------- | ---------------- | --------- | ----- |
-| 工具层 | Flash           | $0.14 / $0.28    | 158,150 次 | ~80%  |
-| 工具层 | MiMo-V2.5       | $0.14 / $0.28    | 150,400 次 | （随便调） |
-| 意见层 | MiniMax M3      | $0.30 / $1.20    | 16,000 次  | ~18%  |
-| 意见层 | DeepSeek V4 Pro | $1.74 / $3.48    | 17,150 次  |       |
-| 意见层 | Qwen3.7 Plus    | $0.40 / $1.60    | 21,600 次  |       |
-| 融合层 | Kimi K2.7 Code  | $0.95 / $4.00    | 9,250 次   | ~2%   |
-| 融合层 | Qwen3.7 Max     | $2.50 / $7.50    | 4,770 次   | （刀刃上） |
-| 融合层 | GLM-5.2         | $1.40 / $4.40    | 4,300 次   |       |
+| Layer      | Model           | Unit price (in/out per 1M) | Monthly quota | Call frequency    |
+| ---------- | --------------- | -------------------------- | ------------- | ----------------- |
+| Tool layer | Flash           | $0.14 / $0.28              | 158,150       | ~80%              |
+| Tool layer | MiMo-V2.5       | $0.14 / $0.28              | 150,400       | (use freely)      |
+| Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%              |
+| Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                   |
+| Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                   |
+| Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2%               |
+| Fusion     | Qwen3.7 Max     | $2.50 / $7.50              | 4,770         | (where it counts) |
+| Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         |                   |
 
-> 所有模型 ID 仅作声明，可替换为你偏好的任何模型。
+> All model IDs are declarations only; replace with any model you prefer.
 
-### 达到限制后
+### After hitting the limit
 
-- **免费模型保底** — Go 达到限制后可继续使用免费模型
-- **Zen 余额回退** — 在控制台启用「使用余额」，Go 限制后自动用 Zen 余额
+- **Free model fallback** — after Go hits the limit you can keep using free models
+- **Zen balance fallback** — enable "use balance" in the console; after Go limit, auto-use Zen balance
 
-### 免费模型
+### Free models
 
-OpenCode Zen 提供免费模型作为最后保底：
+OpenCode Zen provides free models as a last resort:
 
-| 模型                     | 特点          |
-| ---------------------- | ----------- |
-| DeepSeek V4 Flash Free | 快，但上下文有限    |
-| MiMo-V2.5 Free         | 质量较好，但可能慢   |
-| North Mini Code Free   | Cohere 提供   |
-| Nemotron 3 Ultra Free  | NVIDIA 免费端点 |
+| Model                  | Trait                           |
+| ---------------------- | ------------------------------- |
+| DeepSeek V4 Flash Free | fast, but limited context       |
+| MiMo-V2.5 Free         | better quality, but may be slow |
+| North Mini Code Free   | provided by Cohere              |
+| Nemotron 3 Ultra Free  | NVIDIA free endpoint            |
 
-> ⚠️ 免费模型限制：上下文窗口较小、响应可能较慢、数据可能被用于训练、限时免费。
+> ⚠️ Free model limits: smaller context window, possibly slower response, data may be used for training, free for a limited time.
 
-## 安全
+## Security
 
-| 防护           | 效果                          |
-| ------------ | --------------------------- |
-| 全局 catch-all | 未声明的工具调用 → 弹窗确认             |
-| Agent 权限隔离   | 每个 agent 只能用允许的工具           |
-| MCP 权限隔离     | 意见层禁止访问 MCP，防止绕过工具层         |
-| task 白名单     | 门童只能调用声明过的 agent            |
-| 降级链          | 工具层失败 → ask 用户 → 等待/跳过/免费模型 |
-| 一键回滚         | 删掉 `.opencode/` 目录即可还原      |
+| Protection                 | Effect                                                          |
+| -------------------------- | --------------------------------------------------------------- |
+| Global catch-all           | undeclared tool call → popup confirm                            |
+| Agent permission isolation | each agent can only use allowed tools                           |
+| MCP permission isolation   | opinion layer forbidden from MCP, prevents bypassing tool layer |
+| Task whitelist             | concierge-router can only call declared agents                 |
+| Fallback chain             | tool layer fails → ask user → wait/skip/free model              |
+| One-click rollback         | delete `.opencode/` to restore                                  |
 
-## 本地模型
+## Local models
 
-支持 Ollama / LM Studio 等本地模型混用：
+Supports mixing in local models like Ollama / LM Studio:
 
 ```yaml
-# .opencode/agents/中级·码农.md
+# .opencode/agents/mid-coder.md
 model: ollama-local/qwen3-coder
 ```
 
-详见 [`docs/opencode-moa.md`](docs/opencode-moa.md) 附录 A。
+See Appendix A of [`docs/opencode-moa.md`](docs/opencode-moa.md).
 
-## 验证
+## Verification
 
-部署后运行静态检查（需要 `pwsh`）：
+After deploy, run the static check (needs `pwsh`):
 
 ```bash
 pwsh .opencode/tests/T0-static-verify.ps1
-# 预期：全部 PASS / FAIL=0（key 走系统级时 WARN 也算过）
+# expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
 ```
 
-## 常见问题（Q&A）
+## FAQ
 
-### 安装相关
+### Installation
 
-**Q: 我已有 opencode.json，会不会覆盖？**
-A: 不会。安装脚本只合并 MoA 的 `permission`、`agent`、`default_agent` 配置，保留你已有的 `provider`、`model` 等设置。原文件会自动备份为 `.bak.时间戳`。
+**Q: I already have an opencode.json, will it be overwritten?**
+A: No. The install script only merges MoA's `permission`, `agent`, `default_agent` config, keeping your existing `provider`, `model`, etc. The original file is auto-backed up as `.bak.timestamp`.
 
-**Q: Windows 没有 `cp` 命令怎么办？**
-A: 用 `Copy-Item` 或 `xcopy`：
+**Q: Windows has no `cp` command, what do I do?**
+A: Use `Copy-Item` or `xcopy`:
 
 ```powershell
 # PowerShell
@@ -364,51 +368,51 @@ Copy-Item -Recurse -Force opencode-moa\.opencode .\.opencode
 xcopy opencode-moa\.opencode .\.opencode /E /I /Y
 ```
 
-**Q: 没有 pwsh/jq 能装吗？**
-A: 可以。用方式一（AI 自动部署）或方式三（手动合并配置）。
+**Q: Can I install without pwsh/jq?**
+A: Yes. Use Method 1 (AI auto-deploy) or Method 3 (manual config merge).
 
-**Q: 桌面端怎么装？**
-A: 方式一最方便——把 `docs/opencode-moa.md` 拖进对话框，让 AI 自动部署。方式二/三需要先在终端（CMD/PowerShell/Terminal）操作。
+**Q: How do I install on the desktop app?**
+A: Method 1 is most convenient — drag `docs/opencode-moa.md` into the chat box and let the AI auto-deploy. Methods 2/3 require operating in a terminal (CMD/PowerShell/Terminal) first.
 
-### 使用相关
+### Usage
 
-**Q: 看不到「门童路由员」？**
-A: 见上方「30 秒部署 → 部署成功怎么判断」的三点检查：`opencode.json` 在项目根、`.opencode/agents/` 下 19 个 .md、重启后按 `Tab` 切换（Win 桌面端亦可用 `Ctrl+.`）。
+**Q: Can't see "concierge-router"?**
+A: See the three checks under "30-second deploy → How to tell deployment succeeded": `opencode.json` at project root, 19 .md under `.opencode/agents/`, switch with `Tab` after restart (Windows desktop client: `Ctrl+.` also works).
 
-**Q: `@工具人` 无响应？**
-A: 确认 `.opencode/agents/工具人.md` 存在且 frontmatter 格式正确。
+**Q: `@tool-handler` no response?**
+A: Confirm `.opencode/agents/tool-handler.md` exists and the frontmatter format is correct.
 
-**Q: 报错 "model not found"？**
-A: 模型 ID 格式应为 `provider/model-id`（如 `opencode-go/kimi-k2.7-code`）。在配置文件（系统级 `~/.config/opencode/opencode.json` 或项目 `opencode.json`）注册对应的 provider，然后在 TUI 内用 `/models` 查看可用模型。
+**Q: Error "model not found"?**
+A: Model ID format should be `provider/model-id` (e.g. `opencode-go/kimi-k2.7-code`). Register the corresponding provider in the config file (system-level `~/.config/opencode/opencode.json` or project `opencode.json`), then use `/models` inside the TUI to see available models.
 
-**Q: 怎么切换回原来的 build/plan agent？**
-A: 按 `Tab` 切换（Win 桌面端亦可用 `Ctrl+.`），或输入 `/build`、`/plan`。MoA 不影响内置 agent。
+**Q: How do I switch back to the original build/plan agent?**
+A: Press `Tab` to switch (Windows desktop client: `Ctrl+.` also works), or type `/build`, `/plan`. MoA does not affect built-in agents.
 
-**Q: 我想用自己的模型，不走 Go 订阅？**
-A: 修改 agent 的 `model` 字段即可：
+**Q: I want to use my own model, not the Go plan?**
+A: Just change the agent's `model` field:
 
 ```yaml
-# .opencode/agents/中级·工程.md
+# .opencode/agents/mid-eng.md
 model: anthropic/claude-sonnet-4-20250514
 ```
 
-**Q: 部署后能删掉仓库吗？**
-A: 可以。MoA 已复制到你的项目 `.opencode/` 目录，原仓库可以删除。
+**Q: Can I delete the repo after deploying?**
+A: Yes. MoA is already copied to your project's `.opencode/` directory; the original repo can be deleted.
 
-**Q: 多个项目怎么部署？**
-A: 每个项目单独部署。`.opencode/` 是项目级配置，不影响其他项目。
+**Q: How do I deploy across multiple projects?**
+A: Deploy each project separately. `.opencode/` is project-level config and does not affect other projects.
 
-### 降级相关
+### Fallback
 
-**Q: 工具层全部挂了怎么办？**
-A: 见上方「容错设计 → 降级链」：MoA 会 ask 用户选 A. 等几分钟 / B. 跳过工具层直接调意见层（成本较高）/ C. 切换到免费模型。
+**Q: The whole tool layer is down, what now?**
+A: See "Fault tolerance design → Fallback chain" above: MoA asks the user to choose A. wait a few minutes / B. skip tool layer and call opinion layer directly (higher cost) / C. switch to free model.
 
-**Q: 免费模型在哪？**
-A: 见上方「成本 → 免费模型」：用 `/models` 打开模型列表选带 "Free" 标签的模型（Win 桌面端亦可用 `Ctrl+'`）（DeepSeek V4 Flash Free、MiMo-V2.5 Free、Big Pickle 等）。免费模型上下文有限、可能较慢、数据可能被用于训练。
+**Q: Where are the free models?**
+A: See "Cost → Free models" above: use `/models` to open the model list and pick one tagged "Free" (Windows desktop client: `Ctrl+'` also works) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free, etc.). Free models have limited context, may be slower, and data may be used for training.
 
-## 贡献
+## Contributing
 
-欢迎提交 PR 和 Issue。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+PRs and Issues welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

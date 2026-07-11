@@ -1,5 +1,21 @@
 # Changelog
 
+<details open>
+<summary>🇬🇧 English</summary>
+
+## Versioning rules
+
+- Format: `v0.X.Y` (SemVer: major.minor.patch)
+- Patch (Y): fixes, doc updates, config tweaks
+- Minor (X): new features, model changes, agent changes
+- Major: architectural rewrite
+- No version skips; each change bumps exactly one level
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
 ## 版本规范
 
 - 格式：`v0.X.Y`（语义化版本：主版本.次版本.修订号）
@@ -8,18 +24,120 @@
 - 主版本号：架构重构
 - 不跳版本号，每次改动只升一级
 
+</details>
+
+---
+
+## v0.0.8（2026-07-11）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Deploy-deviation fixes and 信达雅 (faithful / expressive / elegant) wrap-up across both language manuals.
+
+- `docs/opencode-moa.en.md` moved from `docs/en/` to `docs/`; README download link updated.
+- Both manuals: fixed two deploy-blocking bugs — command file `moa-Medium.md` → `moa-medium.md` (case-sensitivity on Linux/WSL); Provider key handling now explicitly creates `.opencode/local/opencode-go.key` and references it via `{file:}` (was ambiguous → silent 401 on all 19 agents).
+- Both manuals: unified router name (EN `doorman` → `concierge-router`); added a "Customization" note — agent names and `model` assignments are not hard-bound and can be swapped freely, with a warning that renaming an agent must sync the `task:` whitelist, `permission.task`, and all cross-agent `@`/`task` calls.
+- READMEs (EN/ZH): 信达雅 fixes — qualified "~90%" savings (vs all-flagship baseline); unified `concierge-router` naming; fixed free-model name (`Big Pickle` → `North Mini Code Free`); fixed ZH typo (`hero 的` → `这里说的`).
+- Doc footer version v0.0.6 → v0.0.8 in both manuals.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+部署偏差修复与信达雅收口（两份语言手册）。
+
+- `docs/en/opencode-moa.en.md` → `docs/opencode-moa.en.md`（移出 `docs/en/`）；README 下载链接同步。
+- 两份手册修复两个部署阻断 bug：命令文件 `moa-Medium.md` → `moa-medium.md`（Linux/WSL 大小写敏感）；密钥落盘改为显式创建 `.opencode/local/opencode-go.key` 并经 `{file:}` 引用（原表述歧义 → 全 19 agent 静默 401）。
+- 两份手册统一路由名（英文 `doorman` → `concierge-router`）；新增「自定义」备注——agent 名称与 `model` 不捆绑死、可自由替换，并提醒改名须同步 `task:` 白名单、`permission.task` 与跨 agent 调用。
+- 中英文 README 信达雅修正：限定「省 90%」（对比全程旗舰基线）；统一 `concierge-router` 命名；修正免费模型名（`Big Pickle` → `North Mini Code Free`）；修正中文错别字（`hero 的` → `这里说的`）。
+- 两份手册文档页脚版本 v0.0.6 → v0.0.8。
+
+</details>
+
 ---
 
 ## v0.0.7（2026-07-11）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Cross-platform keybindings and version-floor consistency wrap-up (extension of the v0.0.6 doc fixes, covering code / config / agent files not yet aligned).
+
+- `.opencode/skills/opencode-moa/SKILL.md`: env-check version floor `>= 1.1.1` → `>= 1.3.4`; deploy-success check "`Ctrl+.` to switch agent" → cross-platform "`Tab` cycle (Windows desktop also `Ctrl+.`)"; verify expectation "41 PASS" → "all PASS / FAIL=0 (with system-level key, WARN also counts as pass)"; removed the no-upload entry for the no-longer-generated `user_config.json`.
+- `install.sh` / `install.ps1`: post-install keybinding hint changed from hardcoded `Ctrl+.` to cross-platform "`Tab` (Windows desktop also `Ctrl+.`)".
+- `.opencode/agents/concierge-router.md`: free-model switch hint `Ctrl+.` (actually the agent key, conflicting with the keybinding convention) → `/models` and pick the Free tag (Windows desktop `Ctrl+'`); plan-agent switch `Ctrl+.` → cross-platform "`Tab` (Windows desktop `Ctrl+.`)".
+- `.github/ISSUE_TEMPLATE/bug-report.yml`: version placeholder `1.1.1` → `1.3.4`.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 跨平台键位与版本门槛一致性收口（v0.0.6 文档修正的延伸，覆盖尚未对齐的代码 / 配置 / agent 文件）。
 
 - `.opencode/skills/opencode-moa/SKILL.md`：环境检查版本门槛 `>= 1.1.1` → `>= 1.3.4`；部署成功判定「`Ctrl+.` 切 agent」→ 跨平台「`Tab` 循环（Win 桌面端亦可用 `Ctrl+.`）」；验证预期「41 PASS」→「全部 PASS / FAIL=0（系统级 key 时 WARN 也算过）」；「不上传」清单移除已不生成的 `user_config.json`。
 - `install.sh` / `install.ps1`：安装完成提示的切换键由写死的 `Ctrl+.` 改为跨平台「`Tab`（Win 桌面端亦可用 `Ctrl+.`）」。
-- `.opencode/agents/门童路由员.md`：免费模型切换指引 `Ctrl+.`（实为 agent 键，与键位约定冲突）→ `/models` 选 Free 标签（Win 桌面端 `Ctrl+'`）；plan agent 切换 `Ctrl+.` → 跨平台「`Tab`（Win 桌面端 `Ctrl+.`）」。
+- `.opencode/agents/concierge-router.md`：免费模型切换指引 `Ctrl+.`（实为 agent 键，与键位约定冲突）→ `/models` 选 Free 标签（Win 桌面端 `Ctrl+'`）；plan agent 切换 `Ctrl+.` → 跨平台「`Tab`（Win 桌面端 `Ctrl+.`）」。
 - `.github/ISSUE_TEMPLATE/bug-report.yml`：版本占位符 `1.1.1` → `1.3.4`。
 
+</details>
+
+---
+
 ## v0.0.6（2026-07-11）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+This release = manual `forceReasoning` premise correction + i18n completion (en promoted from skeleton to full) + README rework.
+
+### 1. Correct the manual's wrong premise that "custom provider must add `forceReasoning: true`"
+
+#### Background
+
+The v0.0.5 manual stated: "opencode ≥ 1.3.4, `@ai-sdk/openai-compatible` providers no longer pass reasoning params by default; you must add `forceReasoning: true`, otherwise the matrix silently fails." Per OpenCode issue #20815, that premise is false.
+
+#### Correction (based on issue #20815 testing)
+
+- The v1.3.4 reasoning passthrough regression **only affects custom providers using `"npm": "@ai-sdk/openai"`** (AI SDK v6 validates against a "known reasoning model list"; if not in the list it silently drops `reasoningEffort`).
+- The same issue confirms **`@ai-sdk/openai-compatible` is unaffected** — `reasoningEffort` is correctly passed through as `reasoning_effort`.
+- `forceReasoning` is a switch to bypass the list validation for `@ai-sdk/openai`; our provider uses `openai-compatible`, so it **should not (and does not need to) be added** (adding it is a no-op and misleading). Only when you change `npm` to `@ai-sdk/openai` (e.g. to use the responses API) should you add `forceReasoning: true` in `options`.
+
+#### Changes
+
+- `docs/opencode-moa.md`: Provider config warning, example JSON (remove `forceReasoning` line), matrix prereq, troubleshooting "reasoning intensity unchanged" row, version note, and footer all corrected to the SDK-distinction wording; doc version v0.0.5 → v0.0.6.
+- Kept consistent with the existing provider blocks in install.ps1 / install.sh (which never had `forceReasoning`).
+
+#### Empirical evidence
+
+v0.0.4 already recorded `reasoning_effort` rising from medium→max gave reasoning tokens 359→536, proving passthrough works natively on `openai-compatible`, consistent with the issue conclusion.
+
+### 2. i18n completion (en promoted from skeleton to full)
+
+- Added `README.md` (English homepage): a full English version aligned with the Chinese README (`README.zh.md`).
+- `docs/en/opencode-moa.en.md`: promoted from ~skeleton to a full English version section-by-section matching the Chinese manual (Provider config, matrix, troubleshooting, FAQ, etc.); version synced to v0.0.6.
+- `docs/TRANSLATION.md`: zh/en bilingual status flipped from "🚧 skeleton (to translate)" to "✅ complete".
+
+### 3. README rework
+
+- Restructured the deploy prerequisites table and the system-level key-path warning: added a "read before deploy: don't misplace the key path" alert box (project-level self-contained vs system-level shared, pick one; pin `%USERPROFILE%\.config\opencode` not `%APPDATA%\opencode`).
+- Moved Q&A from the middle of the body to a unified "FAQ" at the end, and fixed several cross-references (e.g. "can't see the doorman", "where are free models" now point to the right sections).
+- Added a "why ~90% cheaper" cost breakdown: weighted by call volume (tool layer 80% / opinion layer 18% / fusion layer 2%) estimates effective output price ≈ $0.69/1M, ~90% cheaper than the flagship baseline, ~80% cheaper than a single mid-tier.
+- hero / architecture diagram model names updated to concrete versions (e.g. `Qwen3.7 Max`, `MiniMax M3`), aligned with the cost table; unified `Qwen3.7Max`/`Qwen3.7Plus` to the spaced spelling across the doc.
+
+### 4. Other
+
+- Deleted `docs/PLAN-moa-hardening.md` (plan consolidated into per-version notes) and removed v0.0.5's reference to it.
+- Keybinding wording changed to cross-platform: agent switching unified to `Tab` cycle (or `Ctrl+x a` to open the agent list); free models via `/models` and pick the `Free` tag; your tested Windows desktop shortcuts `Ctrl+.` (switch agent) / `Ctrl+'` (switch free model) kept as "Windows desktop" annotations. Fixed the earlier bug of hardcoding these two keys, which conflicted with the official defaults (`Tab`/`/models`/`Ctrl+t`; and `Ctrl+.` is officially input redo, no `Ctrl+'` binding) — covering `README.md` (EN) / `README.zh.md` (ZH) / `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` everywhere relevant.
+- Added a cross-platform warning: do not manually switch "variant / reasoning tier" in the TUI — OpenCode's variant selection overrides the agent's `reasoningEffort` and writes to the model-selection cache (`~/.local/state/opencode/model.json` on Linux/macOS, `%USERPROFILE%\.local\state\opencode\model.json` on Windows); it persists after restart and is cross-platform consistent, silently overriding this plan's low→xhigh matrix. Added one line each in the reasoning-matrix section and the "reasoning intensity feels unchanged" troubleshooting row of `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md`.
+- `/connect` command-palette key fix: Method B originally said "press `Ctrl+K` in TUI to open command palette", but the official `command_list` / command palette = `Ctrl+P`, and no `Ctrl+K` binding exists in the full official keybinds table (`Ctrl+K` in the input box is actually "delete to end of line"). Changed to "type `/connect` in TUI (or press `Ctrl+P` to open command palette)", covering `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md`.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 本期 = 手册 `forceReasoning` 前提纠正 + 多语言补全（en 由骨架升至完整）+ README 重构。
 
@@ -46,7 +164,7 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 
 ### 2. 多语言补全（en 由骨架升至完整）
 
-- 新增 `README.en.md`：与 `README.md` 结构对齐的完整英文版。
+- 新增英文 README（现 `README.md` 首页）：与中文 README（现 `README.zh.md`）结构对齐的完整英文版。
 - `docs/en/opencode-moa.en.md`：由 ~骨架 补全为与中文手册逐节对应的完整英文版（Provider 配置、矩阵、排错表、FAQ 等），版本同步至 v0.0.6。
 - `docs/TRANSLATION.md`：中 / 英双语状态由「🚧 骨架（待译）」翻为「✅ 完整」。
 
@@ -60,11 +178,67 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 ### 4. 其他
 
 - 删除 `docs/PLAN-moa-hardening.md`（方案已整合进各版本变更说明），并移除 v0.0.5 对其的引用。
-- 切换键说明改为跨平台写法：agent 切换统一用 `Tab` 循环（或 `Ctrl+x a` 打开 agent 列表），免费模型用 `/models` 打开模型列表选 `Free` 标签；你实测的 Windows 桌面端快捷键 `Ctrl+.`（切 agent）/ `Ctrl+'`（切免费模型）保留为「Win 桌面端」标注。修正了此前把这两个键写死、与官方默认键位（`Tab`/`/models`/`Ctrl+t`，且 `Ctrl+.` 官方为 input redo、无 `Ctrl+'` 绑定）冲突的问题，覆盖 `README.md` / `README.en.md` / `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` 全部相关处。
+- 切换键说明改为跨平台写法：agent 切换统一用 `Tab` 循环（或 `Ctrl+x a` 打开 agent 列表），免费模型用 `/models` 打开模型列表选 `Free` 标签；你实测的 Windows 桌面端快捷键 `Ctrl+.`（切 agent）/ `Ctrl+'`（切免费模型）保留为「Win 桌面端」标注。修正了此前把这两个键写死、与官方默认键位（`Tab`/`/models`/`Ctrl+t`，且 `Ctrl+.` 官方为 input redo、无 `Ctrl+'` 绑定）冲突的问题，覆盖 `README.md`（英文）/ `README.zh.md`（中文）/ `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` 全部相关处。
 - 新增跨平台警告：不要在 TUI 手动切「变体/推理档」——OpenCode 的变体选择会覆盖 agent 配置的 `reasoningEffort` 并写入 model 选择缓存（Linux/macOS `~/.local/state/opencode/model.json`、Windows `%USERPROFILE%\.local\state\opencode\model.json`），重启仍生效、跨平台一致，会静默顶掉本方案的 low→xhigh 矩阵。已在 `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` 的推理矩阵段与「推理强度感觉没变」排错行各补一条。
 - `/connect` 命令面板键纠错：方式 B 原写「TUI 内按 `Ctrl+K` 打开命令面板」，但官方 `command_list` / 命令面板 = `Ctrl+P`，全官方 keybinds 表无 `Ctrl+K` 绑定（`Ctrl+K` 在输入框实为「删除到行尾」）。已改为「TUI 内输入 `/connect`（或按 `Ctrl+P` 打开命令面板）」，覆盖 `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md`。
 
+</details>
+
+---
+
 ## v0.0.5（2026-07-10）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Audited whether opencode-moa misleads AI / users; fixed a batch of issues that cause "all 19 agents can't connect after deploy" and credential leaks.
+
+### Critical (P0)
+
+- **install.ps1 / install.sh non-interactive / no-key branch**: originally generated `user_config.json` and prompted the user to fill the key. But OpenCode only loads `opencode.json` and the system-level `~/.config/opencode/opencode.json`, **not `user_config.json`**, and that branch didn't inject the provider into `opencode.json` at all — after running the script, all 19 agents couldn't connect. Fixed by: **when no key, merge the `opencode-go` provider (apiKey placeholder `<YOUR_GO_API_KEY>`) directly into `opencode.json`** and prompt the user to replace the key; removed `user_config.json` generation entirely.
+- **`opencode.json11` contained a plaintext Go API Key and had a wrong schema** (`llm.model/base_url/api_key` are not OpenCode format): both a leak and misleading. Deleted the workspace file; that key is considered compromised and must be rotated at opencode.ai/auth.
+
+### High (P1)
+
+- **T0 static test didn't validate `reasoningEffort` values**: originally only counted `=19`; an uppercase `Medium` would PASS, and re-packaging/releasing would reproduce the v0.0.3/0.0.4 400 root cause. Added a check: every `reasoningEffort` must be in the lowercase gateway enum `low/medium/high/max/xhigh/none/minimal`, otherwise FAIL.
+
+### Low (P2)
+
+- Manual Provider block (`docs/opencode-moa.md:69-77`) and install script model `name` changed from display name to slug (the API actually calls by map key=slug; the display name is only an alias; unified this time to avoid mismatch with the real config).
+- The 9 orchestration-layer agents' `hidden: true` (concierge-router, mid-eng/creative/coder, flag-eng/arch/plan, fe-logic/motion) is now **actually applied** to `.opencode/agents/*.md` (the v0.0.4 "pending" item is cleared).
+- Created `.opencode/local/` directory placeholder (so the manual's Method A reference `{file:.opencode/local/opencode-go.key}` no longer errors on a missing dir).
+
+### High (P1)
+
+- **reasoning matrix silently fails on opencode ≥ 1.3.4**: custom `@ai-sdk/openai-compatible` providers no longer pass reasoning params to the request body by default ([issue #20815](https://github.com/anomalyco/opencode/issues/20815)), so the `reasoningEffort` matrix was a no-op without erroring. Added `"forceReasoning": true` to the Provider config block `options`; raised the required version from ≥ 1.1.1 to **≥ 1.3.4** (reasoning passthrough fix; 1.1.1 can only run basics, matrix fails). README badge and prerequisites table synced.
+
+### Low (P2)
+
+- **Windows system-level path clarification**: pinned to `%USERPROFILE%\.config\opencode\opencode.json`, explicitly denying the online myth `%APPDATA%\opencode` (wrong path → "deploy succeeds but all agents can't connect" with no obvious error); manual gained a real-path table per platform; README gained a cross-platform hint.
+- **Cross-platform verification script**: Block 6 originally used bash (`ls`/`wc`/`grep`/`find`) which can't run in native Windows CMD/PowerShell; added a native PowerShell version, plus a "bash only on Linux/macOS/WSL/Git Bash" hint.
+- **`instructions` no longer hardcoded**: `["AGENTS.md"]` changed to a default comment; only enabled when the project root **already has** an `AGENTS.md` — removes the startup warning for projects without that file, and doesn't impose a convention file on the project.
+- **`T0-static-verify.ps1` generated on deploy**: manual added Block 5.5 writing the script into `.opencode/tests/`, fixing "manual references it but the file isn't shipped with the repo, other users can't find it when copying"; the script treats a **system-level key** as PASS (key check softened from hard FAIL to lenient, matching system-level deploy).
+- Manual and README's "41 PASS" old wording unified to the accurate expectation (all PASS / FAIL=0 / system-level key WARN also counts).
+
+### High (P1)
+
+- **Provider changed to a hard gate of "exists + real key" (catch empty shells)**: tested an extreme scenario — system-level `opencode.json` deleted / system dir empty / provider missing or placeholder key — deploy could still write all 19 files, yet all agents couldn't connect at runtime, and the old check only WARNed, not red. Done:
+  - Block 0 added a **Provider hard gate**: after deploy, must assert that the project `opencode.json` OR system-level `~/.config/opencode/opencode.json` (pick one, only one per dir) contains `provider.opencode-go` and an `apiKey` that is not `<YOUR_GO_API_KEY>`/empty, otherwise the AI must rebuild the provider and must not declare success.
+  - Block 0's `opencode` binary check **softened**: on desktop a sub-shell/sandbox often misreports not-found due to different PATH; changed to WARN only, not blocking file deploy, and never skipping the provider because of it.
+  - **Provider defaults to project-level `opencode.json`** (self-contained, resilient to system dir deletion/emptiness); system-level downgraded to an optional multi-project share.
+
+### Low (P2)
+
+- **T0 adds provider real-key validation**: Block 5.5 script now greps project/system `.json`/`.jsonc` for `opencode-go` with a real `apiKey` (`sk-*` or `{file:}` reference) that is not placeholder/empty, else FAIL — directly catches "system-level deleted / not rebuilt" empty shells.
+- **T0 skill misjudgment fix**: changed from "total == 3" to validating **3 specific directories exist** (`code-review-moa` / `architecture-moa` / `frontend-moa`), avoiding an end-user copying the repo's bundled `opencode-moa` meta-skill making it 4 and **falsely FAIL**.
+- **Same-layer dual-file warning fix**: originally "`.jsonc` wins, `.json` ignored" came from a third-party plugin doc; **the official spec doesn't define priority for two files in the same dir**. Changed to accurate wording: OpenCode supports both `.json`/`.jsonc`, but two co-existing files in the same dir have undefined priority and may conflict; the safe approach is to keep only one containing a valid provider + real key.
+- **Quick-reference table adds empty-shell causes**: added three rows — "system-level deleted / dir empty", "two `.json`+`.jsonc` in same dir", "placeholder key" — each pointing to rebuild provider / keep only one / replace real key, noting T0 now FAILs to intercept.
+- Plan archive: original `docs/PLAN-moa-hardening.md` (deleted in v0.0.6, content consolidated into per-version notes).
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 审计 opencode-moa 是否误导 AI / 用户，修复一批会导致「部署后 19 agent 全连不上」与泄露凭据的问题。
 
@@ -80,7 +254,7 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 ### 低（P2）
 
 - 手册 Provider 块（`docs/opencode-moa.md:69-77`）与 install 脚本模型 `name` 由显示名改为 slug（API 实际按 map key=slug 调用，显示名仅别名；本次统一以避免与真实配置不一致）。
-- 9 个编排层 agent（门童路由员、中级·工程/创意/码农、旗舰·工程/架构/规划、前端·逻辑/动效）的 `hidden: true` 已从手册约定**实际应用**到 `.opencode/agents/*.md`（v0.0.4 标记「待应用」已结清）。
+- 9 个编排层 agent（concierge-router、mid-eng/creative/coder、flag-eng/arch/plan、fe-logic/motion）的 `hidden: true` 已从手册约定**实际应用**到 `.opencode/agents/*.md`（v0.0.4 标记「待应用」已结清）。
 - 创建 `.opencode/local/` 目录占位（手册方式 A 引用 `{file:.opencode/local/opencode-go.key}` 不再因目录缺失报错）。
 
 ### 高（P1）
@@ -110,7 +284,42 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 - **速查表补空壳成因**：新增「系统级被删/目录为空」「同目录双 `.json`+`.jsonc`」「占位符 key」三行，对应处理均指向重建 provider / 只留一个 / 替换真实 key，并注明 T0 现会 FAIL 拦截。
 - 方案存档：原 `docs/PLAN-moa-hardening.md`（已于 v0.0.6 删除，内容已整合进各版本变更说明）。
 
+</details>
+
+---
+
 ## v0.0.4（2026-07-10）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Fix the `Upstream request failed` that persisted after the v0.0.3 misdiagnosis (real root cause: the agent `reasoningEffort` passthrough param was rejected by the gateway).
+
+### Root cause
+
+See v0.0.3 "Root cause (corrected)". Uppercase `reasoningEffort` values, and tiers unsupported by some models, caused the gateway to return HTTP 400 `invalid_request_error`, wrapped as `Upstream request failed`.
+
+### Fix (all applied)
+
+- All 19 agents' `reasoningEffort` changed to lowercase; opinion/flagship tiers raised to the model's max supported: minimax-m3 / glm-5.2 / deepseek-v4-pro / mimo-v2.5-pro → `max`, qwen3.7-max/plus → `xhigh` (its `max` actually 400s), kimi-k2.7-code → `high` (max only `high`), tool/quick-task layer → `medium`.
+- The 9-model `reasoning_effort` support matrix measured and written into `docs/opencode-moa.md` (per-tier OK/400/500 + 4 rules).
+- All 19 agents gained tiered `max_tokens`: tool/quick-task layer 2048, opinion/flagship/impl layer 8192.
+- `@` menu's ~10-line display cap truncates orchestration-layer agents: agreed to set `hidden: true` for the orchestration layer (flagship×6, mid-fuse, fe-lead, tool-handler-mimo) — only hides the @ menu, doesn't block Task calls; convention written into the manual; agent files pending apply.
+- Param-effectiveness measured: reasoning_effort (reasoning tokens 359→536), max_tokens (5 vs 60), temperature (0.1 deterministic vs 1.0 discrete), stop/top_p (gateway accepts) all confirmed passing through.
+
+### Config-loading mechanism verification (deployer found correct)
+
+Official config docs confirm OpenCode **only loads** `opencode.json` (project) and `~/.config/opencode/opencode.json` (system, including `.jsonc`), **not `user_config.json`**. Therefore:
+
+- The entire v0.0.3 `user_config.json` route (incl. the "main session relies on user_config.json's legacy `llm` block" attribution) was **wrong**; the deployer judged correctly.
+- Actual mechanism = system-level `~/.config/opencode/opencode.json(c)` registers `provider.opencode-go` (with key) + project-level `opencode.json` (permissions / agent / default_agent). Sub-agent model `opencode-go/<model>` resolves via the system provider.
+- The repo's `user_config.json` / `user_config - 副本.json` are dead files (and excluded by `.gitignore`); recommend deletion.
+- The manual's `Block 0` reference "user_config.json created with valid key or placeholder" must also be corrected to system-level `opencode.json`, otherwise it misleads users down the wrong path.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 修复 v0.0.3 误诊后仍未消除的 `Upstream request failed`（真实根因：agent `reasoningEffort` 透传参数被网关拒绝）。
 
@@ -123,7 +332,7 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 - 19 个 agent `reasoningEffort` 取值全部改小写；意见/旗舰层按模型最高支持档提档：minimax-m3 / glm-5.2 / deepseek-v4-pro / mimo-v2.5-pro → `max`，qwen3.7-max/plus → `xhigh`（该模型 `max` 反而 400），kimi-k2.7-code → `high`（最高只到 high），工具/快任务层 → `medium`。
 - 9 模型 `reasoning_effort` 支持矩阵实测写入 `docs/opencode-moa.md`（各档 OK/400/500 + 4 条规则）。
 - 19 个 agent 新增 `max_tokens` 分档：工具/快任务层 2048，意见/旗舰/实现层 8192。
-- `@` 菜单显示上限约 10 行会截断编排层 agent：约定编排层（旗舰×6、中级·融合、前端·总工、工具人-mimo）设 `hidden: true`（仅隐藏 @ 菜单、不阻止 Task 调用），约定已写入手册；agent 文件待应用。
+- `@` 菜单显示上限约 10 行会截断编排层 agent：约定编排层（旗舰×6、mid-fuse、fe-lead、tool-handler-mimo）设 `hidden: true`（仅隐藏 @ 菜单、不阻止 Task 调用），约定已写入手册；agent 文件待应用。
 - 参数生效实测：reasoning_effort（reasoning tokens 359→536）、max_tokens（5 vs 60）、temperature（0.1 确定性 vs 1.0 离散）、stop/top_p（网关接受）全部确认透传生效。
 
 ### 配置加载机制核实（deployer 发现正确）
@@ -135,15 +344,59 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 - 仓库内 `user_config.json` / `user_config - 副本.json` 为死文件（且被 `.gitignore` 排除），建议删除。
 - 部署手册 `Block 0` 的 "`user_config.json` 已创建且含有效 key 或占位符" 引用同样需更正为系统级 `opencode.json`，否则会误导用户走错误路线。
 
+</details>
+
 ---
 
 ## v0.0.3（2026-07-10）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Established credentialed OpenCode Go provider config (necessary prerequisite for sub-agent connectivity) and fixed config validity. Note: this version originally attributed `Upstream request failed` to "provider has no credentials → falls back to public", which was a misdiagnosis; the real root cause is in v0.0.4.
+
+### Root cause (corrected)
+
+The error `Error from provider (Console Go): Upstream request failed` (HTTP 400 `invalid_request_error`) truly comes from **the `Additional` passthrough param in the agent definition being rejected by the gateway**, not from a missing provider credential. Empirical evidence:
+
+- Config had `opencode-go` provider with a valid key; a direct call to `https://opencode.ai/zen/go/v1/chat/completions` for a valid request returned 200;
+- Cache logs show request `providerID: opencode-go`, `modelID: deepseek-v4-flash`, `statusCode: 400`, responseBody `invalid_request_error`;
+- Repro: request body with `reasoning_effort: "Medium"` (uppercase) → 400; lowercase `medium` → 200. temperature / top_p / max_tokens / stop / penalties are all accepted by the gateway.
+
+So the OpenCode Go gateway (backend internal provider name `Console Go`) **only accepts lowercase `reasoning_effort` values (low/medium/high/max/xhigh)**; uppercase `Medium/High` and `extreme/adaptive/auto` etc. all 400, and unsupported values don't degrade — they hard-fail. Provider/credential registration is a necessary prerequisite (see fix items) but not the cause of this error.
+
+### Fix (all applied)
+
+- [Prereq·necessary] System-level `~/.config/opencode/opencode.json` (and `.jsonc`) registers custom `provider.opencode-go` (openai-compatible) → `https://opencode.ai/zen/go/v1` + Go key + 9 models, so `opencode-go/<model>` resolves to the credentialed endpoint (all 9 models measured 200). This is the necessary prerequisite for sub-agents to connect, but not the cause of this error.
+- ⚠️ Originally wrote "fixed project runtime `user_config.json`" — per official config docs, `user_config.json` **is not an OpenCode-loaded config file** (only `opencode.json` project-level and `~/.config/opencode/opencode.json` system-level are loaded); that route is entirely wrong, see v0.0.4. The repo's `user_config.json` / `user_config - 副本.json` are dead files; recommend deletion (excluded by `.gitignore`).
+- Fixed repo template `opencode.json`: removed illegal `"": "https://opencode.ai/config.json"` extends (caused load failure) → `$schema`.
+- All 19 agents' model prefix unified to `opencode-go/<model>` (matches official Go doc ID format; independent naming doesn't shadow the built-in Zen provider).
+- `.gitignore`: added `user_config*.json` (key-bearing copies), `opencode.json1*` (renamed copies), `*.zip` to prevent accidental key-leak commits.
+- Real root-cause fix in v0.0.4: `reasoningEffort` values lowercased and set per model's max supported tier.
+
+### Docs
+
+- Added `docs/PLAN-fix-provider.md`: full root-cause analysis and fix plan (later deleted, naming outdated).
+- Deleted `docs/PLAN-fix-provider.md`.
+- Rewrote `docs/TROUBLESHOOTING.md`: removed fallback section, full `opencode` → `opencode-go`, removed `/connect` misdirection.
+- Rewrote `docs/opencode-moa.md` Provider section: non-interactive config-file auth as primary, TUI `/connect` as fallback, + error fallback notes.
+- Install scripts `install.ps1` / `install.sh`: after merging config, interactively prompt for Go API Key; auto-skip in non-interactive env.
+- `docs/opencode-moa.md` Provider section deploy instructions strengthened: directly ask the user for the key, covering security concerns; no option, no skip.
+- `T0-static-verify.ps1`: skill count excludes the self-referencing opencode-moa meta-skill; unified local/remote CI.
+- Deploy Block 0 added Provider prereq check reminder; Block 5 added user_config.json separate-save note; Block 6 added credential-file check.
+- Full-doc PASS expectation 40 → 41 (post T0 improvement).
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 建立 OpenCode Go provider 的带凭证配置（子代理连通的必要前置），并修正配置合法性。注意：本版原把 `Upstream request failed` 的根因归为"provider 无凭证→降级 public"，属误诊；真实根因见 v0.0.4。
 
 ### 根因（更正）
 
 报错 `Error from provider (Console Go): Upstream request failed`（HTTP 400 `invalid_request_error`）的真正来源是 **agent 定义里的 `Additional` 透传参数网关不接受**，不是 provider 没配凭证。实测证据：
+
 - 配置中 `opencode-go` provider 带有效 key，直连 `https://opencode.ai/zen/go/v1/chat/completions` 对合法请求返回 200；
 - 缓存日志显示请求 `providerID: opencode-go`、`modelID: deepseek-v4-flash`、`statusCode: 400`，responseBody 为 `invalid_request_error`；
 - 复现：请求体带 `reasoning_effort: "Medium"`（大写）即 400；改为小写 `medium` 即 200。temperature / top_p / max_tokens / stop / penalties 网关均接受。
@@ -171,9 +424,45 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 - 部署 Block 0 加 Provider 前置检查提醒；Block 5 加 user_config.json 独立保存说明；Block 6 加认证文件检查。
 - 全文档 PASS 预期 40 → 41（含 T0 改进后）。
 
+</details>
+
 ---
 
 ## v0.0.2（2026-07-09）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Fixed the concierge-router fallback-chain ask logic being skipped; fixed the "Upstream request failed" error caused by the OpenCode Go provider.
+
+### Fix
+
+- concierge-router: after tool-layer failure, must stop subsequent flow and wait for user choice
+- Clarified branch logic: "success → continue normal routing", "failure → stop, ask user"
+- Added an important warning: prevent the LLM from skipping the ask and directly dispatching opinion-layer agents
+- Fixed `Upstream request failed` for all agents: switched 17 agents from `opencode-go/` to `opencode/` (OpenCode Zen)
+- Configured global default model: `opencode/deepseek-v4-flash`, ensuring subagents inherit the correct provider
+
+### Config adjustments
+
+- Global model: added `opencode/deepseek-v4-flash` as default
+- Tool-layer agents: `opencode-go/deepseek-v4-flash` → `opencode/deepseek-v4-flash`
+- tool-handler-mimo: `opencode-go/mimo-v2.5` → `opencode/mimo-v2.5`
+- Opinion/flagship/frontend layers: all switched from `opencode-go/*` to `opencode/*`
+
+### Tests
+
+- Static check script `.opencode/tests/T0-static-verify.ps1` synced: model assertion `opencode-go/` → `opencode/`, else CI static check fails and blocks push
+
+### Docs
+
+- Manual synced: `opencode-moa.md` all 19 agents' `opencode-go/*` → `opencode/*` (incl. 2 example configs)
+- Manual synced: `opencode-moa.md` concierge-router template updated
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 修复门童路由员降级链ask逻辑被跳过的问题；修复OpenCode Go provider导致的"Upstream request failed"错误。
 
@@ -201,9 +490,48 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 - 部署手册同步：opencode-moa.md 全量 19 个 agent 的 `opencode-go/*` → `opencode/*`（含 2 处示例配置）
 - 部署手册同步：opencode-moa.md 门童路由员模板更新
 
+</details>
+
 ---
 
 ## v0.0.1（2026-07-08）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+First formal release.
+
+### Fault tolerance
+
+- Tool-layer 6 agents gained quick retry: fail → immediate retry once → return on success / error on fail
+- Fallback chain optimized: double retry → ask user (wait / skip / free model)
+- Error classification: ERROR_PROVIDER / ERROR_AUTH / ERROR_UNKNOWN
+
+### MCP permission isolation
+
+- `opencode.json` sets `"*_*": "deny"` for the 8 opinion-layer agents, universally disabling all MCP tools
+- Opinion layer `read: deny` + MCP blocked, so it can only produce plans from material provided by the tool layer
+
+### Model assignment
+
+- mid-eng: MiniMax M3 (no context trap, $0.30/$1.20 per 1M)
+- mid-creative: DeepSeek V4 Pro (creative perspective)
+- flag-eng: MiniMax M3 (large-scale implementation)
+
+### Opinion-layer fallback
+
+- When the opinion layer is called but has no material, ask the user to confirm, then reason purely from the requirement description
+
+### Docs
+
+- README rewrite: clearer title, user pain points, Go subscription details, fault-tolerance design section
+- Manual synced: all agent templates updated
+- CHANGELOG split out: versioning rules established
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 首个正式发布版本。
 
@@ -234,11 +562,47 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 - 部署手册同步：所有 agent 模板更新
 - CHANGELOG 独立：版本规范建立
 
+</details>
+
 ---
 
-## Pre-release 历史
+## Pre-release history
 
-> 以下为 v0.0.1 之前的内部迭代记录，保留供参考。
+> The following are internal iteration records before v0.0.1, kept for reference.
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+### v3.4（2026-07-08）
+
+- Added tool-handler-mimo (MiMo fallback); tool layer Flash + MiMo in parallel
+- Hard limits cleared, replaced with semantic classification
+- Test slimmed; Layer 0 99-item static check
+
+### v3.3（2026-07-07）
+
+- Opinion layer fully opened: 8 opinion agents gained task permission; when `@`-called, ask + auto-execute to self-supply material
+- Role map updated; MCP permission design reworked
+
+### v3.2（2026-07-07）
+
+- All agents slimmed (12–40 lines each), removed XML wrapper redundancy
+- concierge-router constraints hardened; only outputs task() calls
+
+### v3.1（2026-07-07）
+
+- Format unified; `/moa-*` command prefix
+- Frontend MoA updated to four-way coverage
+
+### v3.0（2026-07-07）
+
+- Cost-Optimal MoA rework: 18 agents, tool/opinion/fusion three-layer design
+- Triple-opinion mechanism; model assignment rebuilt
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
 
 ### v3.4（2026-07-08）
 
@@ -265,3 +629,5 @@ v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→
 
 - Cost-Optimal MoA 重构：18 agent，工具层/意见层/融合层三层设计
 - 三重意见机制，模型分配重建
+
+</details>

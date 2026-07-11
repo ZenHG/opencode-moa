@@ -75,5 +75,13 @@ jobs:
           gh release view "$VER" >/dev/null 2>&1 && { echo "release 已存在"; exit 0; }
           git archive --format=zip    -o "opencode-moa-$VER.zip"    "$VER"
           git archive --format=tar.gz -o "opencode-moa-$VER.tar.gz" "$VER"
-          gh release create "$VER" --generate-notes --title "$VER" \
+          # extract this version's section (bilingual <details>) from CHANGELOG.md
+          awk -v ver="$VER" '
+            /^## +v/ {
+              if (p) exit
+              if ($0 ~ ver) p=1
+            }
+            p { print }
+          ' CHANGELOG.md > release-notes.md
+          gh release create "$VER" --title "$VER" --notes-file release-notes.md \
             "opencode-moa-$VER.zip" "opencode-moa-$VER.tar.gz"

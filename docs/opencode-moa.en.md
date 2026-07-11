@@ -38,8 +38,13 @@ Two authentication methods, choose one:
 > **Method A (recommended, AI writes directly):**
 >
 > 1. Ask the user: "Please enter your OpenCode Go API Key (created at opencode.ai/auth)."
-> 2. Add the provider config block below to the project `opencode.json`, filling the key directly into the `apiKey` field.
-> 3. Confirm completion and tell the user to restart OpenCode.
+> 2. Ensure the directory exists and write the **real key only** into `.opencode/local/opencode-go.key` (one line, no trailing newline/spaces; this file is git-ignored and never committed):
+>    ```bash
+>    mkdir -p .opencode/local
+>    printf '%s' "<THE_USER_KEY>" > .opencode/local/opencode-go.key
+>    ```
+> 3. Add the provider config block below to the project `opencode.json`, with `apiKey` set to `{file:.opencode/local/opencode-go.key}` (it **references** the key file — do **not** paste the raw key into `apiKey`).
+> 4. Confirm completion and tell the user to restart OpenCode.
 >
 > **Method B (placeholder, no key over chat):**
 >
@@ -53,7 +58,7 @@ Two authentication methods, choose one:
 
 **Method A (recommended, project-level by default): write the key directly in the config**
 
-**Written to the project `opencode.json` by default** — a self-contained deployment: provider + key both live inside the project, so even if the system-level directory is deleted/empty it has no effect; `apiKey` references a separate key file via `{file:}` (`.opencode/local/opencode-go.key`, excluded by `.gitignore`, not committed). Only switch to the system-level config (outside the repo; real paths per platform below under "System-level paths") when you want to **share one key across multiple projects**.
+**Written to the project `opencode.json` by default** — a self-contained deployment: provider + key both live inside the project, so even if the system-level directory is deleted/empty it has no effect. **You must create `.opencode/local/opencode-go.key` containing the real key first** (see Method A above); `apiKey` then references that file via `{file:}` (`.opencode/local/opencode-go.key`, excluded by `.gitignore`, not committed). Only switch to the system-level config (outside the repo; real paths per platform below under "System-level paths") when you want to **share one key across multiple projects**.
 
 > ⚠️ **`forceReasoning` is only needed for `@ai-sdk/openai` — this project defaults to `@ai-sdk/openai-compatible`, do not add it**: the reasoning passthrough regression in opencode >= 1.3.4 ([issue #20815](https://github.com/anomalyco/opencode/issues/20815)) **only affects custom providers with `"npm": "@ai-sdk/openai"`** (AI SDK v6 validates against a "known reasoning model list", and silently drops `reasoningEffort` if not in it). This issue is confirmed to **not affect `@ai-sdk/openai-compatible`** — `reasoningEffort` passes through correctly as `reasoning_effort`. This project's provider uses `openai-compatible`, so **no `forceReasoning` is needed or should be added** (adding it is a no-op and misleads later readers into thinking it's required). Only when you change `npm` to `@ai-sdk/openai` (e.g. to use the responses API) must you add `forceReasoning: true` in `options` (only needed at >=1.3.4; lower versions ignore the field).
 
@@ -114,7 +119,7 @@ Two authentication methods, choose one:
 **Verification:**
 
 - After restarting OpenCode → `/models` shows `opencode-go/deepseek-v4-flash` etc. (not marked `Free`).
-- `@工具人` responds normally.
+- `@tool-handler` responds normally.
 - `pwsh .opencode/tests/T0-static-verify.ps1` → all PASS (with system-level key, WARN also counts as pass, FAIL=0).
 
 > ⚠️ The file containing the real key (`.opencode/local/opencode-go.key`) is not tracked by git (`*.key` and `.opencode/local/` are excluded by `.gitignore`). The system-level `~/.config/opencode/` is outside the repo.
@@ -126,7 +131,7 @@ Two authentication methods, choose one:
 If neither `/connect` nor the config file set up the `opencode-go` provider, tool-layer calls will report `Upstream request failed`:
 
 ```
-工具人 (opencode-go/deepseek-v4-flash) failed
+tool-handler (opencode-go/deepseek-v4-flash) failed
   → auto retry once
   → still fails → ask user:
     A. configure provider then retry
@@ -134,13 +139,13 @@ If neither `/connect` nor the config file set up the `opencode-go` provider, too
     C. switch to free model (/models, pick a Free model)
 ```
 
-This fallback chain is already implemented in the doorman router's prompt. Execution continues only after the user chooses — it never silently routes past the ask.
+This fallback chain is already implemented in the concierge-router's prompt. Execution continues only after the user chooses — it never silently routes past the ask.
 
 ---
 
 By default opencode uses a single model from start to finish. Changing one character and designing a system architecture use the same prompt, same temperature, same context. No division of labor.
 
-This package deploys a **doorman + 18 specialized agents** Cost-Optimal MoA architecture. The core design principle is just one line:
+This package deploys a **concierge-router + 18 specialized agents** Cost-Optimal MoA architecture. The core design principle is just one line:
 
 > **Use flash and MiMo for grunt work, mid-tier for opinions, flagship for fusion.** Each model only does what it does best; never waste a single call.
 
@@ -167,32 +172,32 @@ Monthly quota comparison (OpenCode Go plan $10/month):
 
 > Help me write a Markdown-to-HTML function
 
-The doorman automatically: judges complexity → dispatches the tool agent to gather context → 3 mid-tier opinions in parallel → flagship fusion → flash implementation → pro QA. No agent switching, no model selection needed.
+The concierge-router automatically: judges complexity → dispatches the tool agent to gather context → 3 mid-tier opinions in parallel → flagship fusion → flash implementation → pro QA. No agent switching, no model selection needed.
 
 **Method 2: command-specified flow**
 
 | Command            | Scenario                          | Who does the work                |
 | ------------------ | --------------------------------- | -------------------------------- |
-| `/moa-quick`       | config change, translation, simple query | @闪电侠                       |
-| `/moa-medium`      | function module, bug fix, single-file refactor | 工程 + 创意 + 码农 → 融合  |
+| `/moa-quick`       | config change, translation, simple query | @swift                       |
+| `/moa-medium`      | function module, bug fix, single-file refactor | eng + creative + coder → fuse   |
 | `/moa-flagship`    | system architecture, large refactor | 3 flagship opinions → fuse → implement → QA |
-| `/moa-frontend`    | UI restore, CSS, screenshot fix   | 还原 + 逻辑 + 动效 → 总工        |
-| `/moa-describe`    | screenshot/image to text          | 视觉翻译官                        |
+| `/moa-frontend`    | UI restore, CSS, screenshot fix   | restore + logic + motion → lead      |
+| `/moa-describe`    | screenshot/image to text          | vision-translator                        |
 
 **Method 3: `@` invoke (usable independently)**
 
 Type `@` and pick an agent to talk directly. Each agent can be used independently:
 
-- `@工具人` / `@视觉翻译官` → read files / screenshots directly
-- `@中级·工程` → asks whether to gather material first; if you say "yes" it auto-calls the tool agent
-- `@中级·融合` → you give it the three solutions directly, it fuses and outputs (if you don't have three, it prompts you to use the doorman)
+- `@tool-handler` / `@vision-translator` → read files / screenshots directly
+- `@mid-eng` → asks whether to gather material first; if you say "yes" it auto-calls the tool agent
+- `@mid-fuse` → you give it the three solutions directly, it fuses and outputs (if you don't have three, it prompts you to use the concierge-router)
 
 ### Fallback chain
 
 ```
-工具人 (Flash) failed → immediate retry once
+tool-handler (Flash) failed → immediate retry once
   → retry succeeds → return normally
-  → retry fails → 工具人-mimo (MiMo) failed → immediate retry once
+  → retry fails → tool-handler-mimo (MiMo) failed → immediate retry once
     → retry succeeds → return normally
     → retry fails → ask user:
       A. wait a few minutes and retry
@@ -280,17 +285,22 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 
 OpenCode's `@` autocomplete menu has a **display line cap** (about 10 lines); agents beyond it get truncated and no longer shown. Sorting is by name, unrelated to category.
 
-Mitigation: set `hidden: true` for agents that **are only orchestrated by the doorman via the Task tool and the user almost never types `@` to call**. This field **only hides the `@` menu item, it does not block Task calls** (the doorman calls them via Task), so the fusion chain behavior is unaffected.
+Mitigation: set `hidden: true` for agents that **are only orchestrated by the concierge-router via the Task tool and the user almost never types `@` to call**. This field **only hides the `@` menu item, it does not block Task calls** (the concierge-router calls them via Task), so the fusion chain behavior is unaffected.
 
 **The 9 orchestration-layer agents set to `hidden: true`:**
 
-- 旗舰·架构 / 旗舰·规划 / 旗舰·工程 / 旗舰·融合 / 旗舰·实现 / 旗舰·质检 (flagship fusion chain, all doorman-driven)
-- 中级·融合, 前端·总工 (fusion layer, doorman-driven)
-- 工具人-mimo (tool agent fallback, doorman retry-chain driven)
+- flag-arch / flag-plan / flag-eng / flag-fuse / flag-impl / flag-qa (flagship fusion chain, all concierge-router-driven)
+- mid-fuse, fe-lead (fusion layer, concierge-router-driven)
+- tool-handler-mimo (tool agent fallback, concierge-router retry-chain driven)
 
-**Kept visible (users often `@` them):** 工具人, 视觉翻译官, 闪电侠, 中级·创意, 中级·工程, 中级·码农, 前端·还原, 前端·逻辑, 前端·动效, plus built-in explore / general. If still slightly over the cap, you can also hide 中级·融合 / 前端·总工 (they go through the doorman anyway).
+**Kept visible (users often `@` them):** tool-handler, vision-translator, swift, mid-creative, mid-eng, mid-coder, fe-restore, fe-logic, fe-motion, plus built-in explore / general. If still slightly over the cap, you can also hide mid-fuse / fe-lead (they go through the concierge-router anyway).
 
-> `hidden` only takes effect on `mode: subagent`; the primary agent (doorman router) is not in the `@` menu and needs no setting.
+> `hidden` only takes effect on `mode: subagent`; the primary agent (concierge-router) is not in the `@` menu and needs no setting.
+
+> 🔧 **Customization — nothing here is hard-bound.** Agent names and their `model` assignments are starting-point suggestions, not contracts:
+> - **Models**: change any agent's `model:` to any model/provider you have access to. The 9 `opencode-go` model IDs in the provider block are declarations only — swap them freely (e.g. drop Go and use your own Anthropic/OpenAI key).
+> - **Agent names**: you may rename any agent, but a rename is a global find-and-replace — you must update **every** reference or deployment breaks: the concierge-router's `task:` whitelist, `opencode.json`'s `permission.task` whitelist, and all cross-agent `@`/`task` calls. Miss one and that agent goes unreachable (task call denied).
+> - **The router itself**: keep `concierge-router` identical across its own frontmatter, the `task:` whitelist above, and `opencode.json`'s `default_agent`.
 
 ### Block 2: 19 Agent files
 
@@ -298,21 +308,21 @@ All agents are written to `.opencode/agents/`. Check existing files in the direc
 
 Write order:
 
-1. 门童路由员 (primary)
-2. 工具人 → 工具人-mimo → 闪电侠 → 视觉翻译官
-3. 中级·工程 → 中级·创意 → 中级·码农 → 中级·融合
-4. 旗舰·架构 → 旗舰·规划 → 旗舰·工程 → 旗舰·融合 → 旗舰·实现 → 旗舰·质检
-5. 前端·还原 → 前端·逻辑 → 前端·动效 → 前端·总工
+1. concierge-router (primary)
+2. tool-handler → tool-handler-mimo → swift → vision-translator
+3. mid-eng → mid-creative → mid-coder → mid-fuse
+4. flag-arch → flag-plan → flag-eng → flag-fuse → flag-impl → flag-qa
+5. fe-restore → fe-logic → fe-motion → fe-lead
 
 **Self-check**: `Get-ChildItem .opencode/agents/*.md` count should be 19.
 
-#### 门童路由员
+#### concierge-router
 
-`.opencode/agents/门童路由员.md`:
+`.opencode/agents/concierge-router.md`:
 
 ```markdown
 ---
-description: 路由分发入口，不产生任何代码/方案
+description: Entry-point router; dispatches by task complexity, produces no code or plans
 mode: primary
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
@@ -326,71 +336,71 @@ permission:
   "*": deny
   task:
     "*": deny
-    "工具人": allow
-    "工具人-mimo": allow
-    "闪电侠": allow
-    "视觉翻译官": allow
-    "中级·工程": allow
-    "中级·创意": allow
-    "中级·码农": allow
-    "中级·融合": allow
-    "旗舰·架构": allow
-    "旗舰·规划": allow
-    "旗舰·工程": allow
-    "旗舰·融合": allow
-    "旗舰·实现": allow
-    "旗舰·质检": allow
-    "前端·还原": allow
-    "前端·逻辑": allow
-    "前端·动效": allow
-    "前端·总工": allow
+    "tool-handler": allow
+    "tool-handler-mimo": allow
+    "swift": allow
+    "vision-translator": allow
+    "mid-eng": allow
+    "mid-creative": allow
+    "mid-coder": allow
+    "mid-fuse": allow
+    "flag-arch": allow
+    "flag-plan": allow
+    "flag-eng": allow
+    "flag-fuse": allow
+    "flag-impl": allow
+    "flag-qa": allow
+    "fe-restore": allow
+    "fe-logic": allow
+    "fe-motion": allow
+    "fe-lead": allow
 ---
 
-接收请求 → task(@工具人) 探测工具层可用性
-  → 成功 → 继续执行正常路由流程
-  → 失败 → task(@工具人-mimo)
-    → 成功 → 继续执行正常路由流程
-    → 失败 → 停止执行，ask 用户：
+Receive a request → task(@tool-handler) probes whether the tool layer is available
+  → available → continue normal routing
+  → unavailable → task(@tool-handler-mimo)
+    → available → continue normal routing
+    → unavailable → stop and ask the user:
 
-      "工具层暂时不可用（flash和MiMo都连不上）。
+      "The tool layer is temporarily down (Flash and MiMo both unreachable).
 
-       A. 等几分钟再试
-       B. 跳过工具层，直接调意见层（成本较高，约提高3到10倍）
-       C. 切换到免费模型处理
+       A. Wait a few minutes and retry
+       B. Skip the tool layer and call the opinion layer directly (costlier, ~3–10×)
+       C. Switch to a free model to proceed
 
-       ⚠️ 免费模型限制：
-       - 上下文窗口较小，复杂项目可能丢失信息
-       - 响应可能较慢，可能需要重试
-       - 限时免费，后续可能收费
+       ⚠️ Free-model limits:
+       - Smaller context window — may lose info on large projects
+       - Slower response, may need retry
+       - Free for now, may later be paid
 
-        提示：选 C 需要手动操作——用 `/models` 打开模型列表选免费模型（Win 桌面端亦可用 `Ctrl+'`），然后直接输入需求。"
+         Tip: option C is manual — open the model list with /models and pick a free model (Windows desktop client: also Ctrl+'), then type your request directly."
 
-      → 用户选 A → 30秒后重试工具人
-      → 用户选 B → 调用意见层（不传材料，意见层出方案）
-      → 用户选 C → 门童输出操作指引
+      → user picks A → retry tool-handler after 30s
+      → user picks B → call the opinion layer (no material passed; it returns a plan)
+      → user picks C → concierge-router prints the manual steps
 
-      ⚠️ 重要：当工具层失败时，必须停止执行后续流程，等待用户选择后再继续。不要跳过ask直接执行正常路由流程。
+      ⚠️ Important: when the tool layer fails, you MUST stop and wait for the user's choice before continuing. Do not skip the ask and run normal routing on your own.
 
-正常路由流程：
-小 → @闪电侠
-上下文 → @工具人，量大并行 @工具人-mimo
-截图 → +@视觉翻译官
-中 → @工具人 → 并行 @中级·工程 @中级·创意 @中级·码农 → @中级·融合
-大 → @工具人 → 并行 @旗舰·架构 @旗舰·规划 @旗舰·工程 → @旗舰·融合 → @旗舰·实现 → @旗舰·质检
-界面 → 并行 @前端·还原 @前端·逻辑 @前端·动效 → @前端·总工
+Normal routing:
+  small task → @swift
+  needs context → @tool-handler (parallel @tool-handler-mimo for large volume)
+  screenshot → +@vision-translator
+  medium → @tool-handler → parallel @mid-eng @mid-creative @mid-coder → @mid-fuse
+  large → @tool-handler → parallel @flag-arch @flag-plan @flag-eng → @flag-fuse → @flag-impl → @flag-qa
+  UI → parallel @fe-restore @fe-logic @fe-motion → @fe-lead
 
-最终结果（融合层输出）转发给用户。中间结果不暴露。
-某 agent 失败/超时 → 跳过，用已返回的结果继续。全部失败 → STUCK: 无法路由
-STUCK → 提示用户按 `Tab` 切换 plan agent（Win 桌面端亦可用 `Ctrl+.`）
+Forward the fused-layer output to the user; hide intermediate results.
+If an agent fails or times out → skip it and continue with what returned. All fail → STUCK: cannot route.
+STUCK → tell the user to press Tab to switch to the plan agent (Windows desktop client: also Ctrl+.).
 ```
 
-#### 工具人
+#### tool-handler
 
-`.opencode/agents/工具人.md`:
+`.opencode/agents/tool-handler.md`:
 
 ```markdown
 ---
-description: 读代码搜文件调MCP，不给意见
+description: Reads code, searches files, calls MCP; gives no opinions
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
@@ -401,23 +411,23 @@ permission:
   bash: deny
 ---
 
-只执行读取/搜索任务。返回文件路径+原文或摘要。不做分析不给方案。
+Performs read/search only. Returns file paths + original text or summaries. Does not analyze or propose solutions.
 
-失败 → 立即重试1次
-  → 重试成功 → 正常返回结果
-  → 重试失败 → 输出 ERROR类别: 原因，然后终止
-    ERROR_PROVIDER: provider返回502/503/timeout（连接瞬断）
-    ERROR_AUTH: 认证失败
-    ERROR_UNKNOWN: 其他错误
+On failure → retry once immediately
+  → retry succeeds → return normally
+  → retry fails → output ERROR category: cause, then terminate
+    ERROR_PROVIDER: provider returned 502/503/timeout (transient connection drop)
+    ERROR_AUTH: auth failure
+    ERROR_UNKNOWN: other error
 ```
 
-#### 工具人-mimo
+#### tool-handler-mimo
 
-`.opencode/agents/工具人-mimo.md`:
+`.opencode/agents/tool-handler-mimo.md`:
 
 ```markdown
 ---
-description: 工具人，MiMo模型保底
+description: Tool handler; MiMo model as fallback
 mode: subagent
 hidden: true
 model: opencode-go/mimo-v2.5
@@ -429,23 +439,23 @@ permission:
   bash: deny
 ---
 
-只执行读取/搜索任务。返回文件路径+原文或摘要。不做分析不给方案。
+Performs read/search only. Returns file paths + original text or summaries. Does not analyze or propose solutions.
 
-失败 → 立即重试1次
-  → 重试成功 → 正常返回结果
-  → 重试失败 → 输出 ERROR类别: 原因，然后终止
-    ERROR_PROVIDER: provider返回502/503/timeout（连接瞬断）
-    ERROR_AUTH: 认证失败
-    ERROR_UNKNOWN: 其他错误
+On failure → retry once immediately
+  → retry succeeds → return normally
+  → retry fails → output ERROR category: cause, then terminate
+    ERROR_PROVIDER: provider returned 502/503/timeout (transient connection drop)
+    ERROR_AUTH: auth failure
+    ERROR_UNKNOWN: other error
 ```
 
-#### 闪电侠
+#### swift
 
-`.opencode/agents/闪电侠.md`:
+`.opencode/agents/swift.md`:
 
 ```markdown
 ---
-description: 快速处理简单零碎任务
+description: Handles simple, small tasks quickly
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.2
@@ -456,21 +466,21 @@ permission:
   bash: allow
 ---
 
-专攻简单明确的小任务。直接出结果，不加开场白不改废话。
+Specializes in simple, well-defined small tasks. Delivers results directly — no preamble, no filler.
 
-超能力范围 → ESCALATE:
-失败 → 立即重试1次
-  → 重试成功 → 正常返回
-  → 重试失败 → 卡住 → STUCK: 说明原因
+Out of scope → ESCALATE:
+On failure → retry once immediately
+  → retry succeeds → return normally
+  → retry fails → stuck → STUCK: explain the cause
 ```
 
-#### 视觉翻译官
+#### vision-translator
 
-`.opencode/agents/视觉翻译官.md`:
+`.opencode/agents/vision-translator.md`:
 
 ```markdown
 ---
-description: 截图/UI图/报错图转文字描述
+description: Converts screenshots / UI images / error images to text descriptions
 mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.2
@@ -483,25 +493,25 @@ permission:
   webfetch: deny
 ---
 
-截图转精确文字描述：
-1. 整体布局
-2. 各区域内容
-3. 颜色风格、间距
-4. 报错：完整错误+堆栈
-5. 代码截图：逐行还原
+Convert screenshot to a precise text description:
+1. Overall layout
+2. Content of each region
+3. Color style, spacing
+4. Errors: full error + stack trace
+5. Code screenshots: line-by-line reconstruction
 
-失败 → 立即重试1次
-  → 重试成功 → 正常返回
-  → 重试失败 → 卡住 → STUCK: 说明原因
+On failure → retry once immediately
+  → retry succeeds → return normally
+  → retry fails → stuck → STUCK: explain the cause
 ```
 
-#### 中级·工程
+#### mid-eng
 
-`.opencode/agents/中级·工程.md`:
+`.opencode/agents/mid-eng.md`:
 
 ```markdown
 ---
-description: 工程视角方案
+description: Engineering-perspective plan
 mode: subagent
 model: opencode-go/minimax-m3
 temperature: 0.4
@@ -513,33 +523,33 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是 MoA 三意见之一（工程视角）。基于材料出方案。工程化、可维护、防御式编程。
+You are one of MoA's three opinion agents (engineering view). Produce plans from material. Engineering-minded, maintainable, defensive programming.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 
----记忆层---
-（核心思路+关键决策）
----方案---
+---memory layer---
+(core idea + key decisions)
+---plan---
 ```
 
-#### 中级·创意
+#### mid-creative
 
-`.opencode/agents/中级·创意.md`:
+`.opencode/agents/mid-creative.md`:
 
 ```markdown
 ---
-description: 创意视角方案
+description: Creative-perspective plan
 mode: subagent
 model: opencode-go/deepseek-v4-pro
 temperature: 0.5
@@ -551,33 +561,33 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是 MoA 三意见之一（创意视角）。故意和工程视角不同。思路新颖、差异化设计。
+You are one of MoA's three opinion agents (creative view). Deliberately differ from the engineering view. Novel, differentiated design.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 
----记忆层---
-（与工程方案的差异+独特优势）
----方案---
+---memory layer---
+(difference from & edge over the engineering plan)
+---plan---
 ```
 
-#### 中级·码农
+#### mid-coder
 
-`.opencode/agents/中级·码农.md`:
+`.opencode/agents/mid-coder.md`:
 
 ```markdown
 ---
-description: 实战视角方案
+description: Pragmatic-perspective plan
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.3
@@ -589,28 +599,28 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是 MoA 三意见之一（码农视角）。最快最直接。工程/创意过度设计时给出更简替代方案。
+You are one of MoA's three opinion agents (coder view). Fastest and most direct. When engineering/creative over-design, offer a simpler alternative.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
----记忆层---
-（与另两方案的核心差异）
----方案---
+---memory layer---
+(core difference from the other two plans)
+---plan---
 ```
 
-#### 中级·融合
+#### mid-fuse
 
-`.opencode/agents/中级·融合.md`:
+`.opencode/agents/mid-fuse.md`:
 
 ```markdown
 ---
-description: 三份方案取长补短输出一份
+description: Fuses three plans into one
 mode: subagent
 hidden: true
 model: opencode-go/kimi-k2.7-code
@@ -624,20 +634,20 @@ permission:
   webfetch: deny
 ---
 
-对比工程、创意、码农三份方案。共识保留、分歧取优、差异融合。只交一份。
+Compare the engineering, creative, and coder plans. Keep consensus, pick the best on divergence, fuse differences. Deliver only one.
 
-简述融合决策
----方案---
-融合后完整代码
+Briefly state the fusion decision
+---plan---
+Complete fused code
 ```
 
-#### 旗舰·架构
+#### flag-arch
 
-`.opencode/agents/旗舰·架构.md`:
+`.opencode/agents/flag-arch.md`:
 
 ```markdown
 ---
-description: 顶层架构设计
+description: Top-level architecture design
 mode: subagent
 hidden: true
 model: opencode-go/qwen3.7-max
@@ -650,32 +660,32 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是旗舰三重意见之一（架构）。只出方案不改文件。
+You are one of the flagship's three opinion agents (architecture). Plans only, do not edit files.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 
----架构设计---
-核心决策(≤5) | 技术选型+理由 | 模块划分+数据流 | 接口定义 | 风险+mitigation
+---ARCHITECTURE DESIGN---
+Core decisions (≤5) | Tech choices + reasons | Module split + data flow | Interface definitions | Risks + mitigation
 ```
 
-#### 旗舰·规划
+#### flag-plan
 
-`.opencode/agents/旗舰·规划.md`:
+`.opencode/agents/flag-plan.md`:
 
 ```markdown
 ---
-description: 结构化方案设计
+description: Structured plan design
 mode: subagent
 hidden: true
 model: opencode-go/glm-5.2
@@ -688,32 +698,32 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是旗舰三重意见之一（规划）。配额有限仅用于极复杂场景。
+You are one of the flagship's three opinion agents (planning). Limited quota, use only for very complex tasks.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 
----规划方案---
-问题域分析 | 方案结构 | 实施路径 | 风险与应对
+---PLAN---
+Problem-domain analysis | Plan structure | Execution path | Risks & responses
 ```
 
-#### 旗舰·工程
+#### flag-eng
 
-`.opencode/agents/旗舰·工程.md`:
+`.opencode/agents/flag-eng.md`:
 
 ```markdown
 ---
-description: 大规模实现视角方案
+description: Large-scale implementation plan
 mode: subagent
 hidden: true
 model: opencode-go/minimax-m3
@@ -726,32 +736,32 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是旗舰三重意见之一（工程）。多模块接口一致性、性能与开销、可观测性。
+You are one of the flagship's three opinion agents (engineering). Cross-module interface consistency, performance & overhead, observability.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 
----工程方案---
-实现要点 | 模块划分+接口 | 性能与容量 | 可观测性
+---ENGINEERING PLAN---
+Implementation points | Module split + interfaces | Performance & capacity | Observability
 ```
 
-#### 旗舰·融合
+#### flag-fuse
 
-`.opencode/agents/旗舰·融合.md`:
+`.opencode/agents/flag-fuse.md`:
 
 ```markdown
 ---
-description: 三份架构方案取长补短
+description: Fuses three architecture plans
 mode: subagent
 hidden: true
 model: opencode-go/kimi-k2.7-code
@@ -765,19 +775,19 @@ permission:
   webfetch: deny
 ---
 
-对比架构、规划、工程三份方案。共识保留、分歧注明、差异融合。只交一份。
+Compare the architecture, planning, and engineering plans. Keep consensus, note divergence, fuse differences. Deliver only one.
+Briefly state the fusion rationale
 
-简述融合决策理由
----融合方案---
+---FUSED PLAN---
 ```
 
-#### 旗舰·实现
+#### flag-impl
 
-`.opencode/agents/旗舰·实现.md`:
+`.opencode/agents/flag-impl.md`:
 
 ```markdown
 ---
-description: 按融合方案编码落地
+description: Implements the fused plan
 mode: subagent
 hidden: true
 model: opencode-go/deepseek-v4-flash
@@ -789,24 +799,24 @@ permission:
   bash: allow
 ---
 
-按融合方案编码。不改接口签名。方案歧义时汇报，不自作主张。
+Code per the fused plan. Do not change interface signatures. Report ambiguity, do not decide on your own.
 
-失败 → 立即重试1次
-  → 重试成功 → 正常返回
-  → 重试失败 → 卡住 → STUCK: 说明原因
+On failure → retry once immediately
+  → retry succeeds → return normally
+  → retry fails → stuck → STUCK: explain the cause
 
----实现说明---
-（范围+关键决策）
----代码---
+---IMPLEMENTATION NOTES---
+(scope + key decisions)
+---CODE---
 ```
 
-#### 旗舰·质检
+#### flag-qa
 
-`.opencode/agents/旗舰·质检.md`:
+`.opencode/agents/flag-qa.md`:
 
 ```markdown
 ---
-description: 对比方案和代码全维度验收
+description: Verifies plan vs code across all dimensions
 mode: subagent
 hidden: true
 model: opencode-go/deepseek-v4-pro
@@ -820,22 +830,22 @@ permission:
   webfetch: deny
 ---
 
-对比方案和代码。不输出代码。打回时指明具体问题。
+Compare plan and code. Do not output code. When rejecting, point to the specific issue.
 
-失败 → 立即重试1次
-  → 重试成功 → 正常返回
-  → 重试失败 → 卡住 → STUCK: 说明原因
+On failure → retry once immediately
+  → retry succeeds → return normally
+  → retry fails → stuck → STUCK: explain the cause
 
-通过 / 有条件通过 / 打回
+Pass / Conditional pass / Reject
 ```
 
-#### 前端·还原
+#### fe-restore
 
-`.opencode/agents/前端·还原.md`:
+`.opencode/agents/fe-restore.md`:
 
 ```markdown
 ---
-description: 像素级还原UI设计稿
+description: Pixel-perfect UI mockup reproduction
 mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.3
@@ -846,16 +856,16 @@ permission:
   bash: allow
 ---
 
-严格按布局、颜色、文字精确还原UI。组件化、响应式。输出完整代码。
+Faithfully reproduce the UI exactly by layout, color, and text. Component-based, responsive. Output complete code.
 ```
 
-#### 前端·逻辑
+#### fe-logic
 
-`.opencode/agents/前端·逻辑.md`:
+`.opencode/agents/fe-logic.md`:
 
 ```markdown
 ---
-description: 前端组件架构与状态管理方案
+description: Frontend component architecture & state plan
 mode: subagent
 model: opencode-go/qwen3.7-plus
 temperature: 0.4
@@ -867,32 +877,32 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是前端 MoA 三意见之一（逻辑）。组件架构、TS类型、状态管理、API接口。
+You are one of the frontend MoA's three opinion agents (logic). Component architecture, TS types, state management, API layer.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 
----逻辑方案---
-组件树+职责 | 类型定义 | 状态管理层 | API接口层
+---LOGIC PLAN---
+Component tree + responsibilities | Type definitions | State layer | API interface layer
 ```
 
-#### 前端·动效
+#### fe-motion
 
-`.opencode/agents/前端·动效.md`:
+`.opencode/agents/fe-motion.md`:
 
 ```markdown
 ---
-description: 前端交互体验与动效方案
+description: Frontend interaction & motion plan
 mode: subagent
 model: opencode-go/mimo-v2.5-pro
 temperature: 0.5
@@ -904,29 +914,29 @@ permission:
   read: deny
   webfetch: deny
   task:
-    "工具人": allow
-    "视觉翻译官": allow
+    "tool-handler": allow
+    "vision-translator": allow
 ---
 
-你是前端 MoA 三意见之一（动效）。在还原基础上加过渡动画和微交互。组件划分与还原/逻辑差异化。
+You are one of the frontend MoA's three opinion agents (motion). Add transition animations and micro-interactions on top of the reproduction. Component split differs from restore/logic.
 
-被 @ 直接调用且无上下文时：ask 用户是否先搜集材料。
-是 → task(@工具人) 获取材料 → 出方案
-否 → 直接出方案
+When directly @-called with no context: ask the user whether to gather material first.
+yes → task(@tool-handler) gathers material → produce plan
+no → produce plan directly
 
-被调用时如果没有材料（工具层失败的情况）：
-  → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
-  → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
-  → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+When called without material (tool layer failed):
+  → ask user: "No material received. Produce a plan directly, or wait for the tool layer to recover?"
+  → user picks direct → produce a plan from the requirement description (no code read, no MCP, pure logical reasoning)
+  → user picks wait → output "WAITING: waiting for tool layer to recover"
 ```
 
-#### 前端·总工
+#### fe-lead
 
-`.opencode/agents/前端·总工.md`:
+`.opencode/agents/fe-lead.md`:
 
 ```markdown
 ---
-description: 三份前端方案择优融合
+description: Picks / fuses the best of three frontend plans
 mode: subagent
 hidden: true
 model: opencode-go/kimi-k2.7-code
@@ -940,9 +950,9 @@ permission:
   webfetch: deny
 ---
 
-对比还原、逻辑、动效三份代码。选最优或融合。不得模棱两可。三份都有缺陷→出修正版。
+Compare the restore, logic, and motion code. Pick the best or fuse. No ambiguity allowed. If all three are flawed, produce a corrected version.
 
-评分(布局/代码质量/交互/视觉/TS) | 对比结论 | ---最终代码---
+Scores (layout/code quality/interaction/visual/TS) | Comparison verdict | ---FINAL CODE---
 ```
 
 ---
@@ -956,59 +966,59 @@ One file per command in `.opencode/commands/`. File names share the `moa-` prefi
 ```markdown
 # moa-quick.md
 ---
-description: 简单零碎任务一步到位
+description: One-shot for simple, small tasks
 ---
-@闪电侠 处理以下需求：
+@swift handle the following request:
 $ARGUMENTS
 ```
 
 ```markdown
 # moa-frontend.md
 ---
-description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
+description: Frontend triple MoA — restore + logic + motion → lead picks best
 ---
-执行前端三重 MoA 处理以下需求：
+Run the frontend triple MoA on the following request:
 $ARGUMENTS
-流程：
-1. 涉及截图则先 @视觉翻译官
-2. @前端·还原 + @前端·逻辑 + @前端·动效 并行出方案
-3. @前端·总工 择优融合
+Flow:
+1. if a screenshot is involved, first @vision-translator
+2. @fe-restore + @fe-logic + @fe-motion produce plans in parallel
+3. @fe-lead picks the best / fuses
 ```
 
 ```markdown
-# moa-Medium.md
+# moa-medium.md
 ---
-description: 中级三重 MoA——3 意见并行 + 1 融合
+description: Mid-tier triple MoA — 3 opinions in parallel + 1 fuse
 ---
-执行中级三重 MoA 处理以下需求：
+Run the mid-tier triple MoA on the following request:
 $ARGUMENTS
-流程：
-1. @工具人 + @视觉翻译官 搜集材料
-2. @中级·工程 + @中级·创意 + @中级·码农 并行出方案
-3. @中级·融合 融合输出
+Flow:
+1. @tool-handler + @vision-translator gather material
+2. @mid-eng + @mid-creative + @mid-coder produce plans in parallel
+3. @mid-fuse fuses and outputs
 ```
 
 ```markdown
 # moa-flagship.md
 ---
-description: 旗舰三重 MoA——3 架构意见 + 融合 + 实现 + 质检
+description: Flagship triple MoA — 3 architecture opinions + fuse + implement + QA
 ---
-执行旗舰三重 MoA 处理以下需求：
+Run the flagship triple MoA on the following request:
 $ARGUMENTS
-流程：
-1. @工具人 + @视觉翻译官 搜集材料
-2. @旗舰·架构 + @旗舰·规划 + @旗舰·工程 并行出架构方案
-3. @旗舰·融合 融合
-4. （按需求）@旗舰·实现 编码
-5. @旗舰·质检 验收
+Flow:
+1. @tool-handler + @vision-translator gather material
+2. @flag-arch + @flag-plan + @flag-eng produce architecture plans in parallel
+3. @flag-fuse fuses
+4. (if needed) @flag-impl codes
+5. @flag-qa verifies
 ```
 
 ```markdown
 # moa-describe.md
 ---
-description: 截图/图片转文字描述
+description: Screenshot/image to text description
 ---
-@视觉翻译官 分析以下内容：
+@vision-translator analyze the following:
 $ARGUMENTS
 ```
 
@@ -1023,50 +1033,50 @@ One directory per skill, with a `SKILL.md` inside.
 ```markdown
 # code-review-moa
 ---
-description: 中级 MoA 代码评审——双意见 + 融合
+description: Mid-tier MoA code review — two opinions + fuse
 ---
 <flow>
-1. task(@工具人) 读代码
-2. task(@中级·工程) + task(@中级·创意) 并行出评审意见
-3. task(@中级·融合) 融合
+1. task(@tool-handler) reads code
+2. task(@mid-eng) + task(@mid-creative) produce review opinions in parallel
+3. task(@mid-fuse) fuses
 </flow>
 <rules>
-- 单模块/函数级别
-- 输出：融合理由 + 完整代码
+- single-module / function level
+- output: fusion rationale + complete code
 </rules>
 ```
 
 ```markdown
 # architecture-moa
 ---
-description: 旗舰 MoA——三重架构意见 → 融合 → 实现 → 质检
+description: Flagship MoA — three architecture opinions → fuse → implement → QA
 ---
 <flow>
-1. task(@工具人) + task(@视觉翻译官) 搜集材料
-2. task(@旗舰·架构) + task(@旗舰·规划) + task(@旗舰·工程) 并行
-3. task(@旗舰·融合) 融合
-4. task(@旗舰·实现) 编码
-5. task(@旗舰·质检) 验收
+1. task(@tool-handler) + task(@vision-translator) gather material
+2. task(@flag-arch) + task(@flag-plan) + task(@flag-eng) in parallel
+3. task(@flag-fuse) fuses
+4. task(@flag-impl) codes
+5. task(@flag-qa) verifies
 </flow>
 <rules>
-- 系统架构或多模块设计
-- 输出：质检报告
+- system architecture or multi-module design
+- output: QA report
 </rules>
 ```
 
 ```markdown
 # frontend-moa
 ---
-description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
+description: Frontend triple MoA — restore + logic + motion → lead picks best
 ---
 <flow>
-1. 有截图则 task(@视觉翻译官)
-2. task(@前端·还原) + task(@前端·逻辑) + task(@前端·动效) 并行
-3. task(@前端·总工) 择优融合
+1. if screenshot, task(@vision-translator)
+2. task(@fe-restore) + task(@fe-logic) + task(@fe-motion) in parallel
+3. task(@fe-lead) picks the best / fuses
 </flow>
 <rules>
-- UI 实现、截图还原、CSS 修复
-- 输出：对比结论 + 最终代码
+- UI implementation, screenshot reproduction, CSS fix
+- output: comparison verdict + final code
 </rules>
 ```
 
@@ -1087,7 +1097,7 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "门童路由员",
+  "default_agent": "concierge-router",
   "permission": {
     "*": "ask",
     "bash": {
@@ -1106,24 +1116,24 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     },
     "task": {
       "*": "deny",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "闪电侠": "allow",
-      "视觉翻译官": "allow",
-      "中级·工程": "allow",
-      "中级·创意": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·质检": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow"
+      "tool-handler": "allow",
+      "tool-handler-mimo": "allow",
+      "swift": "allow",
+      "vision-translator": "allow",
+      "mid-eng": "allow",
+      "mid-creative": "allow",
+      "mid-coder": "allow",
+      "mid-fuse": "allow",
+      "flag-arch": "allow",
+      "flag-plan": "allow",
+      "flag-eng": "allow",
+      "flag-fuse": "allow",
+      "flag-impl": "allow",
+      "flag-qa": "allow",
+      "fe-restore": "allow",
+      "fe-logic": "allow",
+      "fe-motion": "allow",
+      "fe-lead": "allow"
     },
     "webfetch": "allow",
     "read": {
@@ -1134,56 +1144,56 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     }
   },
   "agent": {
-    "中级·工程": {
+    "mid-eng": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "中级·创意": {
+    "mid-creative": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "中级·码农": {
+    "mid-coder": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "旗舰·架构": {
+    "flag-arch": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "旗舰·规划": {
+    "flag-plan": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "旗舰·工程": {
+    "flag-eng": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "前端·逻辑": {
+    "fe-logic": {
       "permission": {
         "*": "ask",
         "task": "allow",
         "*_*": "deny"
       }
     },
-    "前端·动效": {
+    "fe-motion": {
       "permission": {
         "*": "ask",
         "task": "allow",
@@ -1227,7 +1237,7 @@ Check "commands == 5 (got $($cmds.Count))" ($cmds.Count -eq 5)
 
 $needSkills = 'code-review-moa','architecture-moa','frontend-moa'
 $missing = $needSkills | Where-Object { -not (Test-Path ".opencode/skills/$_/SKILL.md") }
-Check "3 个指定 skill 存在(缺: $($missing -join ','))" ($missing.Count -eq 0)
+Check "3 required skills exist (missing: $($missing -join ','))" ($missing.Count -eq 0)
 
 Check "opencode.json exists" (Test-Path opencode.json)
 
@@ -1241,7 +1251,7 @@ $provRaw = ($cfgFiles | ForEach-Object { Get-Content $_ -Raw -ErrorAction Silent
 $hasProv = $provRaw -match '"opencode-go"'
 $hasRealKey = ($provRaw -match '"apiKey"\s*:\s*"(sk-[^"]+)"') -or ($provRaw -match '"apiKey"\s*:\s*"\{file:[^"]+\}"')
 $hasPlaceholder = ($provRaw -match '"apiKey"\s*:\s*"<YOUR_GO_API_KEY>"') -or ($provRaw -match '"apiKey"\s*:\s*""')
-Check "provider.opencode-go 已注册且 apiKey 真实(非占位符/空)" ($hasProv -and $hasRealKey -and -not $hasPlaceholder)
+Check "provider.opencode-go registered and apiKey real (not placeholder/empty)" ($hasProv -and $hasRealKey -and -not $hasPlaceholder)
 
 $re = (Select-String -Path .opencode/agents/*.md -Pattern 'reasoningEffort:' -ErrorAction SilentlyContinue).Count
 Check "reasoningEffort x19 (got $re)" ($re -eq 19)
@@ -1249,7 +1259,7 @@ Check "reasoningEffort x19 (got $re)" ($re -eq 19)
 $task = (Select-String -Path .opencode/agents/*.md -Pattern 'task:' -ErrorAction SilentlyContinue).Count
 Check "task: x9 (got $task)" ($task -eq 9)
 
-Write-Host "`n== 结果：PASS=$pass FAIL=$fail WARN=$warn =="
+Write-Host "`n== Result: PASS=$pass FAIL=$fail WARN=$warn =="
 if ($fail -gt 0) { exit 1 } else { exit 0 }
 ```
 
@@ -1281,7 +1291,7 @@ grep "task:" .opencode/agents/*.md 2>/dev/null | wc -l
 ls .opencode/commands/moa-*.md 2>/dev/null | wc -l
 ```
 
-Expected: `reasoningEffort` appears 19 times (all agents), `task:` appears 9 times (doorman + 8 opinion layers), `moa-` command filenames match 5.
+Expected: `reasoningEffort` appears 19 times (all agents), `task:` appears 9 times (concierge-router + 8 opinion layers), `moa-` command filenames match 5.
 
 **Windows (PowerShell, native):**
 
@@ -1299,14 +1309,14 @@ Write-Host "=== content check ==="
 (Get-ChildItem .opencode/commands/moa-*.md -ErrorAction SilentlyContinue).Count
 ```
 
-Expected same as above. If `Select-String` count is high, it's because `task:` appears in both the doorman and opinion-layer frontmatter — normal, total is 9 (doorman 1 + 8 opinion layers each 1).
+Expected same as above. If `Select-String` count is high, it's because `task:` appears in both the concierge-router and opinion-layer frontmatter — normal, total is 9 (concierge-router 1 + 8 opinion layers each 1).
 
 > **Deployment complete**: after all the above verifications pass, **restart opencode to apply all config**.
 
 ### How to tell deployment succeeded
 
-1. After restarting OpenCode, press `Tab` to cycle agents (Windows desktop client: `Ctrl+.` also works) and see "门童路由员"
-2. Type `@工具人` and it responds (if no response, check whether the key in `.opencode/local/opencode-go.key` is correct)
+1. After restarting OpenCode, press `Tab` to cycle agents (Windows desktop client: `Ctrl+.` also works) and see "concierge-router"
+2. Type `@tool-handler` and it responds (if no response, check whether the key in `.opencode/local/opencode-go.key` is correct)
 3. Run the verification script: `pwsh .opencode/tests/T0-static-verify.ps1`, expected all PASS (FAIL=0)
 
 ### One-click rollback
@@ -1341,15 +1351,15 @@ A: Method 1 is most convenient — drag this file into the chat box and let the 
 
 ### Usage
 
-**Q: Can't see "门童路由员"?**
+**Q: Can't see "concierge-router"?**
 A: Check three points:
 
 1. Is `opencode.json` at the project root (not a subfolder)?
 2. Are there 19 .md files under `.opencode/agents/`?
 3. After restarting OpenCode, press `Tab` to cycle agents (Windows desktop client: `Ctrl+.` also works).
 
-**Q: `@工具人` not responding?**
-A: Confirm `.opencode/agents/工具人.md` exists and the frontmatter format is correct.
+**Q: `@tool-handler` not responding?**
+A: Confirm `.opencode/agents/tool-handler.md` exists and the frontmatter format is correct.
 
 **Q: Error "model not found"?**
 A: Wrong model ID or no OpenCode Go subscription. Run `/models` to check the model list.
@@ -1367,7 +1377,7 @@ A: Press `Tab` to switch (Windows desktop client: `Ctrl+.` also works), or type 
 A: Just change the agent's `model` field:
 
 ```yaml
-# .opencode/agents/中级·工程.md
+# .opencode/agents/mid-eng.md
 model: anthropic/claude-sonnet-4-20250514
 ```
 
@@ -1412,7 +1422,7 @@ Divided into two categories by "can it run after deploy". **Most cases are "file
 | System-level `opencode.json` deleted / dir empty, and project has no provider | Provider only in the deleted file → no provider resolvable anywhere                                                | Rebuild provider (default write project `opencode.json`, or system-level), restart; T0 now `FAIL`s |
 | Same dir has both `opencode.json` and `opencode.jsonc`        | Official priority undefined for dual files, contents may conflict                                                  | **Keep only one** per dir, and make the kept one contain a valid `opencode-go` provider + real key |
 | `apiKey` is `<YOUR_GO_API_KEY>` placeholder / empty           | Looks configured but actually 401/403                                                                               | Replace with real key; T0 now `FAIL`s                                                            |
-| `@工具人` no response, log 401/403                             | Key file path wrong / placeholder not replaced / key expired                                                       | Check `.opencode/local/opencode-go.key` actually exists and content correct                      |
+| `@tool-handler` no response, log 401/403                             | Key file path wrong / placeholder not replaced / key expired                                                       | Check `.opencode/local/opencode-go.key` actually exists and content correct                      |
 | An agent suddenly `Upstream request failed` + log has `400`   | `reasoningEffort` value illegal (uppercase / `max` on unsupported model / `extreme` etc.)                          | Fix to lowercase valid value per matrix below                                                    |
 | Reasoning strength "feels unchanged" (always default)         | ①`reasoningEffort` uppercase/invalid value 400-downgraded to default; ②model doesn't support chosen tier 400; ③`npm` changed to `@ai-sdk/openai` without `forceReasoning` (only this case needs it, and >=1.3.4); ④opencode too old to support agent-level `reasoningEffort`; ⑤manually switched "variant/reasoning tier" in the TUI, the `model.json` cache's variant overrides the agent's `reasoningEffort` (cross-platform; WSL uses the Linux path; clear cache or edit agent field and restart to recover) | Fix to lowercase valid value per matrix; only if truly using `@ai-sdk/openai` add `forceReasoning: true` and restart (this project defaults to `openai-compatible`, not needed); if ⑤: delete the model selection cache (`~/.local/state/opencode/model.json` on Linux/macOS/WSL, `%USERPROFILE%\.local\state\opencode\model.json` on Windows; on Unix governed by `XDG_STATE_HOME`, can be redirected) or edit the agent's `reasoningEffort` field and restart |
 | Doorman orchestration `task` call rejected                   | `opencode.json`'s `permission.task` whitelist missing agent name / Chinese name/· mismatch                          | Complete whitelist per Block 5                                                                   |
@@ -1444,10 +1454,10 @@ Optional. Does not affect remote models. Multiple local models can be enabled at
     "opencode-go": { /* original config */ },
     "ollama-local": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama (本地)",
+      "name": "Ollama (local)",
       "options": { "baseURL": "http://localhost:11434/v1" },
       "models": {
-        "qwen3-coder": { "name": "Qwen3-Coder (本地)" }
+        "qwen3-coder": { "name": "Qwen3-Coder (local)" }
       }
     }
   }
@@ -1462,10 +1472,10 @@ Optional. Does not affect remote models. Multiple local models can be enabled at
     "opencode-go": { /* original config */ },
     "lmstudio-local": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "LM Studio (本地)",
+      "name": "LM Studio (local)",
       "options": { "baseURL": "http://127.0.0.1:1234/v1" },
       "models": {
-        "google/gemma-3n-e4b": { "name": "Gemma 3n (本地)" }
+        "google/gemma-3n-e4b": { "name": "Gemma 3n (local)" }
       }
     }
   }
@@ -1475,7 +1485,7 @@ Optional. Does not affect remote models. Multiple local models can be enabled at
 ### Mixed use
 
 ```yaml
-# .opencode/agents/中级·码农.md
+# .opencode/agents/mid-coder.md
 model: ollama-local/qwen3-coder
 ```
 
@@ -1488,9 +1498,9 @@ model: ollama-local/qwen3-coder
 | Global catch-all     | opencode.json                            | Unexplicitly declared tool → "ask" popup |
 | Agent permission     | Each agent file frontmatter              | Tool-level allow/deny hard limit        |
 | MCP permission isolation | opencode.json agent.*.permission     | `*_*: deny` disables opinion-layer MCP  |
-| Task permission whitelist | opencode.json + doorman frontmatter  | Can only task specified agents          |
-| Fallback chain       | Tool agent / doorman prompt              | Quick retry → ask user → downgrade      |
+| Task permission whitelist | opencode.json + concierge-router frontmatter  | Can only task specified agents          |
+| Fallback chain       | Tool agent / concierge-router prompt              | Quick retry → ask user → downgrade      |
 
 ---
 
-> **Doc version**: v0.0.6 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+> **Doc version**: v0.0.8 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
