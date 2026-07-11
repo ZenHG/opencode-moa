@@ -8,6 +8,8 @@
 
 > **One conversation entry point, 19 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship), code quality significantly up.**
 
+![OpenCode MoA](https://raw.githubusercontent.com/ZenHG/opencode-moa/master/docs/opengraph.png)
+
 OpenCode MoA is a Mixture of Agents configuration package for OpenCode. It lets multiple models **think about the same problem simultaneously**, then fuse into an output quality a single model can't reach. You don't need to switch tools, write code, or have an API quota — just drop the files into your project and restart OpenCode.
 
 **19 agents · 5 commands · 3 skills · 30-second deploy**
@@ -28,9 +30,9 @@ By default OpenCode uses a single model from start to finish. Changing one chara
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
-    ├─ flag-plan (GLM)        ─── plan from the PM's view
-    ├─ flag-eng (MiniMax M3) ─── plan from the implementer's view
-    └─ flag-fuse (Kimi)       ─── take the best of each, one optimal solution
+    ├─ flag-plan (GLM        ) ─── plan from the PM's view
+    ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
+    └─ flag-fuse (Kimi       ) ─── take the best of each, one optimal solution
 ```
 
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
@@ -141,13 +143,13 @@ rm -rf your-project/.opencode/
 
 **Learn nothing — just talk.** The concierge-router automatically judges task complexity and dispatches the corresponding agent chain.
 
-| What you say                         | What the doorman does                                            | Agents used                |
-| ------------------------------------ | ---------------------------------------------------------------- | -------------------------- |
-| "rename this variable"               | judged as a simple task                                          | swift (Flash)                |
+| What you say                         | What the doorman does                                            | Agents used                         |
+| ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------- |
+| "rename this variable"               | judged as a simple task                                          | swift (Flash)                       |
 | "write a user auth module"           | tool layer gathers → 3 mid-tier parallel → fuse                  | tool-handler + mid-tier trio + fuse |
-| "design a microservice architecture" | tool layer gathers → 3 flagship parallel → fuse → implement → QA | full-chain 6 agents        |
-| "restore this screenshot's UI"       | 3 frontend experts parallel → lead picks best                    | frontend quartet           |
-| message with screenshot              | vision-translator converts to text → normal routing                          | vision-translator                      |
+| "design a microservice architecture" | tool layer gathers → 3 flagship parallel → fuse → implement → QA | full-chain 6 agents                 |
+| "restore this screenshot's UI"       | 3 frontend experts parallel → lead picks best                    | frontend quartet                    |
+| message with screenshot              | vision-translator converts to text → normal routing              | vision-translator                   |
 
 **Direct `@` calls:**
 
@@ -174,9 +176,9 @@ rm -rf your-project/.opencode/
                               │
                 ┌─────────────┼─────────────┐
                 ▼             ▼             ▼
-             Tool layer      Opinion layer      Fusion layer
-          Flash + MiMo    3 parallel opinions   take the best
-          (~80% calls)   (~18% calls)         (~2% calls)
+             Tool layer     Opinion layer       Fusion layer
+             Flash + MiMo   3 parallel opinions take the best
+             (~80% calls)   (~18% calls)        (~2% calls)
 ```
 
 **Tool layer** (Flash + MiMo) — read code, search files, screenshot to text. Cheap and fast, call freely.
@@ -190,31 +192,31 @@ rm -rf your-project/.opencode/
 ```
 concierge-router (Flash)
  │
- ├── Tool layer ──────────────────────────────────────
- │   tool-handler      (Flash)        read code, search files
- │   tool-handler-mimo (MiMo)         reliable file read (fallback + parallel)
- │   swift      (Flash)        simple tasks in one shot
- │   vision-translator   (MiMo)        screenshot/UI/error image to text
+ ├── Tool layer ─────────────────────────────────────────────
+ │   tool-handler     (Flash       ) read code, search files
+ │   tool-handler-mimo (MiMo        ) reliable file read (fallback + parallel)
+ │   swift            (Flash       ) simple tasks in one shot
+ │   vision-translator (MiMo        ) screenshot/UI/error image to text
  │
- ├── Mid-tier opinion layer ──────────────────────────
- │   mid-eng    (MiniMax M3)   engineering view
- │   mid-creative    (DeepSeek Pro) creative view
- │   mid-coder    (Flash)        pragmatic view
- │   mid-fuse    (Kimi)         fuse three plans
+ ├── Mid-tier opinion layer ─────────────────────────────────────────────
+ │   mid-eng          (MiniMax M3  ) engineering view
+ │   mid-creative     (DeepSeek Pro) creative view
+ │   mid-coder        (Flash       ) pragmatic view
+ │   mid-fuse         (Kimi        ) fuse three plans
  │
- ├── Flagship opinion layer ──────────────────────────
- │   flag-arch    (Qwen3.7 Max)   top-level architecture
- │   flag-plan    (GLM)          structured planning
- │   flag-eng    (MiniMax M3)   large-scale implementation
- │   flag-fuse    (Kimi)         fuse three architecture plans
- │   flag-impl    (Flash)        implement per fused plan
- │   flag-qa    (DeepSeek Pro) plan vs code acceptance
+ ├── Flagship opinion layer ─────────────────────────────────────────────
+ │   flag-arch        (Qwen3.7 Max ) top-level architecture
+ │   flag-plan        (GLM         ) structured planning
+ │   flag-eng         (MiniMax M3  ) large-scale implementation
+ │   flag-fuse        (Kimi        ) fuse three architecture plans
+ │   flag-impl        (Flash       ) implement per fused plan
+ │   flag-qa          (DeepSeek Pro) plan vs code acceptance
  │
- └── Frontend opinion layer ──────────────────────────
-      fe-restore    (MiMo)         pixel-perfect UI restore
-      fe-logic    (Qwen3.7 Plus)  component architecture & state mgmt
-      fe-motion    (MiMo-Pro)     interaction & motion
-      fe-lead    (Kimi)         pick best of three frontend plans
+ └── Frontend opinion layer ─────────────────────────────────────────────
+     fe-restore       (MiMo        ) pixel-perfect UI restore
+     fe-logic         (Qwen3.7 Plus) component architecture & state mgmt
+     fe-motion        (MiMo-Pro    ) interaction & motion
+     fe-lead          (Kimi        ) pick best of three frontend plans
 ```
 
 ## Fault tolerance design
