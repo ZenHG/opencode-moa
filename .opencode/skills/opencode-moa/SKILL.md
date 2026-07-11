@@ -27,7 +27,7 @@ read(docs/opencode-moa.md)
 执行部署手册中 Block 0 的环境检查脚本：
 
 - 检测 opencode 运行模式（桌面版/CLI）
-- 确认 opencode 版本 >= 1.1.1
+- 确认 opencode 版本 >= 1.3.4
 
 ### Step 2：创建目录（Block 1）
 
@@ -91,12 +91,12 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 用户执行以下验证：
 
 1. 重启 OpenCode
-2. 按 `Ctrl+.` 切换 agent，看到「门童路由员」
+2. 按 `Tab` 循环切换 agent（Win 桌面端亦可用 `Ctrl+.`），看到「门童路由员」
 3. 输入 `@工具人` 能正常响应
-4. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期 41 PASS
+4. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期全部 PASS / FAIL=0（系统级 key 时 WARN 也算过）
 
 ## 安全约束
 
 - **不修改**：用户已有的 opencode.json 其他字段
 - **不覆盖**：同名 agent/command/skill 文件时先 ask
-- **不上传**：API key、.env、user_config.json 等私密文件
+- **不上传**：API key、.env 等私密文件

@@ -227,4 +227,4 @@ Write-Ok "Config: ok"
 
 Write-Host "`n=== 安装完成 ===" -ForegroundColor Cyan
 Write-Host "重启 OpenCode 使配置生效。" -ForegroundColor Yellow
-Write-Host "按 Ctrl+. 切换到「门童路由员」开始使用。" -ForegroundColor Yellow
+Write-Host "按 Tab 循环切换 agent（Win 桌面端亦可用 Ctrl+.）切换到「门童路由员」开始使用。" -ForegroundColor Yellow

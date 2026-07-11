@@ -10,6 +10,15 @@
 
 ---
 
+## v0.0.7（2026-07-11）
+
+跨平台键位与版本门槛一致性收口（v0.0.6 文档修正的延伸，覆盖尚未对齐的代码 / 配置 / agent 文件）。
+
+- `.opencode/skills/opencode-moa/SKILL.md`：环境检查版本门槛 `>= 1.1.1` → `>= 1.3.4`；部署成功判定「`Ctrl+.` 切 agent」→ 跨平台「`Tab` 循环（Win 桌面端亦可用 `Ctrl+.`）」；验证预期「41 PASS」→「全部 PASS / FAIL=0（系统级 key 时 WARN 也算过）」；「不上传」清单移除已不生成的 `user_config.json`。
+- `install.sh` / `install.ps1`：安装完成提示的切换键由写死的 `Ctrl+.` 改为跨平台「`Tab`（Win 桌面端亦可用 `Ctrl+.`）」。
+- `.opencode/agents/门童路由员.md`：免费模型切换指引 `Ctrl+.`（实为 agent 键，与键位约定冲突）→ `/models` 选 Free 标签（Win 桌面端 `Ctrl+'`）；plan agent 切换 `Ctrl+.` → 跨平台「`Tab`（Win 桌面端 `Ctrl+.`）」。
+- `.github/ISSUE_TEMPLATE/bug-report.yml`：版本占位符 `1.1.1` → `1.3.4`。
+
 ## v0.0.6（2026-07-11）
 
 本期 = 手册 `forceReasoning` 前提纠正 + 多语言补全（en 由骨架升至完整）+ README 重构。
