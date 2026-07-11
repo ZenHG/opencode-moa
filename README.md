@@ -8,11 +8,13 @@
 
 > **One conversation entry point, 19 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship), code quality significantly up.**
 
-![OpenCode MoA](https://raw.githubusercontent.com/ZenHG/opencode-moa/master/docs/opengraph.png)
+![OpenCode MoA](docs/opengraph.png)
 
 OpenCode MoA is a Mixture of Agents configuration package for OpenCode. It lets multiple models **think about the same problem simultaneously**, then fuse into an output quality a single model can't reach. You don't need to switch tools, write code, or have an API quota — just drop the files into your project and restart OpenCode.
 
 **19 agents · 5 commands · 3 skills · 30-second deploy**
+
+---
 
 ## Why do you need this?
 
@@ -36,6 +38,8 @@ You: help me design a message queue solution
 ```
 
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
+
+---
 
 ## Prerequisites
 
@@ -72,6 +76,8 @@ Three independent plans from three different models naturally form a "consensus 
 > - Windows `%USERPROFILE%\.config\opencode\opencode.json` (**not** `%APPDATA%\opencode`)
 >   Wrong system-level path leads to "deployment succeeds but all agents can't connect".
 
+---
+
 ## 30-second deploy
 
 ### Method 1: AI auto-deploy (recommended)
@@ -105,7 +111,7 @@ bash ../opencode-moa/install.sh
 ```
 
 > The install script auto-backs up your original `opencode.json`, only merging MoA config while keeping your provider and API key.
->
+> 
 > Note: this method copies the repo's bundled `.opencode/` as-is — its agents have **Chinese display names**. If you want English-named agents (so you can `@english-name`), use Method 1 instead.
 
 ### Method 3: manual install
@@ -123,7 +129,7 @@ cp -r opencode-moa/.opencode/ your-project/
 ```
 
 > ⚠️ **Do not** use `cat >>` to append — it corrupts JSON format. **Do not** replace directly — you'll lose your API key.
->
+> 
 > Note: this method copies the repo's bundled `.opencode/` as-is — its agents have **Chinese display names**. If you want English-named agents (so you can `@english-name`), use Method 1 instead.
 
 ### How to tell deployment succeeded?
@@ -138,6 +144,8 @@ cp -r opencode-moa/.opencode/ your-project/
 rm -rf your-project/.opencode/
 # manually restore your opencode.json (the install script auto-backs up a .bak file)
 ```
+
+---
 
 ## How to use?
 
@@ -169,13 +177,15 @@ rm -rf your-project/.opencode/
 | `/moa-frontend` | UI restore, CSS, screenshot fix                |
 | `/moa-describe` | screenshot/image to text                       |
 
+---
+
 ## Architecture
 
 ```
-                       concierge-router (Flash)
-                              │
-                ┌─────────────┼─────────────┐
-                ▼             ▼             ▼
+                      concierge-router (Flash)
+                                 │
+                ┌────────────────┼─────────────────┐
+                ▼                ▼                 ▼
              Tool layer     Opinion layer       Fusion layer
              Flash + MiMo   3 parallel opinions take the best
              (~80% calls)   (~18% calls)        (~2% calls)
@@ -186,6 +196,8 @@ rm -rf your-project/.opencode/
 **Opinion layer** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — plans from different perspectives. Three opinions naturally form a "consensus + divergence" structure.
 
 **Fusion layer** (Kimi / Qwen-Max / GLM) — keep consensus, take the best on divergence. Used only where it matters.
+
+---
 
 ## 19 Agents
 
@@ -218,6 +230,8 @@ concierge-router (Flash)
      fe-motion        (MiMo-Pro    ) interaction & motion
      fe-lead          (Kimi        ) pick best of three frontend plans
 ```
+
+---
 
 ## Fault tolerance design
 
@@ -260,6 +274,8 @@ The tool layer outputs a clear error category on failure, instead of blindly ret
 - `ERROR_PROVIDER` — server 502/503/timeout
 - `ERROR_AUTH` — auth failure
 - `ERROR_UNKNOWN` — other errors
+
+---
 
 ## Cost
 
@@ -322,6 +338,8 @@ OpenCode Zen provides free models as a last resort:
 
 > ⚠️ Free model limits: smaller context window, possibly slower response, data may be used for training, free for a limited time.
 
+---
+
 ## Security
 
 | Protection                 | Effect                                                          |
@@ -329,9 +347,11 @@ OpenCode Zen provides free models as a last resort:
 | Global catch-all           | undeclared tool call → popup confirm                            |
 | Agent permission isolation | each agent can only use allowed tools                           |
 | MCP permission isolation   | opinion layer forbidden from MCP, prevents bypassing tool layer |
-| Task whitelist             | concierge-router can only call declared agents                 |
+| Task whitelist             | concierge-router can only call declared agents                  |
 | Fallback chain             | tool layer fails → ask user → wait/skip/free model              |
 | One-click rollback         | delete `.opencode/` to restore                                  |
+
+---
 
 ## Local models
 
@@ -344,6 +364,8 @@ model: ollama-local/qwen3-coder
 
 See Appendix A of [`docs/opencode-moa.md`](docs/opencode-moa.md).
 
+---
+
 ## Verification
 
 After deploy, run the static check (needs `pwsh`):
@@ -352,6 +374,8 @@ After deploy, run the static check (needs `pwsh`):
 pwsh .opencode/tests/T0-static-verify.ps1
 # expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
 ```
+
+---
 
 ## FAQ
 
@@ -412,9 +436,13 @@ A: See "Fault tolerance design → Fallback chain" above: MoA asks the user to c
 **Q: Where are the free models?**
 A: See "Cost → Free models" above: use `/models` to open the model list and pick one tagged "Free" (Windows desktop client: `Ctrl+'` also works) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free, etc.). Free models have limited context, may be slower, and data may be used for training.
 
+---
+
 ## Contributing
 
 PRs and Issues welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
 
 ## License
 
