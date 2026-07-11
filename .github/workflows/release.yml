@@ -2,10 +2,14 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
-    branches:
-      - master
+    branches: [master]
+    paths: ['CHANGELOG.md']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只解析版本号，不创建 tag / Release'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -22,20 +26,54 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure release exists for every v* tag
+      - name: Resolve latest version from CHANGELOG
+        id: ver
         shell: bash
         run: |
-          for tag in $(git tag -l 'v*' | sort -V); do
-            if gh release view "$tag" >/dev/null 2>&1; then
-              echo "skip  $tag (release already exists)"
-              continue
-            fi
-            echo "create $tag"
-            git archive --format=zip       --output="opencode-moa-$tag.zip"     "$tag"
-            git archive --format=tar.gz    --output="opencode-moa-$tag.tar.gz"  "$tag"
-            gh release create "$tag" \
-              --generate-notes \
-              --title "$tag" \
-              "opencode-moa-$tag.zip" \
-              "opencode-moa-$tag.tar.gz"
-          done
+          VER=$(grep -m1 -E '^## +v[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "解析到版本: ${VER:-（无，跳过）}"
+
+      - name: Idempotency guard (skip if tag/release exists)
+        id: decide
+        if: steps.ver.outputs.version != ''
+        shell: bash
+        run: |
+          VER=${{ steps.ver.outputs.version }}
+          if git rev-parse "$VER" >/dev/null 2>&1 || gh release view "$VER" >/dev/null 2>&1; then
+            echo "skip=1"; echo "$VER 已存在，跳过"
+          else
+            echo "skip=0"
+          fi >> "$GITHUB_OUTPUT"
+
+      - name: Dry run
+        if: github.event.inputs.dry_run == 'true' && steps.ver.outputs.version != ''
+        run: echo "DRY RUN -> 将发 ${{ steps.ver.outputs.version }}"
+
+      - name: Gate - Layer 0 static verify
+        if: steps.decide.outputs.skip == '0' && github.event.inputs.dry_run != 'true'
+        shell: pwsh
+        run: pwsh .opencode/tests/T0-static-verify.ps1
+
+      - name: Create tag (concurrency-safe)
+        if: steps.decide.outputs.skip == '0' && github.event.inputs.dry_run != 'true'
+        shell: bash
+        run: |
+          VER=${{ steps.ver.outputs.version }}
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VER" -m "$VER"
+          git push origin "$VER" \
+            || (git rev-parse "$VER" >/dev/null 2>&1 && echo "tag 已存在（并发），视为成功" && exit 0) \
+            || exit 1
+
+      - name: Create Release + archives
+        if: steps.decide.outputs.skip == '0' && github.event.inputs.dry_run != 'true'
+        shell: bash
+        run: |
+          VER=${{ steps.ver.outputs.version }}
+          gh release view "$VER" >/dev/null 2>&1 && { echo "release 已存在"; exit 0; }
+          git archive --format=zip    -o "opencode-moa-$VER.zip"    "$VER"
+          git archive --format=tar.gz -o "opencode-moa-$VER.tar.gz" "$VER"
+          gh release create "$VER" --generate-notes --title "$VER" \
+            "opencode-moa-$VER.zip" "opencode-moa-$VER.tar.gz"

@@ -29,6 +29,27 @@ pwsh .opencode/tests/T0-static-verify.ps1
 - Bug 报告：请附上 OpenCode 版本、错误日志、复现步骤
 - 功能请求：请描述场景和期望行为
 
+## 发版规范（CHANGELOG 驱动，全自动）
+
+发版**唯一入口**是 `CHANGELOG.md`：在文件顶部加一个 `## vX.Y.Z（日期）` 节并 push 到 `master`，GitHub Actions 会自动打 tag、建 Release、上传 `zip`/`tar.gz` 源码归档。你**不需要**手动打 tag 或手动建 Release。
+
+- **一次一发**：一个 PR / 一次提交只新增一个版本节。
+- **不要手动打 tag**：手动 `git push` 的 `v*` tag 不会再触发发版（发版逻辑已内聚进 CHANGELOG 推送这一个 job）。
+- **发版门禁**：发版前跑 Layer 0 静态检查，失败则中止发版。
+- **预演（dry-run）**：仓库 `Actions → Release → Run workflow`，勾 `dry_run`，只打印将发版本号、不真正发版。
+- **已发版后补说明**：改同名 CHANGELOG 节**不会**回更 Release body，请直接到 GitHub Releases 页手动编辑。
+- **回滚**：`git push -d origin vX.Y.Z` 删 tag，并在 Releases 页删对应 Release（不会自动撤回）。
+- **CHANGELOG 铁律**：保持单语、文件名固定、顶部第一条 `## v` 必须是版本号；非版本标题（如 `## 路线图`）放版本节**之下**，解析器自动忽略。
+
+## 多语言规范
+
+本项目面向多语言用户，但**包版本号单一、贯穿所有语言**，不按语言拆 repo / tag / Release。
+
+- **版本真相源**：`CHANGELOG.md` 单语、不翻译、不移动。
+- **部署手册**：中文源 `docs/opencode-moa.md`；其他语言放 `docs/<lang>/opencode-moa.<lang>.md`（例：`docs/en/opencode-moa.en.md`）。
+- **README**：根 `README.md` 为中文入口并链接各语言；英文 `README.en.md` 等同。
+- 翻译进度与约定见 [`docs/TRANSLATION.md`](docs/TRANSLATION.md)。
+
 ## License
 
 提交即同意 [MIT License](LICENSE)。
