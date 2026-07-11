@@ -10,6 +10,51 @@
 
 ---
 
+## v0.0.6（2026-07-11）
+
+本期 = 手册 `forceReasoning` 前提纠正 + 多语言补全（en 由骨架升至完整）+ README 重构。
+
+### 1. 纠正手册「自定义 provider 必须加 `forceReasoning: true`」的错误前提
+
+#### 背景
+
+v0.0.5 手册写入：「opencode ≥ 1.3.4 起，`@ai-sdk/openai-compatible` provider 默认不再透传 reasoning 参数，必须加 `forceReasoning: true`，否则矩阵静默失效」。经核实 OpenCode issue #20815，该前提不成立。
+
+#### 纠正（基于 issue #20815 实测）
+
+- v1.3.4 的 reasoning 透传回归**只影响 `"npm": "@ai-sdk/openai"`** 的自定义 provider（AI SDK v6 起按「已知推理模型列表」校验，不在表中就吞掉 `reasoningEffort`）。
+- 同一 issue 确认 **`@ai-sdk/openai-compatible` 不受影响**，`reasoningEffort` 会正确透传为 `reasoning_effort`。
+- `forceReasoning` 是给 `@ai-sdk/openai` 绕过列表校验的开关；本项目 provider 用的是 `openai-compatible`，**无需也不应加**（加了是 no-op，且会误导）。仅当把 `npm` 改成 `@ai-sdk/openai`（如用 responses API）时才需在 `options` 加 `forceReasoning: true`。
+
+#### 改动
+
+- `docs/opencode-moa.md`：Provider 配置警告、示例 JSON（移除 `forceReasoning` 行）、矩阵前置依赖、排错表「推理强度没变」行、版本说明、页脚均更正为 SDK 区分表述；文档版本 v0.0.5 → v0.0.6。
+- 与 install.ps1 / install.sh 既有 provider 块（本就无 `forceReasoning`）保持一致。
+
+#### 实测佐证
+
+v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→536，证明透传在 `openai-compatible` 上原生生效，与 issue 结论一致。
+
+### 2. 多语言补全（en 由骨架升至完整）
+
+- 新增 `README.en.md`：与 `README.md` 结构对齐的完整英文版。
+- `docs/en/opencode-moa.en.md`：由 ~骨架 补全为与中文手册逐节对应的完整英文版（Provider 配置、矩阵、排错表、FAQ 等），版本同步至 v0.0.6。
+- `docs/TRANSLATION.md`：中 / 英双语状态由「🚧 骨架（待译）」翻为「✅ 完整」。
+
+### 3. README 重构
+
+- 部署前置条件表、系统级 key 路径提示重构：新增「部署前必读：key 路径别放错」警告框（项目级自包含 vs 系统级共享二选一，钉死 `%USERPROFILE%\.config\opencode` 而非 `%APPDATA%\opencode`）。
+- Q&A 段落从正文中部移到文末「常见问题」统一收口，并修正若干交叉引用（如「看不到门童」「免费模型在哪」指向对应小节）。
+- 新增「为什么省 ~90%」成本拆解：按调用量加权（工具层 80% / 意见层 18% / 融合层 2%）估算有效输出单价 ≈ $0.69/1M，对比旗舰基线省 ~90%、对比单中端省 ~80%。
+- hero / 架构图模型名更新为具体版本（如 `Qwen3.7 Max`、`MiniMax M3`），与成本表对齐；全文档 `Qwen3.7Max`/`Qwen3.7Plus` 统一为带空格写法。
+
+### 4. 其他
+
+- 删除 `docs/PLAN-moa-hardening.md`（方案已整合进各版本变更说明），并移除 v0.0.5 对其的引用。
+- 切换键说明改为跨平台写法：agent 切换统一用 `Tab` 循环（或 `Ctrl+x a` 打开 agent 列表），免费模型用 `/models` 打开模型列表选 `Free` 标签；你实测的 Windows 桌面端快捷键 `Ctrl+.`（切 agent）/ `Ctrl+'`（切免费模型）保留为「Win 桌面端」标注。修正了此前把这两个键写死、与官方默认键位（`Tab`/`/models`/`Ctrl+t`，且 `Ctrl+.` 官方为 input redo、无 `Ctrl+'` 绑定）冲突的问题，覆盖 `README.md` / `README.en.md` / `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` 全部相关处。
+- 新增跨平台警告：不要在 TUI 手动切「变体/推理档」——OpenCode 的变体选择会覆盖 agent 配置的 `reasoningEffort` 并写入 model 选择缓存（Linux/macOS `~/.local/state/opencode/model.json`、Windows `%USERPROFILE%\.local\state\opencode\model.json`），重启仍生效、跨平台一致，会静默顶掉本方案的 low→xhigh 矩阵。已在 `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` 的推理矩阵段与「推理强度感觉没变」排错行各补一条。
+- `/connect` 命令面板键纠错：方式 B 原写「TUI 内按 `Ctrl+K` 打开命令面板」，但官方 `command_list` / 命令面板 = `Ctrl+P`，全官方 keybinds 表无 `Ctrl+K` 绑定（`Ctrl+K` 在输入框实为「删除到行尾」）。已改为「TUI 内输入 `/connect`（或按 `Ctrl+P` 打开命令面板）」，覆盖 `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md`。
+
 ## v0.0.5（2026-07-10）
 
 审计 opencode-moa 是否误导 AI / 用户，修复一批会导致「部署后 19 agent 全连不上」与泄露凭据的问题。
@@ -54,7 +99,7 @@
 - **T0 skills 误判修复**：从「总数 == 3」改为校验 **3 个指定目录存在**（`code-review-moa` / `architecture-moa` / `frontend-moa`），避免仓库自带 `opencode-moa` 元 skill 导致端用户复制后变 4 而**误 FAIL**。
 - **同层双文件警告修正**：原写「`.jsonc` 优先、`.json` 被忽略」来自第三方插件文档，**官方未定义同目录双文件优先级**。已改为准确表述：OpenCode 同时支持 `.json`/`.jsonc`，但同目录两份并存优先级未定义、内容还可能冲突，安全做法是只留一个且含有效 provider + 真实 key。
 - **速查表补空壳成因**：新增「系统级被删/目录为空」「同目录双 `.json`+`.jsonc`」「占位符 key」三行，对应处理均指向重建 provider / 只留一个 / 替换真实 key，并注明 T0 现会 FAIL 拦截。
-- 方案存档：`docs/PLAN-moa-hardening.md`。
+- 方案存档：原 `docs/PLAN-moa-hardening.md`（已于 v0.0.6 删除，内容已整合进各版本变更说明）。
 
 ## v0.0.4（2026-07-10）
 

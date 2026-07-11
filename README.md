@@ -27,10 +27,10 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 ```
 你：帮我设计一个消息队列方案
 
-    ┌─ 旗舰·架构 (Qwen) ─── 从架构师视角出方案
-    ├─ 旗舰·规划 (GLM)  ─── 从产品经理视角出方案
-    ├─ 旗舰·工程 (MiniMax) ─ 从实现者视角出方案
-    └─ 旗舰·融合 (Kimi) ─── 取长补短，一份最优解
+    ┌─ 旗舰·架构 (Qwen3.7 Max) ─── 从架构师视角出方案
+    ├─ 旗舰·规划 (GLM)        ─── 从产品经理视角出方案
+    ├─ 旗舰·工程 (MiniMax M3) ─ 从实现者视角出方案
+    └─ 旗舰·融合 (Kimi)       ─── 取长补短，一份最优解
 ```
 
 三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
@@ -39,19 +39,19 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 ### 必需
 
-| 条件 | 检查命令 | 说明 |
-|------|----------|------|
-| OpenCode 已安装 | `opencode --version` | **≥ 1.3.4**（reasoning 透传修复；1.1.1 仅能跑通基础、矩阵失效），[安装](https://opencode.ai/install) |
-| OpenCode Go 订阅 | opencode.ai 控制台 | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月 |
-| Git 已安装 | `git --version` | 用于克隆仓库 |
-| OpenCode Go API Key | opencode.ai 控制台创建 | 在 Zen 控制台（opencode.ai）创建 |
+| 条件                  | 检查命令                 | 说明                                                                                                                                                          |
+| ------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenCode 已安装        | `opencode --version` | **≥ 1.3.4**（agent 级 `reasoningEffort`/`hidden`/`task` 支持；`openai-compatible` provider 原生透传 reasoning，无需 `forceReasoning`），[安装](https://opencode.ai/install) |
+| OpenCode Go 订阅      | opencode.ai 控制台      | [订阅](https://opencode.ai/auth)，首月 $5，之后 $10/月                                                                                                               |
+| Git 已安装             | `git --version`      | 用于克隆仓库                                                                                                                                                      |
+| OpenCode Go API Key | opencode.ai 控制台创建    | 在 Zen 控制台（opencode.ai）创建                                                                                                                                    |
 
 ### 可选（安装脚本需要）
 
-| 条件 | 检查命令 | 说明 |
-|------|----------|------|
-| PowerShell Core | `pwsh --version` | install.ps1 需要，Windows 自带或 `brew install powershell` |
-| jq | `jq --version` | install.sh 合并 JSON 需要，`apt install jq` / `brew install jq` |
+| 条件              | 检查命令             | 说明                                                         |
+| --------------- | ---------------- | ---------------------------------------------------------- |
+| PowerShell Core | `pwsh --version` | install.ps1 需要，Windows 自带或 `brew install powershell`       |
+| jq              | `jq --version`   | install.sh 合并 JSON 需要，`apt install jq` / `brew install jq` |
 
 > 没有 pwsh/jq 也没关系，可以用方式一（AI 自动部署）或方式三（手动合并）。
 
@@ -60,7 +60,15 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 - **CLI**：所有方式都支持
 - **桌面端**：方式一（AI 自动部署）最方便，方式二/三需要先在终端操作
 
-> ⚠️ **系统级 key 路径（跨平台）**：放 `~/.config/opencode/opencode.json`（Linux/macOS）或 `C:\Users\<你>\.config\opencode\opencode.json`（Windows，`%USERPROFILE%\.config\opencode`，**不是** `%APPDATA%\opencode`）。按错路径会「部署成功但全 agent 连不上」。详见 [`docs/opencode-moa.md`](docs/opencode-moa.md) 的 Provider 配置节。
+> ⚠️ **系统级 key 路径容易放错**——正确写法见下方「部署前必读」。按错路径会「部署成功但全 agent 连不上」。
+
+> ⚠️ **部署前必读：key 路径别放错**
+> provider + key 放**项目级 `opencode.json`**（默认，自包含）或**系统级**共享路径，**二选一**即可。
+> 若用系统级，正确路径是：
+> 
+> - Linux/macOS `~/.config/opencode/opencode.json`
+> - Windows `%USERPROFILE%\.config\opencode\opencode.json`（**不是** `%APPDATA%\opencode`）
+>   放错系统级路径会「部署成功但全 agent 连不上」。
 
 ## 30 秒部署
 
@@ -75,7 +83,7 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 > 全程不需要手动创建任何文件。部署手册本身就是安装器。
 
-### 方式二：一键安装脚本（推荐）
+### 方式二：一键安装脚本（脚本版 · CLI 友好）
 
 ```bash
 # 克隆仓库
@@ -114,7 +122,7 @@ cp -r opencode-moa/.opencode/ your-project/
 
 ### 部署成功怎么判断？
 
-1. 重启 OpenCode 后，按 `Ctrl+.` 切换 agent，看到「门童路由员」
+1. 重启 OpenCode 后，按 `Tab` 循环切换 agent（Win 桌面端亦可用 `Ctrl+.`），看到「门童路由员」
 2. 输入 `@工具人` 能正常响应
 3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`（部署时由手册 Block 5.5 生成），预期全部 PASS（FAIL=0；key 走系统级时 WARN 也算过）
 
@@ -124,69 +132,6 @@ cp -r opencode-moa/.opencode/ your-project/
 rm -rf your-project/.opencode/
 # 手动恢复你的 opencode.json（安装脚本会自动备份 .bak 文件）
 ```
-
-## 常见问题（Q&A）
-
-### 安装相关
-
-**Q: 我已有 opencode.json，会不会覆盖？**
-A: 不会。安装脚本只合并 MoA 的 `permission`、`agent`、`default_agent` 配置，保留你已有的 `provider`、`model` 等设置。原文件会自动备份为 `.bak.时间戳`。
-
-**Q: Windows 没有 `cp` 命令怎么办？**
-A: 用 `Copy-Item` 或 `xcopy`：
-```powershell
-# PowerShell
-Copy-Item -Recurse -Force opencode-moa\.opencode .\.opencode
-# CMD
-xcopy opencode-moa\.opencode .\.opencode /E /I /Y
-```
-
-**Q: 没有 pwsh/jq 能装吗？**
-A: 可以。用方式一（AI 自动部署）或方式三（手动合并配置）。
-
-**Q: 桌面端怎么装？**
-A: 方式一最方便——把 `docs/opencode-moa.md` 拖进对话框，让 AI 自动部署。方式二/三需要先在终端（CMD/PowerShell/Terminal）操作。
-
-### 使用相关
-
-**Q: 看不到「门童路由员」？**
-A: 检查三点：
-1. `opencode.json` 是否在项目根目录（不是子目录）
-2. `.opencode/agents/` 下是否有 19 个 .md 文件
-3. 重启 OpenCode 后按 `Ctrl+.` 切换 agent
-
-**Q: `@工具人` 无响应？**
-A: 确认 `.opencode/agents/工具人.md` 存在且 frontmatter 格式正确。
-
-**Q: 报错 "model not found"？**
-A: 模型 ID 格式应为 `provider/model-id`（如 `opencode-go/kimi-k2.7-code`）。在配置文件（系统级 `~/.config/opencode/opencode.json` 或项目 `opencode.json`）注册对应的 provider，然后在 TUI 内用 `/models` 查看可用模型。
-
-**Q: 怎么切换回原来的 build/plan agent？**
-A: 按 `Ctrl+.` 切换，或输入 `/build`、`/plan`。MoA 不影响内置 agent。
-
-**Q: 我想用自己的模型，不走 Go 订阅？**
-A: 修改 agent 的 `model` 字段即可：
-```yaml
-# .opencode/agents/中级·工程.md
-model: anthropic/claude-sonnet-4-20250514
-```
-
-**Q: 部署后能删掉仓库吗？**
-A: 可以。MoA 已复制到你的项目 `.opencode/` 目录，原仓库可以删除。
-
-**Q: 多个项目怎么部署？**
-A: 每个项目单独部署。`.opencode/` 是项目级配置，不影响其他项目。
-
-### 降级相关
-
-**Q: 工具层全部挂了怎么办？**
-A: MoA 会 ask 用户：
-- A. 等几分钟再试
-- B. 跳过工具层，直接调意见层（成本较高）
-- C. 切换到免费模型（需手动操作）
-
-**Q: 免费模型在哪？**
-A: 输入 `/models` 选择带 "Free" 标签的模型（如 DeepSeek V4 Flash Free、MiMo-V2.5 Free、Big Pickle 等）。免费模型上下文有限、可能较慢、数据可能被用于训练。
 
 ## 怎么用？
 
@@ -221,13 +166,13 @@ A: 输入 `/models` 选择带 "Free" 标签的模型（如 DeepSeek V4 Flash Fre
 ## 架构
 
 ```
-                     门童路由员（Flash）
-                            │
-              ┌─────────────┼─────────────┐
-              ▼             ▼             ▼
-           工具层          意见层          融合层
-        Flash + MiMo    3 份并行意见      取长补短
-        （~80% 调用）   （~18% 调用）    （~2% 调用）
+                      门童路由员（Flash）
+                             │
+               ┌─────────────┼─────────────┐
+               ▼             ▼             ▼
+            工具层          意见层          融合层
+         Flash + MiMo    3 份并行意见      取长补短
+         （~80% 调用）   （~18% 调用）    （~2% 调用）
 ```
 
 **工具层**（Flash + MiMo）—— 读代码、搜文件、截图转文字。便宜快，随便调。
@@ -254,7 +199,7 @@ A: 输入 `/models` 选择带 "Free" 标签的模型（如 DeepSeek V4 Flash Fre
  │   中级·融合    (Kimi)         三份方案取长补短
  │
  ├── 旗舰意见层 ──────────────────────────────────
- │   旗舰·架构    (Qwen3.7Max)   顶层架构设计
+ │   旗舰·架构    (Qwen3.7 Max)   顶层架构设计
  │   旗舰·规划    (GLM)          结构化方案设计
  │   旗舰·工程    (MiniMax M3)   大规模实现方案
  │   旗舰·融合    (Kimi)         三份架构方案融合
@@ -263,7 +208,7 @@ A: 输入 `/models` 选择带 "Free" 标签的模型（如 DeepSeek V4 Flash Fre
  │
  └── 前端意见层 ──────────────────────────────────
      前端·还原    (MiMo)        像素级还原 UI
-     前端·逻辑    (Qwen3.7Plus) 组件架构与状态管理
+     前端·逻辑    (Qwen3.7 Plus) 组件架构与状态管理
      前端·动效    (MiMo-Pro)    交互体验与动效
      前端·总工    (Kimi)        三份前端方案择优
 ```
@@ -312,32 +257,44 @@ A: 输入 `/models` 选择带 "Free" 标签的模型（如 DeepSeek V4 Flash Fre
 
 ## 成本
 
+### 为什么省 ~90%
+
+MoA 按调用量加权混合计费：~80% 走工具层 Flash、~18% 走中端、~2% 走旗舰。用本节成本表的单价估算有效输出单价：
+
+| 层级  | 占比  | 输出单价/1M                                                         | 加权     |
+| --- | --- | --------------------------------------------------------------- | ------ |
+| 工具层 | 80% | $0.28                                                           | $0.224 |
+| 意见层 | 18% | ~$2.00（MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 均值） | $0.36  |
+| 融合层 | 2%  | ~$5.30（Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 均值）              | $0.106 |
+
+混合有效输出单价 ≈ **$0.69 / 1M**。对比「全程最贵旗舰 GLM $7.50」→ 约 9% → **省 ~90%**；对比「全程单中端 DeepSeek Pro $3.48」→ 约 20% → **省 ~80%**。hero 的「省 90%」即旗舰基线下的真实值。
+
 ### OpenCode Go 订阅
 
 MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅，**首月 $5，之后 $10/月**。
 
 **使用限制：**
 
-| 时间窗口 | 额度 |
-|----------|------|
+| 时间窗口   | 额度  |
+| ------ | --- |
 | 每 5 小时 | $12 |
-| 每周 | $30 |
-| 每月 | $60 |
+| 每周     | $30 |
+| 每月     | $60 |
 
 限制按美元价值定义。便宜模型（Flash）可用更多次，贵模型（GLM）可用较少次。
 
 ### 各层级月配额
 
-| 层级 | 模型 | 单价（输入/输出 per 1M） | 月配额 | 调用频率 |
-|------|------|--------------------------|--------|----------|
-| 工具层 | Flash | $0.14 / $0.28 | 158,150 次 | ~80% |
-| 工具层 | MiMo-V2.5 | $0.14 / $0.28 | 150,400 次 | （随便调） |
-| 意见层 | MiniMax M3 | $0.30 / $1.20 | 16,000 次 | ~18% |
-| 意见层 | DeepSeek V4 Pro | $1.74 / $3.48 | 17,150 次 | |
-| 意见层 | Qwen3.7 Plus | $0.40 / $1.60 | 21,600 次 | |
-| 融合层 | Kimi K2.7 Code | $0.95 / $4.00 | 9,250 次 | ~2% |
-| 融合层 | Qwen3.7 Max | $2.50 / $7.50 | 4,770 次 | （刀刃上） |
-| 融合层 | GLM-5.2 | $1.40 / $4.40 | 4,300 次 | |
+| 层级  | 模型              | 单价（输入/输出 per 1M） | 月配额       | 调用频率  |
+| --- | --------------- | ---------------- | --------- | ----- |
+| 工具层 | Flash           | $0.14 / $0.28    | 158,150 次 | ~80%  |
+| 工具层 | MiMo-V2.5       | $0.14 / $0.28    | 150,400 次 | （随便调） |
+| 意见层 | MiniMax M3      | $0.30 / $1.20    | 16,000 次  | ~18%  |
+| 意见层 | DeepSeek V4 Pro | $1.74 / $3.48    | 17,150 次  |       |
+| 意见层 | Qwen3.7 Plus    | $0.40 / $1.60    | 21,600 次  |       |
+| 融合层 | Kimi K2.7 Code  | $0.95 / $4.00    | 9,250 次   | ~2%   |
+| 融合层 | Qwen3.7 Max     | $2.50 / $7.50    | 4,770 次   | （刀刃上） |
+| 融合层 | GLM-5.2         | $1.40 / $4.40    | 4,300 次   |       |
 
 > 所有模型 ID 仅作声明，可替换为你偏好的任何模型。
 
@@ -350,25 +307,25 @@ MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅，**首月 $
 
 OpenCode Zen 提供免费模型作为最后保底：
 
-| 模型 | 特点 |
-|------|------|
-| DeepSeek V4 Flash Free | 快，但上下文有限 |
-| MiMo-V2.5 Free | 质量较好，但可能慢 |
-| North Mini Code Free | Cohere 提供 |
-| Nemotron 3 Ultra Free | NVIDIA 免费端点 |
+| 模型                     | 特点          |
+| ---------------------- | ----------- |
+| DeepSeek V4 Flash Free | 快，但上下文有限    |
+| MiMo-V2.5 Free         | 质量较好，但可能慢   |
+| North Mini Code Free   | Cohere 提供   |
+| Nemotron 3 Ultra Free  | NVIDIA 免费端点 |
 
 > ⚠️ 免费模型限制：上下文窗口较小、响应可能较慢、数据可能被用于训练、限时免费。
 
 ## 安全
 
-| 防护           | 效果                           |
-| ------------ | ---------------------------- |
-| 全局 catch-all | 未声明的工具调用 → 弹窗确认              |
-| Agent 权限隔离   | 每个 agent 只能用允许的工具            |
-| MCP 权限隔离     | 意见层禁止访问 MCP，防止绕过工具层           |
-| task 白名单     | 门童只能调用声明过的 agent             |
+| 防护           | 效果                          |
+| ------------ | --------------------------- |
+| 全局 catch-all | 未声明的工具调用 → 弹窗确认             |
+| Agent 权限隔离   | 每个 agent 只能用允许的工具           |
+| MCP 权限隔离     | 意见层禁止访问 MCP，防止绕过工具层         |
+| task 白名单     | 门童只能调用声明过的 agent            |
 | 降级链          | 工具层失败 → ask 用户 → 等待/跳过/免费模型 |
-| 一键回滚         | 删掉 `.opencode/` 目录即可还原       |
+| 一键回滚         | 删掉 `.opencode/` 目录即可还原      |
 
 ## 本地模型
 
@@ -389,6 +346,65 @@ model: ollama-local/qwen3-coder
 pwsh .opencode/tests/T0-static-verify.ps1
 # 预期：全部 PASS / FAIL=0（key 走系统级时 WARN 也算过）
 ```
+
+## 常见问题（Q&A）
+
+### 安装相关
+
+**Q: 我已有 opencode.json，会不会覆盖？**
+A: 不会。安装脚本只合并 MoA 的 `permission`、`agent`、`default_agent` 配置，保留你已有的 `provider`、`model` 等设置。原文件会自动备份为 `.bak.时间戳`。
+
+**Q: Windows 没有 `cp` 命令怎么办？**
+A: 用 `Copy-Item` 或 `xcopy`：
+
+```powershell
+# PowerShell
+Copy-Item -Recurse -Force opencode-moa\.opencode .\.opencode
+# CMD
+xcopy opencode-moa\.opencode .\.opencode /E /I /Y
+```
+
+**Q: 没有 pwsh/jq 能装吗？**
+A: 可以。用方式一（AI 自动部署）或方式三（手动合并配置）。
+
+**Q: 桌面端怎么装？**
+A: 方式一最方便——把 `docs/opencode-moa.md` 拖进对话框，让 AI 自动部署。方式二/三需要先在终端（CMD/PowerShell/Terminal）操作。
+
+### 使用相关
+
+**Q: 看不到「门童路由员」？**
+A: 见上方「30 秒部署 → 部署成功怎么判断」的三点检查：`opencode.json` 在项目根、`.opencode/agents/` 下 19 个 .md、重启后按 `Tab` 切换（Win 桌面端亦可用 `Ctrl+.`）。
+
+**Q: `@工具人` 无响应？**
+A: 确认 `.opencode/agents/工具人.md` 存在且 frontmatter 格式正确。
+
+**Q: 报错 "model not found"？**
+A: 模型 ID 格式应为 `provider/model-id`（如 `opencode-go/kimi-k2.7-code`）。在配置文件（系统级 `~/.config/opencode/opencode.json` 或项目 `opencode.json`）注册对应的 provider，然后在 TUI 内用 `/models` 查看可用模型。
+
+**Q: 怎么切换回原来的 build/plan agent？**
+A: 按 `Tab` 切换（Win 桌面端亦可用 `Ctrl+.`），或输入 `/build`、`/plan`。MoA 不影响内置 agent。
+
+**Q: 我想用自己的模型，不走 Go 订阅？**
+A: 修改 agent 的 `model` 字段即可：
+
+```yaml
+# .opencode/agents/中级·工程.md
+model: anthropic/claude-sonnet-4-20250514
+```
+
+**Q: 部署后能删掉仓库吗？**
+A: 可以。MoA 已复制到你的项目 `.opencode/` 目录，原仓库可以删除。
+
+**Q: 多个项目怎么部署？**
+A: 每个项目单独部署。`.opencode/` 是项目级配置，不影响其他项目。
+
+### 降级相关
+
+**Q: 工具层全部挂了怎么办？**
+A: 见上方「容错设计 → 降级链」：MoA 会 ask 用户选 A. 等几分钟 / B. 跳过工具层直接调意见层（成本较高）/ C. 切换到免费模型。
+
+**Q: 免费模型在哪？**
+A: 见上方「成本 → 免费模型」：用 `/models` 打开模型列表选带 "Free" 标签的模型（Win 桌面端亦可用 `Ctrl+'`）（DeepSeek V4 Flash Free、MiMo-V2.5 Free、Big Pickle 等）。免费模型上下文有限、可能较慢、数据可能被用于训练。
 
 ## 贡献
 

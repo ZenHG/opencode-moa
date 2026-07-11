@@ -15,10 +15,11 @@
 - **命令变更**：修改对应的 `.opencode/commands/*.md`
 - **skill 变更**：修改对应的 `.opencode/skills/*/SKILL.md`
 - **配置变更**：修改 `opencode.json`，确保 task 白名单同步更新
+- **reasoningEffort 变更**：改 agent 推理强度请直接改 `.opencode/agents/*.md` 的 `reasoningEffort` 字段并重启；**不要**在 TUI 手动切「变体 / 推理档」——会覆盖 agent 配置并写入 model 选择缓存（`~/.local/state/opencode/model.json` 等，WSL 走 Linux 路径、Unix 下受 `XDG_STATE_HOME` 影响可重定向），重启仍生效、跨平台一致，会静默顶掉 low→xhigh 矩阵。详见 `docs/opencode-moa.md` 推理矩阵段警告框与「推理强度感觉没变」排错行。
 
 ## 测试要求
 
-所有 PR 必须通过 Layer 0 静态检查（41 PASS / 0 FAIL）：
+所有 PR 必须通过 Layer 0 静态检查（全部 PASS / FAIL=0；key 走系统级时 WARN 也算过）：
 
 ```bash
 pwsh .opencode/tests/T0-static-verify.ps1

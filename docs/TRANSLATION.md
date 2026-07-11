@@ -26,7 +26,7 @@ OpenCode MoA 面向全球用户，但**包只有一个版本号**，贯穿所有
 | 语言 | 部署手册 | README | 状态 |
 | --- | --- | --- | --- |
 | `zh` | `docs/opencode-moa.md` | `README.md` | ✅ 完整 |
-| `en` | `docs/en/opencode-moa.en.md` | `README.en.md` | 🚧 骨架（待译） |
+| `en` | `docs/en/opencode-moa.en.md` | `README.en.md` | ✅ 完整 |
 
 ## 如何新增一种语言
 
