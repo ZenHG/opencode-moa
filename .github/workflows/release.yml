@@ -46,12 +46,45 @@ jobs:
             echo "skip=0"
           fi >> "$GITHUB_OUTPUT"
 
+      - name: Confirm CI is green (wait for Layer 0 Static Verify)
+        id: ci
+        if: steps.ver.outputs.version != ''
+        shell: bash
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          # push 触发时强依赖真实 CI 结果；手动 dispatch 无外部 CI 运行，回退到下方内联 T0 门禁
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "非 push 触发（${{ github.event_name }}），无外部 CI 运行，依赖下方内联 T0 门禁"
+            echo "enforced=inline" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # 轮询等待本 SHA 的 Layer 0 Static Verify 跑完，最多约 6 分钟
+          for i in $(seq 1 36); do
+            RUN=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$SHA" --json databaseId,status,conclusion --limit 1)
+            STATUS=$(echo "$RUN" | jq -r '.[0].status // empty')
+            CONCL=$(echo "$RUN" | jq -r '.[0].conclusion // empty')
+            echo "attempt $i: status=$STATUS conclusion=$CONCL"
+            if [ "$STATUS" = "completed" ]; then
+              if [ "$CONCL" = "success" ]; then
+                echo "CI 全绿，继续发布"
+                echo "enforced=external" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              echo "::error::CI 未通过（conclusion=$CONCL），中止发布"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "::error::等待 CI 超时（>360s），中止发布"
+          exit 1
+
       - name: Dry run
         if: github.event.inputs.dry_run == 'true' && steps.ver.outputs.version != ''
         run: echo "DRY RUN -> 将发 ${{ steps.ver.outputs.version }}"
 
-      - name: Gate - Layer 0 static verify
-        if: steps.decide.outputs.skip == '0' && github.event.inputs.dry_run != 'true'
+      - name: Gate - Layer 0 static verify (fallback for manual dispatch)
+        if: steps.decide.outputs.skip == '0' && github.event.inputs.dry_run != 'true' && steps.ci.outputs.enforced != 'external'
         shell: pwsh
         run: pwsh .opencode/tests/T0-static-verify.ps1
 
