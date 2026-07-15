@@ -22,7 +22,7 @@ Check "opencode.json" (Test-Path (Join-Path $base "opencode.json"))
 
 Write-Host "`n=== Agent count ===" -ForegroundColor Yellow
 $agents = Get-ChildItem "$agentDir/*.md" -ErrorAction SilentlyContinue
-Check "Agent files = 19" ($agents.Count -eq 19)
+Check "Agent files = 22" ($agents.Count -eq 22)
 
 Write-Host "`n=== Command count ===" -ForegroundColor Yellow
 $cmds = Get-ChildItem "$cmdDir/*.md" -ErrorAction SilentlyContinue
@@ -51,13 +51,15 @@ $expectedModels = @{
     "旗舰·架构"  = "qwen3.7-max"
     "旗舰·规划"  = "glm-5.2"
     "旗舰·工程"  = "minimax-m3"
-    "旗舰·融合"  = "kimi-k2.7-code"
+    "旗舰·融合"  = "qwen3.7-max"
     "旗舰·实现"  = "deepseek-v4-flash"
     "旗舰·质检"  = "deepseek-v4-pro"
     "前端·还原"  = "mimo-v2.5"
     "前端·逻辑"  = "qwen3.7-plus"
     "前端·动效"  = "mimo-v2.5-pro"
-    "前端·总工"  = "kimi-k2.7-code"
+    "前端·总工"  = "glm-5.2"
+    "残差提取者"  = "deepseek-v4-flash"
+    "置信度评估者" = "deepseek-v4-pro"
 }
 
 foreach ($name in $expectedModels.Keys) {
@@ -77,7 +79,7 @@ foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
     $c = Get-Content $f.FullName -Raw -Encoding utf8
     $reCount += ([regex]::Matches($c, "reasoningEffort:")).Count
 }
-Check "reasoningEffort = 19" ($reCount -eq 19)
+Check "reasoningEffort = 22" ($reCount -eq 22)
 
 Write-Host "`n=== reasoningEffort value (must be lowercase gateway enum) ===" -ForegroundColor Yellow
 $validRE = @('low','medium','high','max','xhigh','none','minimal')

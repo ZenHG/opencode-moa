@@ -6,13 +6,13 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> **One conversation entry point, 19 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship), code quality significantly up.**
+> **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship), code quality significantly up.**
 
 ![OpenCode MoA](docs/opengraph.png)
 
 OpenCode MoA is a Mixture of Agents configuration package for OpenCode. It lets multiple models **think about the same problem simultaneously**, then fuse into an output quality a single model can't reach. You don't need to switch tools, write code, or have an API quota — just drop the files into your project and restart OpenCode.
 
-**19 agents · 5 commands · 3 skills · 30-second deploy**
+**22 agents · 5 commands · 3 skills · 30-second deploy**
 
 ---
 
@@ -34,7 +34,7 @@ You: help me design a message queue solution
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
     ├─ flag-plan (GLM        ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
-    └─ flag-fuse (Kimi       ) ─── take the best of each, one optimal solution
+     └─ flag-fuse (Qwen3.7 Max) ─── take the best of each, one optimal solution
 ```
 
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
@@ -85,7 +85,7 @@ Three independent plans from three different models naturally form a "consensus 
 1. Download [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md)
 2. Upload that document in OpenCode and send:
 
-> Deploy all 19 agents, 5 commands, and 3 skills from this manual into the current project
+> Deploy all 22 agents, 5 commands, and 3 skills from this manual into the current project
 
 3. The AI creates all files automatically. **Restart OpenCode** when done.
 
@@ -151,7 +151,7 @@ rm -rf your-project/.opencode/
 
 **Learn nothing — just talk.** The concierge-router automatically judges task complexity and dispatches the corresponding agent chain.
 
-| What you say                         | What the doorman does                                            | Agents used                         |
+| What you say                         | What the concierge-router does                                   | Agents used                         |
 | ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------- |
 | "rename this variable"               | judged as a simple task                                          | swift (Flash)                       |
 | "write a user auth module"           | tool layer gathers → 3 mid-tier parallel → fuse                  | tool-handler + mid-tier trio + fuse |
@@ -195,47 +195,50 @@ rm -rf your-project/.opencode/
 
 **Opinion layer** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — plans from different perspectives. Three opinions naturally form a "consensus + divergence" structure.
 
-**Fusion layer** (Kimi / Qwen-Max / GLM) — keep consensus, take the best on divergence. Used only where it matters.
+**Fusion layer** (Kimi / Qwen-Max / GLM / DeepSeek Pro fallback) — keep consensus, take the best on divergence, with fallback to DeepSeek V4 Pro if fusion fails.
 
 ---
 
-## 19 Agents
+## 22 Agents
 
 ```
 concierge-router (Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler     (Flash       ) read code, search files
- │   tool-handler-mimo (MiMo        ) reliable file read (fallback + parallel)
+ │   tool-handler     (Flash       ) read code, search files [+ material self-check]
+ │   tool-handler-mimo (MiMo        ) reliable file read (fallback + parallel) [hidden]
  │   swift            (Flash       ) simple tasks in one shot
  │   vision-translator (MiMo        ) screenshot/UI/error image to text
+ │
+ ├── Residual extractor (Flash)    NEW: analyze divergence between plans
+ ├── Confidence assessor (DS Pro)  NEW: assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
  │   mid-eng          (MiniMax M3  ) engineering view
  │   mid-creative     (DeepSeek Pro) creative view
  │   mid-coder        (Flash       ) pragmatic view
- │   mid-fuse         (Kimi        ) fuse three plans
+ │   mid-fuse         (Kimi        ) fuse three plans [max_tokens: 16384]
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch        (Qwen3.7 Max ) top-level architecture
  │   flag-plan        (GLM         ) structured planning
  │   flag-eng         (MiniMax M3  ) large-scale implementation
- │   flag-fuse        (Kimi        ) fuse three architecture plans
- │   flag-impl        (Flash       ) implement per fused plan
- │   flag-qa          (DeepSeek Pro) plan vs code acceptance
+ │   flag-fuse        (Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+ │   flag-impl        (Flash       ) implement per fused plan [hidden]
+ │   flag-qa          (DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── Frontend opinion layer ─────────────────────────────────────────────
      fe-restore       (MiMo        ) pixel-perfect UI restore
      fe-logic         (Qwen3.7 Plus) component architecture & state mgmt
      fe-motion        (MiMo-Pro    ) interaction & motion
-     fe-lead          (Kimi        ) pick best of three frontend plans
+     fe-lead          (GLM-5.2     ) pick best of three frontend plans [max_tokens: 16384]
 ```
 
 ---
 
 ## Fault tolerance design
 
-### Fallback chain
+### Tool layer fallback chain
 
 The tool layer failing doesn't freeze — it auto-downgrades:
 
@@ -252,13 +255,30 @@ tool-handler (Flash) failed → immediate retry once
 
 > Most provider errors (502/503/timeout) are transient; a quick retry usually succeeds.
 
+### Fusion layer fallback
+
+If the primary fusion agent fails (STUCK / ERROR_PROVIDER / timeout / empty result), the concierge-router automatically falls back to `@融合·保底` (DeepSeek V4 Pro):
+
+```
+旗舰·融合 (Qwen3.7 Max) failed
+  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
+中级·融合 (Kimi) failed
+  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
+前端·总工 (GLM-5.2) failed
+  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
+```
+
+The fallback agent uses the same residual-enhanced fusion process.
+
 ### MCP permission isolation
 
-Opinion-layer agents are forbidden from MCP tools, preventing them from bypassing the tool layer to fetch material themselves:
+Opinion-layer agents are forbidden from reading code directly (via `read: deny` + `bash: deny`), preventing them from bypassing the tool layer to fetch material themselves:
 
-- Tool layer: can call MCP (read code, search files)
-- Opinion layer: `read: deny` + MCP blocked, can only plan based on material from the tool layer
-- Fusion layer: same, can only fuse based on the three opinions
+- Tool layer: can read code, search files (has `read`/`bash` access)
+- Opinion layer: `read: deny` + `bash: deny`, can only plan based on material from the tool layer
+- Fusion layer: same restriction, can only fuse based on the three opinions
+
+> Note: This project does not configure any MCP servers. The term "MCP permission isolation" refers to the agent-level tool restrictions (`read: deny` / `bash: deny`), not MCP server-level isolation.
 
 ### No-material fallback
 
@@ -282,6 +302,8 @@ The tool layer outputs a clear error category on failure, instead of blindly ret
 ### Why ~90% saved
 
 MoA bills by a call-volume-weighted mix: ~80% tool-layer Flash, ~18% mid-tier, ~2% flagship. Estimate the effective output unit price with the per-unit prices in this section's cost table:
+
+> **Important**: The 80/18/2 ratios are **expected call volume distribution designed by the architecture**, not measured cost proportions. Actual usage depends on task types and complexity.
 
 | Layer      | Share | Output unit price /1M                                             | Weighted |
 | ---------- | ----- | ----------------------------------------------------------------- | -------- |
@@ -314,9 +336,9 @@ Limits are defined by dollar value. Cheap models (Flash) can be used more often,
 | Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%              |
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                   |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                   |
-| Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2%               |
-| Fusion     | Qwen3.7 Max     | $2.50 / $7.50              | 4,770         | (where it counts) |
-| Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         |                   |
+| Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
+| Fusion     | Qwen3.7 Max     | $2.50 / $7.50              | 4,770         | ~2% (flagship fuse) |
+| Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
 > All model IDs are declarations only; replace with any model you prefer.
 
@@ -346,7 +368,7 @@ OpenCode Zen provides free models as a last resort:
 | -------------------------- | --------------------------------------------------------------- |
 | Global catch-all           | undeclared tool call → popup confirm                            |
 | Agent permission isolation | each agent can only use allowed tools                           |
-| MCP permission isolation   | opinion layer forbidden from MCP, prevents bypassing tool layer |
+| MCP permission isolation   | opinion layer forbidden from reading code (read: deny / bash: deny), prevents bypassing tool layer (project has no MCP server configured; "MCP" here refers to agent-level tool restrictions) |
 | Task whitelist             | concierge-router can only call declared agents                  |
 | Fallback chain             | tool layer fails → ask user → wait/skip/free model              |
 | One-click rollback         | delete `.opencode/` to restore                                  |
@@ -403,7 +425,7 @@ A: Method 1 is most convenient — drag `docs/opencode-moa.md` into the chat box
 ### Usage
 
 **Q: Can't see "concierge-router"?**
-A: See the three checks under "30-second deploy → How to tell deployment succeeded": `opencode.json` at project root, 19 .md under `.opencode/agents/`, switch with `Tab` after restart (Windows desktop client: `Ctrl+.` also works).
+A: See the three checks under "30-second deploy → How to tell deployment succeeded": `opencode.json` at project root, 22 .md under `.opencode/agents/`, switch with `Tab` after restart (Windows desktop client: `Ctrl+.` also works).
 
 **Q: `@tool-handler` no response?**
 A: Confirm `.opencode/agents/tool-handler.md` exists and the frontmatter format is correct.
@@ -431,7 +453,7 @@ A: Deploy each project separately. `.opencode/` is project-level config and does
 ### Fallback
 
 **Q: The whole tool layer is down, what now?**
-A: See "Fault tolerance design → Fallback chain" above: MoA asks the user to choose A. wait a few minutes / B. skip tool layer and call opinion layer directly (higher cost) / C. switch to free model.
+A: See "Fault tolerance design → Fallback chain" above: MoA asks the user to choose A. wait a few minutes / B. skip tool layer and call opinion layer directly (higher cost).
 
 **Q: Where are the free models?**
 A: See "Cost → Free models" above: use `/models` to open the model list and pick one tagged "Free" (Windows desktop client: `Ctrl+'` also works) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free, etc.). Free models have limited context, may be slower, and data may be used for training.

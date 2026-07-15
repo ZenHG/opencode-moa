@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 <details open>
 <summary>🇬🇧 English</summary>
@@ -10,6 +10,15 @@
 - Minor (X): new features, model changes, agent changes
 - Major: architectural rewrite
 - No version skips; each change bumps exactly one level
+
+### Entry structure
+
+- One entry per release: `## v0.X.Y（YYYY-MM-DD）` (level-2 heading; fullwidth parentheses around the date).
+- Two collapsible blocks per entry: English `<details open>` (expanded by default) then Chinese `<details>` (collapsed by default).
+- One-line summary at the top of each block (plain text, not bold).
+- Changes go under `###` category headings (e.g. `New agents`, `Fix`, `Docs`) — short category words + optional `(parenthetical note)`. Do not number headings (e.g. `### 1.`).
+- Severity-ordered changes use `### Critical (P0)` / `### High (P1)` / `### Low (P2)`, each listed once in P0→P1→P2 order (never interleaved or repeated).
+- Entries separated by `---`; keep one blank line between `</details>` and `---`, and between `---` and the next `##` heading (missing blanks make the heading render as a code block).
 
 </details>
 
@@ -23,6 +32,142 @@
 - 次版本号（X）：新增功能、模型调整、agent 改动
 - 主版本号：架构重构
 - 不跳版本号，每次改动只升一级
+
+### 条目结构
+
+- 每个版本一条：`## v0.X.Y（YYYY-MM-DD）`（二级标题；日期用全角括号）。
+- 每条含两个折叠块：英文 `<details open>`（默认展开）在前，中文 `<details>`（默认折叠）在后。
+- 每个块顶部一句摘要（纯文本，不加粗）。
+- 变更用 `###` 分类小标题组织（如 `新增 agent`、`修复`、`文档`）：简短分类词 + 可选（括号说明）。不要用数字编号（如 `### 1.`）。
+- 按严重度排序时用 `### 致命（P0）` / `### 高（P1）` / `### 低（P2）`，各只出现一次、按 P0→P1→P2 排列（不穿插、不重复）。
+- 版本之间用 `---` 分隔；`</details>` 与 `---` 之间、`---` 与下一个 `##` 标题之间各留一个空行（缺空行会导致标题被渲染成代码块）。
+
+</details>
+
+---
+## v0.0.9（2026-07-15）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+MoA 2.0: Residual-enhanced fusion + confidence routing + 22 agents.
+
+### New agents (+2)
+
+- ``残差提取者`` (Flash): analyzes divergence between 3 parallel plans; triggers only when consensus < 95%. Enriches fusion with structured difference data.
+- ``置信度评估者`` (DS Pro): evaluates fusion output across 4 dimensions (hallucination, requirement alignment, spec conflict, feasibility), returns a 0–100 confidence score.
+
+### Fusion layer overhaul (residual-enhanced)
+
+- **旗舰·融合** (Qwen3.7 Max, 16384 tokens): upgraded to 3-stage fusion — consensus identification → residual analysis → integration. Includes a "fast path" that skips residual when consensus ≥ 95%.
+- **中级·融合** (Kimi, 16384 tokens): 2-stage simplified fusion (consensus + residual → output).
+- **前端·总工** (GLM-5.2, 16384 tokens): adds confidence scoring dimension to frontend plan selection.
+- **融合·保底** (DS V4 Pro, 16384 tokens): generic fallback fusion agent that inherits the residual-enhanced fusion flow. Triggered automatically when any primary fusion agent fails.
+- All 3 fusion agents now have ``hidden: true`` (not shown in @ menu).
+
+### Quality assurance upgrade
+
+- **旗舰·质检** (DS Pro, 16384 tokens): expanded to dual-role — plan review (with confidence assessment) AND code acceptance. Adds "learning records" (logs typical problem tags after each review).
+
+### Router upgrade
+
+- **门童路由员** (Flash): added confidence estimation (4 dimensions: clarity, familiarity, context sufficiency, risk level) and VOC (Value of Computation) escalation rules. Expanded task whitelist to include the 2 new agents.
+
+### Token limit fixes
+
+- All production-layer agents bumped from 8192 → 16384 max_tokens (旗舰·实现, 旗舰·质检, 旗舰·融合, 旗舰·架构, 旗舰·规划, 旗舰·工程, 中级·工程, 中级·创意, 中级·码农, 中级·融合, 前端·总工, 前端·逻辑, 前端·动效, 融合·保底).
+- Frontend·还原 bumped from 8192 → 16384; added ``hidden: true``.
+- Analysis-layer agents (残差提取者, 置信度评估者): 4096 max_tokens.
+- Tool-layer agents remain at 2048 (cost optimization).
+
+### Command updates
+
+- ``/moa-flagship``: reflects new flow (残差提取者 + 质检方案审查).
+- ``/moa-medium``: reflects new flow (残差提取者 + 可选质检).
+- ``/moa-quick``: marked as deprecated/equivalent to "small task" shortcut.
+
+### Skill updates
+
+- ``architecture-moa/SKILL.md``: reflects new flow (残差提取者 + 质检方案审查).
+
+### Documentation fixes
+
+- README: agent count updated 19 → 22 (header, deploy section, FAQ).
+- README: clarified "MCP permission isolation" — noted it refers to agent-level ``read: deny`` / ``bash: deny``, not actual MCP server isolation (no MCP servers are configured).
+- README: 80/18/2 ratio annotated as "designed call volume distribution, not measured cost proportion".
+- T0 test script: updated to expect 22 agents, correct model assignments, 22 reasoningEffort entries.
+
+### Abandoned items (intentionally not done)
+
+- **P0-4: Clean up invalid bash allows in opencode.json** — The ``grep/ls/cat allow`` entries on ``bash: deny`` agents are noise but harmless; they're still useful for ``bash: ask`` agents.
+- **P0-5: Unify 4 fusion agent prompts** — Different input sources make unified prompts counterproductive; separate prompts allow fine-tuning per chain.
+- **P1-3: Deduplicate 3-document set (README + 2 manuals)** — Each doc serves a different purpose (quick-start guide vs AI installer vs English installer); cross-referencing would increase maintenance burden.
+
+### Verification
+
+- T0 static verification: 44/44 PASS (previously 40/40 at v0.0.8, +4 new checks for new agents/models).
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+MoA 2.0：残差增强融合 + 置信度路由 + 22 个 agent。
+
+### 新增 agent（+2）
+
+- ``残差提取者`` (Flash)：分析 3 份并行方案的差异；仅在共识覆盖率 < 95% 时触发，为融合层提供结构化差异数据。
+- ``置信度评估者`` (DS Pro)：从 4 个维度评估融合输出（幻觉检测、要求对齐、规范冲突、可行性），返回 0–100 置信度评分。
+
+### 融合层重构（残差增强）
+
+- **旗舰·融合** (Qwen3.7 Max, 16384 token)：升级为三阶段融合 — 共识识别 → 残差分析 → 整合。含「快速通道」：共识 ≥ 95% 时跳过残差分析。
+- **中级·融合** (Kimi, 16384 token)：两阶段简化融合（共识 + 残差 → 输出）。
+- **前端·总工** (GLM-5.2, 16384 token)：新增置信度评分维度。
+- **融合·保底** (DS V4 Pro, 16384 token)：通用保底融合 agent，继承残差增强融合流程。任一主融合 agent 失败时自动触发。
+- 3 个融合 agent 均设 ``hidden: true``（不在 @ 菜单显示）。
+
+### 质检升级
+
+- **旗舰·质检** (DS Pro, 16384 token)：扩展为双重职责 — 方案审查（含置信度评估）+ 代码验收。新增「学习记录」（每次审查后记录典型问题标签）。
+
+### 路由升级
+
+- **门童路由员** (Flash)：新增置信度估计（4 维度：需求清晰度、技术熟悉度、上下文充分性、风险等级）和 VOC（计算价值）升级规则。task 白名单扩展至包含 2 个新 agent。
+
+### Token 上限修复
+
+- 所有产出层 agent 从 8192 → 16384 max_tokens（旗舰·实现/质检/融合/架构/规划/工程，中级·工程/创意/码农/融合，前端·总工/逻辑/动效，融合·保底）。
+- 前端·还原 从 8192 → 16384；添加 ``hidden: true``。
+- 分析层 agent（残差提取者、置信度评估者）：4096 max_tokens。
+- 工具层 agent 保持 2048（成本优化）。
+
+### 命令文件更新
+
+- ``/moa-flagship``：反映新流程（残差提取者 + 质检方案审查）。
+- ``/moa-medium``：反映新流程（残差提取者 + 可选质检）。
+- ``/moa-quick``：标记为废弃/等价于「小任务」快捷方式。
+
+### Skill 更新
+
+- ``architecture-moa/SKILL.md``：反映新流程（残差提取者 + 质检方案审查）。
+
+### 文档修正
+
+- README：agent 计数 19 → 22（头部、部署节、FAQ）。
+- README：澄清「MCP 权限隔离」— 实际指 agent 级别的 ``read: deny`` / ``bash: deny``，并非真实 MCP 服务器隔离（项目未配置 MCP 服务器）。
+- README：80/18/2 比例标注为「设计调用量占比，非实测成本占比」。
+- T0 测试脚本：更新为期望 22 个 agent、正确的模型分配、22 个 reasoningEffort。
+
+### 放弃项（有意不做）
+
+- **P0-4: 清理 opencode.json 中无效的 bash allow** — 对 ``bash: deny`` agent 无效但对 ``bash: ask`` agent 仍有用，保留无害。
+- **P0-5: 统一 4 个融合 agent 提示词** — 输入来源不同，统一反而失去针对性。
+- **P1-3: 三件套文档去重** — README/部署手册/英文手册各有定位，改为互相引用增加维护负担。
+
+### 验证
+
+- T0 静态验证：44/44 PASS（v0.0.8 时为 40/40，新增 4 项对新 agent/模型的检查）。
 
 </details>
 
@@ -93,7 +238,7 @@ Cross-platform keybindings and version-floor consistency wrap-up (extension of t
 
 This release = manual `forceReasoning` premise correction + i18n completion (en promoted from skeleton to full) + README rework.
 
-### 1. Correct the manual's wrong premise that "custom provider must add `forceReasoning: true`"
+### Correct the manual's wrong premise that "custom provider must add `forceReasoning: true`"
 
 #### Background
 
@@ -114,20 +259,20 @@ The v0.0.5 manual stated: "opencode ≥ 1.3.4, `@ai-sdk/openai-compatible` provi
 
 v0.0.4 already recorded `reasoning_effort` rising from medium→max gave reasoning tokens 359→536, proving passthrough works natively on `openai-compatible`, consistent with the issue conclusion.
 
-### 2. i18n completion (en promoted from skeleton to full)
+### i18n completion (en promoted from skeleton to full)
 
 - Added `README.md` (English homepage): a full English version aligned with the Chinese README (`README.zh.md`).
 - `docs/en/opencode-moa.en.md`: promoted from ~skeleton to a full English version section-by-section matching the Chinese manual (Provider config, matrix, troubleshooting, FAQ, etc.); version synced to v0.0.6.
 - `docs/TRANSLATION.md`: zh/en bilingual status flipped from "🚧 skeleton (to translate)" to "✅ complete".
 
-### 3. README rework
+### README rework
 
 - Restructured the deploy prerequisites table and the system-level key-path warning: added a "read before deploy: don't misplace the key path" alert box (project-level self-contained vs system-level shared, pick one; pin `%USERPROFILE%\.config\opencode` not `%APPDATA%\opencode`).
 - Moved Q&A from the middle of the body to a unified "FAQ" at the end, and fixed several cross-references (e.g. "can't see the doorman", "where are free models" now point to the right sections).
 - Added a "why ~90% cheaper" cost breakdown: weighted by call volume (tool layer 80% / opinion layer 18% / fusion layer 2%) estimates effective output price ≈ $0.69/1M, ~90% cheaper than the flagship baseline, ~80% cheaper than a single mid-tier.
 - hero / architecture diagram model names updated to concrete versions (e.g. `Qwen3.7 Max`, `MiniMax M3`), aligned with the cost table; unified `Qwen3.7Max`/`Qwen3.7Plus` to the spaced spelling across the doc.
 
-### 4. Other
+### Other
 
 - Deleted `docs/PLAN-moa-hardening.md` (plan consolidated into per-version notes) and removed v0.0.5's reference to it.
 - Keybinding wording changed to cross-platform: agent switching unified to `Tab` cycle (or `Ctrl+x a` to open the agent list); free models via `/models` and pick the `Free` tag; your tested Windows desktop shortcuts `Ctrl+.` (switch agent) / `Ctrl+'` (switch free model) kept as "Windows desktop" annotations. Fixed the earlier bug of hardcoding these two keys, which conflicted with the official defaults (`Tab`/`/models`/`Ctrl+t`; and `Ctrl+.` is officially input redo, no `Ctrl+'` binding) — covering `README.md` (EN) / `README.zh.md` (ZH) / `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` everywhere relevant.
@@ -141,7 +286,7 @@ v0.0.4 already recorded `reasoning_effort` rising from medium→max gave reasoni
 
 本期 = 手册 `forceReasoning` 前提纠正 + 多语言补全（en 由骨架升至完整）+ README 重构。
 
-### 1. 纠正手册「自定义 provider 必须加 `forceReasoning: true`」的错误前提
+### 纠正手册「自定义 provider 必须加 `forceReasoning: true`」的错误前提
 
 #### 背景
 
@@ -162,20 +307,20 @@ v0.0.5 手册写入：「opencode ≥ 1.3.4 起，`@ai-sdk/openai-compatible` pr
 
 v0.0.4 已记录 `reasoning_effort` 从 medium→max 时 reasoning tokens 359→536，证明透传在 `openai-compatible` 上原生生效，与 issue 结论一致。
 
-### 2. 多语言补全（en 由骨架升至完整）
+### 多语言补全（en 由骨架升至完整）
 
 - 新增英文 README（现 `README.md` 首页）：与中文 README（现 `README.zh.md`）结构对齐的完整英文版。
 - `docs/en/opencode-moa.en.md`：由 ~骨架 补全为与中文手册逐节对应的完整英文版（Provider 配置、矩阵、排错表、FAQ 等），版本同步至 v0.0.6。
 - `docs/TRANSLATION.md`：中 / 英双语状态由「🚧 骨架（待译）」翻为「✅ 完整」。
 
-### 3. README 重构
+### README 重构
 
 - 部署前置条件表、系统级 key 路径提示重构：新增「部署前必读：key 路径别放错」警告框（项目级自包含 vs 系统级共享二选一，钉死 `%USERPROFILE%\.config\opencode` 而非 `%APPDATA%\opencode`）。
 - Q&A 段落从正文中部移到文末「常见问题」统一收口，并修正若干交叉引用（如「看不到门童」「免费模型在哪」指向对应小节）。
 - 新增「为什么省 ~90%」成本拆解：按调用量加权（工具层 80% / 意见层 18% / 融合层 2%）估算有效输出单价 ≈ $0.69/1M，对比旗舰基线省 ~90%、对比单中端省 ~80%。
 - hero / 架构图模型名更新为具体版本（如 `Qwen3.7 Max`、`MiniMax M3`），与成本表对齐；全文档 `Qwen3.7Max`/`Qwen3.7Plus` 统一为带空格写法。
 
-### 4. 其他
+### 其他
 
 - 删除 `docs/PLAN-moa-hardening.md`（方案已整合进各版本变更说明），并移除 v0.0.5 对其的引用。
 - 切换键说明改为跨平台写法：agent 切换统一用 `Tab` 循环（或 `Ctrl+x a` 打开 agent 列表），免费模型用 `/models` 打开模型列表选 `Free` 标签；你实测的 Windows 桌面端快捷键 `Ctrl+.`（切 agent）/ `Ctrl+'`（切免费模型）保留为「Win 桌面端」标注。修正了此前把这两个键写死、与官方默认键位（`Tab`/`/models`/`Ctrl+t`，且 `Ctrl+.` 官方为 input redo、无 `Ctrl+'` 绑定）冲突的问题，覆盖 `README.md`（英文）/ `README.zh.md`（中文）/ `docs/opencode-moa.md` / `docs/en/opencode-moa.en.md` 全部相关处。
@@ -202,25 +347,7 @@ Audited whether opencode-moa misleads AI / users; fixed a batch of issues that c
 
 - **T0 static test didn't validate `reasoningEffort` values**: originally only counted `=19`; an uppercase `Medium` would PASS, and re-packaging/releasing would reproduce the v0.0.3/0.0.4 400 root cause. Added a check: every `reasoningEffort` must be in the lowercase gateway enum `low/medium/high/max/xhigh/none/minimal`, otherwise FAIL.
 
-### Low (P2)
-
-- Manual Provider block (`docs/opencode-moa.md:69-77`) and install script model `name` changed from display name to slug (the API actually calls by map key=slug; the display name is only an alias; unified this time to avoid mismatch with the real config).
-- The 9 orchestration-layer agents' `hidden: true` (concierge-router, mid-eng/creative/coder, flag-eng/arch/plan, fe-logic/motion) is now **actually applied** to `.opencode/agents/*.md` (the v0.0.4 "pending" item is cleared).
-- Created `.opencode/local/` directory placeholder (so the manual's Method A reference `{file:.opencode/local/opencode-go.key}` no longer errors on a missing dir).
-
-### High (P1)
-
 - **reasoning matrix silently fails on opencode ≥ 1.3.4**: custom `@ai-sdk/openai-compatible` providers no longer pass reasoning params to the request body by default ([issue #20815](https://github.com/anomalyco/opencode/issues/20815)), so the `reasoningEffort` matrix was a no-op without erroring. Added `"forceReasoning": true` to the Provider config block `options`; raised the required version from ≥ 1.1.1 to **≥ 1.3.4** (reasoning passthrough fix; 1.1.1 can only run basics, matrix fails). README badge and prerequisites table synced.
-
-### Low (P2)
-
-- **Windows system-level path clarification**: pinned to `%USERPROFILE%\.config\opencode\opencode.json`, explicitly denying the online myth `%APPDATA%\opencode` (wrong path → "deploy succeeds but all agents can't connect" with no obvious error); manual gained a real-path table per platform; README gained a cross-platform hint.
-- **Cross-platform verification script**: Block 6 originally used bash (`ls`/`wc`/`grep`/`find`) which can't run in native Windows CMD/PowerShell; added a native PowerShell version, plus a "bash only on Linux/macOS/WSL/Git Bash" hint.
-- **`instructions` no longer hardcoded**: `["AGENTS.md"]` changed to a default comment; only enabled when the project root **already has** an `AGENTS.md` — removes the startup warning for projects without that file, and doesn't impose a convention file on the project.
-- **`T0-static-verify.ps1` generated on deploy**: manual added Block 5.5 writing the script into `.opencode/tests/`, fixing "manual references it but the file isn't shipped with the repo, other users can't find it when copying"; the script treats a **system-level key** as PASS (key check softened from hard FAIL to lenient, matching system-level deploy).
-- Manual and README's "41 PASS" old wording unified to the accurate expectation (all PASS / FAIL=0 / system-level key WARN also counts).
-
-### High (P1)
 
 - **Provider changed to a hard gate of "exists + real key" (catch empty shells)**: tested an extreme scenario — system-level `opencode.json` deleted / system dir empty / provider missing or placeholder key — deploy could still write all 19 files, yet all agents couldn't connect at runtime, and the old check only WARNed, not red. Done:
   - Block 0 added a **Provider hard gate**: after deploy, must assert that the project `opencode.json` OR system-level `~/.config/opencode/opencode.json` (pick one, only one per dir) contains `provider.opencode-go` and an `apiKey` that is not `<YOUR_GO_API_KEY>`/empty, otherwise the AI must rebuild the provider and must not declare success.
@@ -229,12 +356,21 @@ Audited whether opencode-moa misleads AI / users; fixed a batch of issues that c
 
 ### Low (P2)
 
+- Manual Provider block (`docs/opencode-moa.md:69-77`) and install script model `name` changed from display name to slug (the API actually calls by map key=slug; the display name is only an alias; unified this time to avoid mismatch with the real config).
+- The 9 orchestration-layer agents' `hidden: true` (concierge-router, mid-eng/creative/coder, flag-eng/arch/plan, fe-logic/motion) is now **actually applied** to `.opencode/agents/*.md` (the v0.0.4 "pending" item is cleared).
+- Created `.opencode/local/` directory placeholder (so the manual's Method A reference `{file:.opencode/local/opencode-go.key}` no longer errors on a missing dir).
+
+- **Windows system-level path clarification**: pinned to `%USERPROFILE%\.config\opencode\opencode.json`, explicitly denying the online myth `%APPDATA%\opencode` (wrong path → "deploy succeeds but all agents can't connect" with no obvious error); manual gained a real-path table per platform; README gained a cross-platform hint.
+- **Cross-platform verification script**: Block 6 originally used bash (`ls`/`wc`/`grep`/`find`) which can't run in native Windows CMD/PowerShell; added a native PowerShell version, plus a "bash only on Linux/macOS/WSL/Git Bash" hint.
+- **`instructions` no longer hardcoded**: `["AGENTS.md"]` changed to a default comment; only enabled when the project root **already has** an `AGENTS.md` — removes the startup warning for projects without that file, and doesn't impose a convention file on the project.
+- **`T0-static-verify.ps1` generated on deploy**: manual added Block 5.5 writing the script into `.opencode/tests/`, fixing "manual references it but the file isn't shipped with the repo, other users can't find it when copying"; the script treats a **system-level key** as PASS (key check softened from hard FAIL to lenient, matching system-level deploy).
+- Manual and README's "41 PASS" old wording unified to the accurate expectation (all PASS / FAIL=0 / system-level key WARN also counts).
+
 - **T0 adds provider real-key validation**: Block 5.5 script now greps project/system `.json`/`.jsonc` for `opencode-go` with a real `apiKey` (`sk-*` or `{file:}` reference) that is not placeholder/empty, else FAIL — directly catches "system-level deleted / not rebuilt" empty shells.
 - **T0 skill misjudgment fix**: changed from "total == 3" to validating **3 specific directories exist** (`code-review-moa` / `architecture-moa` / `frontend-moa`), avoiding an end-user copying the repo's bundled `opencode-moa` meta-skill making it 4 and **falsely FAIL**.
 - **Same-layer dual-file warning fix**: originally "`.jsonc` wins, `.json` ignored" came from a third-party plugin doc; **the official spec doesn't define priority for two files in the same dir**. Changed to accurate wording: OpenCode supports both `.json`/`.jsonc`, but two co-existing files in the same dir have undefined priority and may conflict; the safe approach is to keep only one containing a valid provider + real key.
 - **Quick-reference table adds empty-shell causes**: added three rows — "system-level deleted / dir empty", "two `.json`+`.jsonc` in same dir", "placeholder key" — each pointing to rebuild provider / keep only one / replace real key, noting T0 now FAILs to intercept.
 - Plan archive: original `docs/PLAN-moa-hardening.md` (deleted in v0.0.6, content consolidated into per-version notes).
-
 </details>
 
 <details>
@@ -251,25 +387,7 @@ Audited whether opencode-moa misleads AI / users; fixed a batch of issues that c
 
 - **T0 静态测试不校验 `reasoningEffort` 取值**：原只数 `=19`，大写 `Medium` 会 PASS，重打包发布会复现 v0.0.3/0.0.4 的 400 根因。已新增检查：每个 `reasoningEffort` 必须落在网关小写枚举 `low/medium/high/max/xhigh/none/minimal`，否则 FAIL。
 
-### 低（P2）
-
-- 手册 Provider 块（`docs/opencode-moa.md:69-77`）与 install 脚本模型 `name` 由显示名改为 slug（API 实际按 map key=slug 调用，显示名仅别名；本次统一以避免与真实配置不一致）。
-- 9 个编排层 agent（concierge-router、mid-eng/creative/coder、flag-eng/arch/plan、fe-logic/motion）的 `hidden: true` 已从手册约定**实际应用**到 `.opencode/agents/*.md`（v0.0.4 标记「待应用」已结清）。
-- 创建 `.opencode/local/` 目录占位（手册方式 A 引用 `{file:.opencode/local/opencode-go.key}` 不再因目录缺失报错）。
-
-### 高（P1）
-
 - **reasoning 矩阵在 opencode ≥ 1.3.4 静默失效**：自定义 `@ai-sdk/openai-compatible` provider 默认不再把 reasoning 参数透传到请求体（[issue #20815](https://github.com/anomalyco/opencode/issues/20815)），`reasoningEffort` 矩阵等于摆设且不报错。已在 Provider 配置块 `options` 加 `"forceReasoning": true`；并把手册必需版本从 ≥ 1.1.1 提到 **≥ 1.3.4**（reasoning 透传修复；1.1.1 仅能跑通基础、矩阵失效）。README badge 与前置条件表同步更新。
-
-### 低（P2）
-
-- **Windows 系统级路径辟谣**：钉死为 `%USERPROFILE%\.config\opencode\opencode.json`，明确否定网上误传的 `%APPDATA%\opencode`（按错路径会「部署成功但全 agent 连不上」且无明显报错）；手册新增各平台真实路径表，README 加跨平台提示。
-- **验证脚本跨平台**：Block 6 原 bash（`ls` / `wc` / `grep` / `find`）在 Windows 原生 CMD / PowerShell 跑不了，补 PowerShell 原生版，并加「bash 仅 Linux / macOS / WSL / Git Bash」提示。
-- **`instructions` 不再写死**：`["AGENTS.md"]` 改为默认注释，仅当项目根**已存在** `AGENTS.md` 才启用——消除无该文件项目的启动告警，且不替项目强加约定文件。
-- **`T0-static-verify.ps1` 随部署生成**：手册新增 Block 5.5 把脚本完整写入 `.opencode/tests/`，解决「手册引用但该文件不随仓库分发、其他用户照跑找不到」；脚本对**系统级 key** 判定为 PASS（key 检查从硬 FAIL 改为 lenient，匹配系统级部署方式）。
-- 手册与 README 的「41 PASS」旧话术统一改为准确预期（全部 PASS / FAIL=0 / 系统级 key 时 WARN 也算过）。
-
-### 高（P1）
 
 - **Provider 改为「存在 + 真实 key」硬门（抓空壳）**：实测极端场景——系统级 `opencode.json` 被删 / 系统目录为空 / provider 缺失或占位符 key——部署仍能写出完整 19 文件，却运行时全 agent 连不上，且旧检查只 WARN 不红。已做：
   - Block 0 新增 **Provider 硬门**：部署后必须断言项目 `opencode.json` 或系统级 `~/.config/opencode/opencode.json`（二选一，同目录只留一个）含 `provider.opencode-go` 且 `apiKey` 非 `<YOUR_GO_API_KEY>`/非空，否则 AI 必须重建 provider，不许宣布成功。
@@ -278,12 +396,21 @@ Audited whether opencode-moa misleads AI / users; fixed a batch of issues that c
 
 ### 低（P2）
 
+- 手册 Provider 块（`docs/opencode-moa.md:69-77`）与 install 脚本模型 `name` 由显示名改为 slug（API 实际按 map key=slug 调用，显示名仅别名；本次统一以避免与真实配置不一致）。
+- 9 个编排层 agent（concierge-router、mid-eng/creative/coder、flag-eng/arch/plan、fe-logic/motion）的 `hidden: true` 已从手册约定**实际应用**到 `.opencode/agents/*.md`（v0.0.4 标记「待应用」已结清）。
+- 创建 `.opencode/local/` 目录占位（手册方式 A 引用 `{file:.opencode/local/opencode-go.key}` 不再因目录缺失报错）。
+
+- **Windows 系统级路径辟谣**：钉死为 `%USERPROFILE%\.config\opencode\opencode.json`，明确否定网上误传的 `%APPDATA%\opencode`（按错路径会「部署成功但全 agent 连不上」且无明显报错）；手册新增各平台真实路径表，README 加跨平台提示。
+- **验证脚本跨平台**：Block 6 原 bash（`ls` / `wc` / `grep` / `find`）在 Windows 原生 CMD / PowerShell 跑不了，补 PowerShell 原生版，并加「bash 仅 Linux / macOS / WSL / Git Bash」提示。
+- **`instructions` 不再写死**：`["AGENTS.md"]` 改为默认注释，仅当项目根**已存在** `AGENTS.md` 才启用——消除无该文件项目的启动告警，且不替项目强加约定文件。
+- **`T0-static-verify.ps1` 随部署生成**：手册新增 Block 5.5 把脚本完整写入 `.opencode/tests/`，解决「手册引用但该文件不随仓库分发、其他用户照跑找不到」；脚本对**系统级 key** 判定为 PASS（key 检查从硬 FAIL 改为 lenient，匹配系统级部署方式）。
+- 手册与 README 的「41 PASS」旧话术统一改为准确预期（全部 PASS / FAIL=0 / 系统级 key 时 WARN 也算过）。
+
 - **T0 增 provider 真实 key 校验**：Block 5.5 脚本现 grep 项目/系统级 `.json`/`.jsonc` 中的 `opencode-go` 且 `apiKey` 为真实值（`sk-*` 或 `{file:}` 引用）且非占位符/空，否则 FAIL——直接抓住「系统级被删 / 没重建」式空壳。
 - **T0 skills 误判修复**：从「总数 == 3」改为校验 **3 个指定目录存在**（`code-review-moa` / `architecture-moa` / `frontend-moa`），避免仓库自带 `opencode-moa` 元 skill 导致端用户复制后变 4 而**误 FAIL**。
 - **同层双文件警告修正**：原写「`.jsonc` 优先、`.json` 被忽略」来自第三方插件文档，**官方未定义同目录双文件优先级**。已改为准确表述：OpenCode 同时支持 `.json`/`.jsonc`，但同目录两份并存优先级未定义、内容还可能冲突，安全做法是只留一个且含有效 provider + 真实 key。
 - **速查表补空壳成因**：新增「系统级被删/目录为空」「同目录双 `.json`+`.jsonc`」「占位符 key」三行，对应处理均指向重建 provider / 只留一个 / 替换真实 key，并注明 T0 现会 FAIL 拦截。
 - 方案存档：原 `docs/PLAN-moa-hardening.md`（已于 v0.0.6 删除，内容已整合进各版本变更说明）。
-
 </details>
 
 ---
@@ -631,3 +758,4 @@ First formal release.
 - 三重意见机制，模型分配重建
 
 </details>
+

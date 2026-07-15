@@ -1,6 +1,6 @@
 ---
 name: opencode-moa
-description: 19-agent Cost-Optimal MoA configuration. Cost-efficient models act as tool agents, mid-tier models give opinions, flagship models fuse. One-shot deploy, can be deleted afterward.
+description: 22-agent Cost-Optimal MoA configuration. Cost-efficient models act as tool agents, mid-tier models give opinions, flagship models fuse. One-shot deploy, can be deleted afterward.
 ---
 
 # OpenCode MoA Deployment Manual
@@ -29,7 +29,7 @@ description: 19-agent Cost-Optimal MoA configuration. Cost-efficient models act 
 
 ### Provider configuration (required)
 
-All 19 agents use **`opencode-go/<model-id>`** (the official Go model ID format). Sub-agents resolve this prefix through the provider registry. **You must have an `opencode-go` provider with credentials** (otherwise the built-in `opencode` provider has no key and silently downgrades to `public`, Go paid models get disabled → `OpenCode Go provider error` / `Upstream request failed`).
+All 22 agents use **`opencode-go/<model-id>`** (the official Go model ID format). Sub-agents resolve this prefix through the provider registry. **You must have an `opencode-go` provider with credentials** (otherwise the built-in `opencode` provider has no key and silently downgrades to `public`, Go paid models get disabled → `OpenCode Go provider error` / `Upstream request failed`).
 
 Two authentication methods, choose one:
 
@@ -52,7 +52,7 @@ Two authentication methods, choose one:
 > 2. Tell the user: open `opencode.json`, replace `<YOUR_GO_API_KEY>` with your real key created at opencode.ai/auth, save and restart OpenCode.
 > 3. The key never goes through chat; the user does it locally.
 >
-> **This step cannot be skipped.** Otherwise all 19 agents fail silently.
+> **This step cannot be skipped.** Otherwise all 22 agents fail silently.
 
 ---
 
@@ -73,7 +73,7 @@ Two authentication methods, choose one:
 
 > 🔴 **Same-directory dual-file warning**: OpenCode officially supports **both `.json` and `.jsonc`** formats, but **leaving both `opencode.json` and `opencode.jsonc` in the same directory has undefined priority** — the official config docs only say "both formats supported" and list the global path as `opencode.json`, without specifying which wins in a same-directory dual-file situation. The two files may also conflict (e.g. one enables a provider, the other disables it). **Safe practice: keep only one file per directory**, and make the kept one contain a valid `opencode-go` provider + real key; don't rely on "both present" as a fallback.
 
-> 🔴 **`apiKey` cannot be a placeholder / empty**: writing `<YOUR_GO_API_KEY>`, an empty string, or omitting it makes deployment look complete but at runtime all 19 agents return 401/403 `Upstream request failed`. Both this project's hard gate and T0 will block this.
+> 🔴 **`apiKey` cannot be a placeholder / empty**: writing `<YOUR_GO_API_KEY>`, an empty string, or omitting it makes deployment look complete but at runtime all 22 agents return 401/403 `Upstream request failed`. Both this project's hard gate and T0 will block this.
 
 ```jsonc
 {
@@ -145,7 +145,7 @@ This fallback chain is already implemented in the concierge-router's prompt. Exe
 
 By default opencode uses a single model from start to finish. Changing one character and designing a system architecture use the same prompt, same temperature, same context. No division of labor.
 
-This package deploys a **concierge-router + 18 specialized agents** Cost-Optimal MoA architecture. The core design principle is just one line:
+This package deploys a **22-agent Cost-Optimal MoA** architecture (1 concierge-router + 21 specialized subagents, of which 18 are hidden). The core design principle is just one line:
 
 > **Use flash and MiMo for grunt work, mid-tier for opinions, flagship for fusion.** Each model only does what it does best; never waste a single call.
 
@@ -155,15 +155,15 @@ This package deploys a **concierge-router + 18 specialized agents** Cost-Optimal
 Monthly quota comparison (OpenCode Go plan $10/month):
   DeepSeek V4 Flash   158,000 calls → tool layer (use freely)
   MiMo-V2.5           150,400 calls → tool layer (use freely)
-  ─── above are the tool agents, ~80% of call volume ───
+  ─── above are the tool agents, ~80% of call volume (design target, not measured) ───
   MiniMax M3           16,000 calls
   DeepSeek V4 Pro      17,150 calls
   Qwen3.7 Plus         21,600 calls
-  ─── above are mid-tier opinion models, ~18% ───
+  ─── above are mid-tier opinion models, ~18% (design target, not measured) ───
   Kimi K2.7 Code        9,250 calls
   Qwen3.7 Max           4,770 calls
   GLM-5.2               4,300 calls
-  ─── above are flagship fusion models, ~2% ───
+  ─── above are flagship fusion models, ~2% (design target, not measured) ───
 ```
 
 ### How to use
@@ -221,7 +221,7 @@ tool-handler (Flash) failed → immediate retry once
 
 ### Block 0: Environment check
 
-> ⚠️ **Pre-check**: before starting deployment, confirm you have completed the key setup in the **"Provider configuration"** section above (the system-level `~/.config/opencode/opencode.json` has registered `provider.opencode-go` with a valid key). OpenCode only loads the project-level `opencode.json` and the system-level `~/.config/opencode/opencode.json`, **not `user_config.json`**. If you haven't configured it, go back and do it first, otherwise the 19 agents will all fail to connect after deployment.
+> ⚠️ **Pre-check**: before starting deployment, confirm you have completed the key setup in the **"Provider configuration"** section above (the system-level `~/.config/opencode/opencode.json` has registered `provider.opencode-go` with a valid key). OpenCode only loads the project-level `opencode.json` and the system-level `~/.config/opencode/opencode.json`, **not `user_config.json`**. If you haven't configured it, go back and do it first, otherwise the 22 agents will all fail to connect after deployment.
 
 ```bash
 # detect run mode
@@ -238,7 +238,7 @@ else
 fi
 ```
 
-> 🔴 **Provider hard gate (must check after deploy)**: after file deployment, you must assert that **either the project `opencode.json` or the system-level `~/.config/opencode/opencode.json` (one per directory, keep only one)** contains `provider.opencode-go` and `apiKey` is a **real key** (neither the `<YOUR_GO_API_KEY>` placeholder, nor empty/missing). If not satisfied, the AI **must re-run the Provider step above to rebuild the provider** and must not announce "deployment successful" — otherwise it produces an empty shell of "complete files but all 19 agents can't connect".
+> 🔴 **Provider hard gate (must check after deploy)**: after file deployment, you must assert that **either the project `opencode.json` or the system-level `~/.config/opencode/opencode.json` (one per directory, keep only one)** contains `provider.opencode-go` and `apiKey` is a **real key** (neither the `<YOUR_GO_API_KEY>` placeholder, nor empty/missing). If not satisfied, the AI **must re-run the Provider step above to rebuild the provider** and must not announce "deployment successful" — otherwise it produces an empty shell of "complete files but all 22 agents can't connect".
 
 ---
 
@@ -287,13 +287,15 @@ OpenCode's `@` autocomplete menu has a **display line cap** (about 10 lines); ag
 
 Mitigation: set `hidden: true` for agents that **are only orchestrated by the concierge-router via the Task tool and the user almost never types `@` to call**. This field **only hides the `@` menu item, it does not block Task calls** (the concierge-router calls them via Task), so the fusion chain behavior is unaffected.
 
-**The 9 orchestration-layer agents set to `hidden: true`:**
+**The 18 orchestration-layer agents set to `hidden: true`:**
 
-- flag-arch / flag-plan / flag-eng / flag-fuse / flag-impl / flag-qa (flagship fusion chain, all concierge-router-driven)
-- mid-fuse, fe-lead (fusion layer, concierge-router-driven)
+- flag-arch / flag-plan / flag-eng / flag-fuse / flag-impl / flag-qa (flagship fusion chain, concierge-router-driven)
+- mid-eng / mid-creative / mid-coder / mid-fuse (opinion layer, concierge-router-driven)
+- fe-restore / fe-logic / fe-motion / fe-lead (frontend opinion + fusion, concierge-router-driven)
+- residual-extractor / confidence-assessor / fusion-fallback (analysis + fallback layer, concierge-router-driven)
 - tool-handler-mimo (tool agent fallback, concierge-router retry-chain driven)
 
-**Kept visible (users often `@` them):** tool-handler, vision-translator, swift, mid-creative, mid-eng, mid-coder, fe-restore, fe-logic, fe-motion, plus built-in explore / general. If still slightly over the cap, you can also hide mid-fuse / fe-lead (they go through the concierge-router anyway).
+**Kept visible (users often `@` them):** concierge-router (primary), tool-handler, vision-translator, swift, plus built-in explore / general.
 
 > `hidden` only takes effect on `mode: subagent`; the primary agent (concierge-router) is not in the `@` menu and needs no setting.
 
@@ -302,7 +304,7 @@ Mitigation: set `hidden: true` for agents that **are only orchestrated by the co
 > - **Agent names**: you may rename any agent, but a rename is a global find-and-replace — you must update **every** reference or deployment breaks: the concierge-router's `task:` whitelist, `opencode.json`'s `permission.task` whitelist, and all cross-agent `@`/`task` calls. Miss one and that agent goes unreachable (task call denied).
 > - **The router itself**: keep `concierge-router` identical across its own frontmatter, the `task:` whitelist above, and `opencode.json`'s `default_agent`.
 
-### Block 2: 19 Agent files
+### Block 2: 22 Agent files
 
 All agents are written to `.opencode/agents/`. Check existing files in the directory before writing to avoid overwriting same-named files.
 
@@ -313,8 +315,9 @@ Write order:
 3. mid-eng → mid-creative → mid-coder → mid-fuse
 4. flag-arch → flag-plan → flag-eng → flag-fuse → flag-impl → flag-qa
 5. fe-restore → fe-logic → fe-motion → fe-lead
+6. residual-extractor → confidence-assessor → fusion-fallback (hidden, concierge-driven)
 
-**Self-check**: `Get-ChildItem .opencode/agents/*.md` count should be 19.
+**Self-check**: `Get-ChildItem .opencode/agents/*.md` count should be 22.
 
 #### concierge-router
 
@@ -354,6 +357,9 @@ permission:
     "fe-logic": allow
     "fe-motion": allow
     "fe-lead": allow
+    "fusion-fallback": allow
+    "residual-extractor": allow
+    "confidence-assessor": allow
 ---
 
 Receive a request → task(@tool-handler) probes whether the tool layer is available
@@ -385,12 +391,12 @@ Normal routing:
   small task → @swift
   needs context → @tool-handler (parallel @tool-handler-mimo for large volume)
   screenshot → +@vision-translator
-  medium → @tool-handler → parallel @mid-eng @mid-creative @mid-coder → @mid-fuse
-  large → @tool-handler → parallel @flag-arch @flag-plan @flag-eng → @flag-fuse → @flag-impl → @flag-qa
+  medium → @tool-handler → parallel @mid-eng @mid-creative @mid-coder → @mid-fuse → @residual-extractor
+  large → @tool-handler → parallel @flag-arch @flag-plan @flag-eng → @flag-fuse → @flag-impl → @flag-qa → @residual-extractor
   UI → parallel @fe-restore @fe-logic @fe-motion → @fe-lead
 
 Forward the fused-layer output to the user; hide intermediate results.
-If an agent fails or times out → skip it and continue with what returned. All fail → STUCK: cannot route.
+If an agent fails or times out → skip it and continue with what returned. If the fusion agent (mid-fuse / flag-fuse) fails, returns empty, or errors → @fusion-fallback compares the three plans and outputs one. All fail → STUCK: cannot route.
 STUCK → tell the user to press Tab to switch to the plan agent (Windows desktop client: also Ctrl+.).
 ```
 
@@ -516,7 +522,8 @@ mode: subagent
 model: opencode-go/minimax-m3
 temperature: 0.4
 reasoningEffort: max
-max_tokens: 8192
+max_tokens: 16384
+hidden: true
 permission:
   edit: deny
   bash: deny
@@ -554,7 +561,8 @@ mode: subagent
 model: opencode-go/deepseek-v4-pro
 temperature: 0.5
 reasoningEffort: medium
-max_tokens: 8192
+max_tokens: 16384
+hidden: true
 permission:
   edit: deny
   bash: deny
@@ -592,7 +600,8 @@ mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.3
 reasoningEffort: medium
-max_tokens: 8192
+max_tokens: 16384
+hidden: true
 permission:
   edit: deny
   bash: deny
@@ -626,7 +635,7 @@ hidden: true
 model: opencode-go/kimi-k2.7-code
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -653,7 +662,7 @@ hidden: true
 model: opencode-go/qwen3.7-max
 temperature: 0.4
 reasoningEffort: xhigh
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -691,7 +700,7 @@ hidden: true
 model: opencode-go/glm-5.2
 temperature: 0.4
 reasoningEffort: max
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -729,7 +738,7 @@ hidden: true
 model: opencode-go/minimax-m3
 temperature: 0.5
 reasoningEffort: max
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -764,10 +773,10 @@ Implementation points | Module split + interfaces | Performance & capacity | Obs
 description: Fuses three architecture plans
 mode: subagent
 hidden: true
-model: opencode-go/kimi-k2.7-code
+model: opencode-go/qwen3.7-max
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -793,7 +802,7 @@ hidden: true
 model: opencode-go/deepseek-v4-flash
 temperature: 0.2
 reasoningEffort: medium
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: allow
   bash: allow
@@ -822,7 +831,7 @@ hidden: true
 model: opencode-go/deepseek-v4-pro
 temperature: 0.2
 reasoningEffort: max
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -850,7 +859,8 @@ mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.3
 reasoningEffort: medium
-max_tokens: 8192
+max_tokens: 16384
+hidden: true
 permission:
   edit: allow
   bash: allow
@@ -870,7 +880,8 @@ mode: subagent
 model: opencode-go/qwen3.7-plus
 temperature: 0.4
 reasoningEffort: medium
-max_tokens: 8192
+max_tokens: 16384
+hidden: true
 permission:
   edit: deny
   bash: deny
@@ -907,7 +918,8 @@ mode: subagent
 model: opencode-go/mimo-v2.5-pro
 temperature: 0.5
 reasoningEffort: max
-max_tokens: 8192
+max_tokens: 16384
+hidden: true
 permission:
   edit: deny
   bash: deny
@@ -939,10 +951,10 @@ When called without material (tool layer failed):
 description: Picks / fuses the best of three frontend plans
 mode: subagent
 hidden: true
-model: opencode-go/kimi-k2.7-code
+model: opencode-go/glm-5.2
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 8192
+max_tokens: 16384
 permission:
   edit: deny
   bash: deny
@@ -957,6 +969,155 @@ Scores (layout/code quality/interaction/visual/TS) | Comparison verdict | ---FIN
 
 ---
 
+
+
+#### residual-extractor
+
+`.opencode/agents/residual-extractor.md`：
+
+```markdown
+---
+description: Extract residual information across multiple plans; identify consensus and divergence
+mode: subagent
+model: opencode-go/deepseek-v4-flash
+temperature: 0.3
+reasoningEffort: medium
+max_tokens: 4096
+hidden: true
+permission:
+  edit: deny
+  bash: deny
+  read: deny
+  webfetch: deny
+---
+
+You are the residual-extraction specialist. Your only job is to analyze the differences between multiple input plans and surface the incremental information beyond consensus.
+
+## Workflow
+
+1. **Consensus identification** — find the core decisions all plans agree on.
+2. **Divergence extraction** — identify contradictions and differences between plans.
+3. **Difference classification**:
+   - Complementary: plans focus on different aspects, mergeable.
+   - Contradictory: fundamental conflict between plans, pick one.
+   - Redundant: plans express the same idea, keep the best wording.
+4. **Hallucination flagging** — flag suspicious tech choices, non-existent APIs, fabricated libraries.
+
+## Output format
+
+---residual report---
+[consensus coverage] XX%
+
+[consensus]
+- decision 1: ...
+
+[divergence handling]
+divergence 1:
+  - plan A: ...
+  - plan B: ...
+  - type: complementary / contradictory / redundant
+  - handling: merge / pick-one / discard
+
+[suspected hallucinations]
+- location: plan X
+- issue: description
+- confidence: high / medium / low
+
+[residual compensation suggestions]
+(incremental info beyond consensus; what to add)
+```
+
+#### confidence-assessor
+
+`.opencode/agents/confidence-assessor.md`：
+
+```markdown
+---
+description: Assess the confidence and compliance of MoA fusion results
+mode: subagent
+model: opencode-go/deepseek-v4-pro
+temperature: 0.2
+reasoningEffort: max
+max_tokens: 4096
+hidden: true
+permission:
+  edit: deny
+  bash: deny
+  read: deny
+  webfetch: deny
+---
+
+You are the confidence assessor. Review the credibility of MoA fusion output.
+
+## Scoring (0-100, shares dimensions with concierge-router / flag-qa)
+
+| Dimension | Weight | What to score |
+| --- | --- | --- |
+| Requirement clarity | 0.25 | Does output answer the user's concrete constraints |
+| Model fit | 0.20 | Does the chosen approach match model capability |
+| Task complexity | 0.15 | Does the plan cover the task's complexity |
+| Familiarity | 0.10 | Uses mature tech the team knows |
+| Context sufficiency | 0.10 | Uses available material/context |
+| Risk level | 0.10 | Identifies potential risks |
+
+Overall confidence = 100 * Sum(dimension score * weight)
+
+## Review dimensions
+
+1. **Hallucination detection** — fabricated tech, non-existent APIs, invented libraries.
+2. **Requirement alignment** — meets all constraints of the original request.
+3. **Spec conflict** — conflicts with existing project specs / official docs.
+4. **Feasibility** — can it actually land in the current project context.
+
+## Output format
+
+---confidence report---
+overall confidence: X/100
+
+hallucination risk: high / medium / low
+  - [details]
+
+requirement alignment: X%
+  - unmet constraints: [...]
+
+spec conflict: yes / no
+  - [if any, list conflicts]
+
+feasibility: high / medium / low
+  - [reason]
+
+---disposition---
+confidence >= 85: adopt directly
+confidence 60-84: adopt with conditions — [what to fix]
+confidence < 60: redo — [main reason]
+```
+
+#### fusion-fallback
+
+`.opencode/agents/fusion-fallback.md`：
+
+```markdown
+---
+description: Fusion-layer fallback; compare three inputs and output one (inherits residual-enhanced fusion)
+mode: subagent
+model: opencode-go/deepseek-v4-pro
+temperature: 0.3
+reasoningEffort: max
+max_tokens: 16384
+hidden: true
+permission:
+  edit: deny
+  bash: deny
+  read: deny
+  webfetch: deny
+---
+
+You are the fusion fallback. When any primary fusion agent fails (STUCK / ERROR_PROVIDER / timeout / empty result), the concierge-router routes the three plans to you.
+
+Compare the three plans, keep consensus, take the best on divergence using the residual-enhanced flow, and output a single fused plan. Do not sit on the fence. If all three are flawed, emit a corrected version.
+
+[consensus coverage] | comparison conclusion | ---final plan---
+```
 ### Block 3: 5 `/moa-*` commands
 
 One file per command in `.opencode/commands/`. File names share the `moa-` prefix.
@@ -995,7 +1156,8 @@ $ARGUMENTS
 Flow:
 1. @tool-handler + @vision-translator gather material
 2. @mid-eng + @mid-creative + @mid-coder produce plans in parallel
-3. @mid-fuse fuses and outputs
+3. @mid-fuse fuses
+4. @residual-extractor surfaces consensus + divergence across the plans
 ```
 
 ```markdown
@@ -1009,8 +1171,9 @@ Flow:
 1. @tool-handler + @vision-translator gather material
 2. @flag-arch + @flag-plan + @flag-eng produce architecture plans in parallel
 3. @flag-fuse fuses
-4. (if needed) @flag-impl codes
-5. @flag-qa verifies
+4. @residual-extractor surfaces consensus + divergence across the plans
+5. (if needed) @flag-impl codes
+6. @flag-qa verifies, then @confidence-assessor scores the fused result
 ```
 
 ```markdown
@@ -1055,8 +1218,9 @@ description: Flagship MoA — three architecture opinions → fuse → implement
 1. task(@tool-handler) + task(@vision-translator) gather material
 2. task(@flag-arch) + task(@flag-plan) + task(@flag-eng) in parallel
 3. task(@flag-fuse) fuses
-4. task(@flag-impl) codes
-5. task(@flag-qa) verifies
+4. task(@residual-extractor) surfaces consensus + divergence
+5. task(@flag-impl) codes
+6. task(@flag-qa) verifies, then task(@confidence-assessor) scores the fused result
 </flow>
 <rules>
 - system architecture or multi-module design
@@ -1133,7 +1297,10 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
       "fe-restore": "allow",
       "fe-logic": "allow",
       "fe-motion": "allow",
-      "fe-lead": "allow"
+      "fe-lead": "allow",
+      "fusion-fallback": "allow",
+      "residual-extractor": "allow",
+      "confidence-assessor": "allow"
     },
     "webfetch": "allow",
     "read": {
@@ -1230,7 +1397,7 @@ function Check($name, $ok, $warnOnly = $false) {
 }
 
 $agents = @(Get-ChildItem .opencode/agents/*.md -ErrorAction SilentlyContinue)
-Check "agents == 19 (got $($agents.Count))" ($agents.Count -eq 19)
+Check "agents == 22 (got $($agents.Count))" ($agents.Count -eq 22)
 
 $cmds = @(Get-ChildItem .opencode/commands/moa-*.md -ErrorAction SilentlyContinue)
 Check "commands == 5 (got $($cmds.Count))" ($cmds.Count -eq 5)
@@ -1254,7 +1421,7 @@ $hasPlaceholder = ($provRaw -match '"apiKey"\s*:\s*"<YOUR_GO_API_KEY>"') -or ($p
 Check "provider.opencode-go registered and apiKey real (not placeholder/empty)" ($hasProv -and $hasRealKey -and -not $hasPlaceholder)
 
 $re = (Select-String -Path .opencode/agents/*.md -Pattern 'reasoningEffort:' -ErrorAction SilentlyContinue).Count
-Check "reasoningEffort x19 (got $re)" ($re -eq 19)
+Check "reasoningEffort x22 (got $re)" ($re -eq 22)
 
 $task = (Select-String -Path .opencode/agents/*.md -Pattern 'task:' -ErrorAction SilentlyContinue).Count
 Check "task: x9 (got $task)" ($task -eq 9)
@@ -1282,7 +1449,7 @@ test -f opencode.json && echo "Config ok" || echo "Config missing"
 test -f .opencode/local/opencode-go.key && echo "Key file ok" || echo "Key file MISSING"
 ```
 
-Expected: Agents 19, Commands 5, Skills 3, Config ok. Key file line: shows `Key file ok` when the key is project-level; **when using the system-level `~/.config/opencode/` this shows `Key file MISSING` — that's normal**, as long as the system-level provider has a real key (or use the T0 script below, which judges a system-level key as PASS).
+Expected: Agents 22, Commands 5, Skills 3, Config ok. Key file line: shows `Key file ok` when the key is project-level; **when using the system-level `~/.config/opencode/` this shows `Key file MISSING` — that's normal**, as long as the system-level provider has a real key (or use the T0 script below, which judges a system-level key as PASS).
 
 ```bash
 echo "=== content check ==="
@@ -1291,7 +1458,7 @@ grep "task:" .opencode/agents/*.md 2>/dev/null | wc -l
 ls .opencode/commands/moa-*.md 2>/dev/null | wc -l
 ```
 
-Expected: `reasoningEffort` appears 19 times (all agents), `task:` appears 9 times (concierge-router + 8 opinion layers), `moa-` command filenames match 5.
+Expected: `reasoningEffort` appears 22 times (all agents), `task:` appears 9 times (concierge-router + 8 opinion layers), `moa-` command filenames match 5.
 
 **Windows (PowerShell, native):**
 
@@ -1355,7 +1522,7 @@ A: Method 1 is most convenient — drag this file into the chat box and let the 
 A: Check three points:
 
 1. Is `opencode.json` at the project root (not a subfolder)?
-2. Are there 19 .md files under `.opencode/agents/`?
+2. Are there 22 .md files under `.opencode/agents/`?
 3. After restarting OpenCode, press `Tab` to cycle agents (Windows desktop client: `Ctrl+.` also works).
 
 **Q: `@tool-handler` not responding?**
@@ -1411,21 +1578,21 @@ Divided into two categories by "can it run after deploy". **Most cases are "file
 | ------------------------------------ | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `opencode --version` errors / not installed | Not installed or PATH not set (desktop sub-shell often **falsely reports** due to different PATH) | Files can still be deployed; verify/run needs opencode installed: <https://opencode.ai/install>, restart desktop app |
 | Startup reports `JSON parse error`   | `opencode.json` has an extra comma / comment in `.json` not `.jsonc` | Rename to `.jsonc`, or validate at [jsonlint](https://jsonlint.com)                                |
-| 19 agent file count wrong            | Block 2 missed or overwrote                                        | Count per Block 6: agents=19                                                                       |
+| 22 agent file count wrong            | Block 2 missed or overwrote                                        | Count per Block 6: agents=22                                                                       |
 | Version < 1.1.1                      | `hidden` / `task` / agent-level `reasoningEffort` not supported    | Upgrade opencode to >= 1.3.4 (`@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed) |
 
 ### B. Runtime failure (files complete, but agent errors)
 
 | Symptom                                                       | Root cause                                                                                                          | Fix                                                                                              |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| All 19 agents `Upstream request failed` / silent failure      | **Neither system-level nor project-level has `opencode-go` provider, or key invalid**                                              | Go back to Provider section to set key, restart                                                 |
+| All 22 agents `Upstream request failed` / silent failure      | **Neither system-level nor project-level has `opencode-go` provider, or key invalid**                                              | Go back to Provider section to set key, restart                                                 |
 | System-level `opencode.json` deleted / dir empty, and project has no provider | Provider only in the deleted file → no provider resolvable anywhere                                                | Rebuild provider (default write project `opencode.json`, or system-level), restart; T0 now `FAIL`s |
 | Same dir has both `opencode.json` and `opencode.jsonc`        | Official priority undefined for dual files, contents may conflict                                                  | **Keep only one** per dir, and make the kept one contain a valid `opencode-go` provider + real key |
 | `apiKey` is `<YOUR_GO_API_KEY>` placeholder / empty           | Looks configured but actually 401/403                                                                               | Replace with real key; T0 now `FAIL`s                                                            |
 | `@tool-handler` no response, log 401/403                             | Key file path wrong / placeholder not replaced / key expired                                                       | Check `.opencode/local/opencode-go.key` actually exists and content correct                      |
 | An agent suddenly `Upstream request failed` + log has `400`   | `reasoningEffort` value illegal (uppercase / `max` on unsupported model / `extreme` etc.)                          | Fix to lowercase valid value per matrix below                                                    |
 | Reasoning strength "feels unchanged" (always default)         | ①`reasoningEffort` uppercase/invalid value 400-downgraded to default; ②model doesn't support chosen tier 400; ③`npm` changed to `@ai-sdk/openai` without `forceReasoning` (only this case needs it, and >=1.3.4); ④opencode too old to support agent-level `reasoningEffort`; ⑤manually switched "variant/reasoning tier" in the TUI, the `model.json` cache's variant overrides the agent's `reasoningEffort` (cross-platform; WSL uses the Linux path; clear cache or edit agent field and restart to recover) | Fix to lowercase valid value per matrix; only if truly using `@ai-sdk/openai` add `forceReasoning: true` and restart (this project defaults to `openai-compatible`, not needed); if ⑤: delete the model selection cache (`~/.local/state/opencode/model.json` on Linux/macOS/WSL, `%USERPROFILE%\.local\state\opencode\model.json` on Windows; on Unix governed by `XDG_STATE_HOME`, can be redirected) or edit the agent's `reasoningEffort` field and restart |
-| Doorman orchestration `task` call rejected                   | `opencode.json`'s `permission.task` whitelist missing agent name / Chinese name/· mismatch                          | Complete whitelist per Block 5                                                                   |
+| concierge-router orchestration `task` call rejected          | `opencode.json`'s `permission.task` whitelist missing agent name                                                    | Complete whitelist per Block 5                                                                   |
 | Opinion layer wants MCP but blocked                          | By design (`*_*: deny`)                                                                                             | Normal; material must go through tool layer                                                      |
 | Free model context insufficient, loses info                  | Free model window small                                                                                             | Be mentally prepared when choosing C downgrade                                                   |
 
@@ -1503,4 +1670,4 @@ model: ollama-local/qwen3-coder
 
 ---
 
-> **Doc version**: v0.0.8 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+> **Doc version**: v0.0.9 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)

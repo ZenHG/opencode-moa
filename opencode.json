@@ -36,7 +36,10 @@
       "前端·还原": "allow",
       "前端·逻辑": "allow",
       "前端·动效": "allow",
-      "前端·总工": "allow"
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "残差提取者": "allow",
+      "置信度评估者": "allow"
     },
     "webfetch": "allow",
     "read": {
