@@ -34,7 +34,7 @@ You: help me design a message queue solution
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
     ├─ flag-plan (GLM        ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
-     └─ flag-fuse (Qwen3.7 Max) ─── take the best of each, one optimal solution
+    └─ flag-fuse (Qwen3.7 Max) ─── take the best of each, one optimal solution
 ```
 
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
@@ -329,13 +329,13 @@ Limits are defined by dollar value. Cheap models (Flash) can be used more often,
 
 ### Monthly quota per layer
 
-| Layer      | Model           | Unit price (in/out per 1M) | Monthly quota | Call frequency    |
-| ---------- | --------------- | -------------------------- | ------------- | ----------------- |
-| Tool layer | Flash           | $0.14 / $0.28              | 158,150       | ~80%              |
-| Tool layer | MiMo-V2.5       | $0.14 / $0.28              | 150,400       | (use freely)      |
-| Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%              |
-| Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                   |
-| Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                   |
+| Layer      | Model           | Unit price (in/out per 1M) | Monthly quota | Call frequency      |
+| ---------- | --------------- | -------------------------- | ------------- | ------------------- |
+| Tool layer | Flash           | $0.14 / $0.28              | 158,150       | ~80%                |
+| Tool layer | MiMo-V2.5       | $0.14 / $0.28              | 150,400       | (use freely)        |
+| Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%                |
+| Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
+| Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
 | Fusion     | Qwen3.7 Max     | $2.50 / $7.50              | 4,770         | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
@@ -364,14 +364,14 @@ OpenCode Zen provides free models as a last resort:
 
 ## Security
 
-| Protection                 | Effect                                                          |
-| -------------------------- | --------------------------------------------------------------- |
-| Global catch-all           | undeclared tool call → popup confirm                            |
-| Agent permission isolation | each agent can only use allowed tools                           |
+| Protection                 | Effect                                                                                                                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Global catch-all           | undeclared tool call → popup confirm                                                                                                                                                          |
+| Agent permission isolation | each agent can only use allowed tools                                                                                                                                                         |
 | MCP permission isolation   | opinion layer forbidden from reading code (read: deny / bash: deny), prevents bypassing tool layer (project has no MCP server configured; "MCP" here refers to agent-level tool restrictions) |
-| Task whitelist             | concierge-router can only call declared agents                  |
-| Fallback chain             | tool layer fails → ask user → wait/skip/free model              |
-| One-click rollback         | delete `.opencode/` to restore                                  |
+| Task whitelist             | concierge-router can only call declared agents                                                                                                                                                |
+| Fallback chain             | tool layer fails → ask user → wait/skip/free model                                                                                                                                            |
+| One-click rollback         | delete `.opencode/` to restore                                                                                                                                                                |
 
 ---
 
