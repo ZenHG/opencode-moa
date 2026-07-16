@@ -1,4 +1,4 @@
-# OpenCode MoA
+﻿# OpenCode MoA
 
 > 🌐 Idiomas / Languages: [English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · Español · [Français](README.fr.md) · [Deutsch](README.de.md)
 
@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> **Un único punto de conversación donde 22 modelos especializados colaboran automáticamente. Las tareas simples usan Flash (barato) y las tareas complejas llaman al flagship (caro). Coste reducido hasta ~90% (frente a usar flagship en todo), con una mejora notable de la calidad del código.**
+> **Un único punto de conversación donde 22 modelos especializados colaboran automáticamente. Las tareas simples usan Flash (barato) y las tareas complejas llaman al flagship (caro). Coste reducido hasta ~90% (frente a usar flagship en todo) cuando las tareas simples dominan y las llamadas flagship se minimizan — el ahorro real depende del tipo de tareas, con una mejora notable de la calidad del código.**
 
 ![OpenCode MoA](.github/opengraph.png)
 

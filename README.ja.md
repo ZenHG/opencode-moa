@@ -1,4 +1,4 @@
-# OpenCode MoA
+﻿# OpenCode MoA
 
 > 🌐 Languages: [English](README.md) · [中文](README.zh.md) · 日本語 · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> **1つの会話入口で、22個の専門モデルが自動的に協調します。簡単なタスクは Flash（低コスト）、複雑なタスクだけ flagship（高コスト）を呼び出します。コストは最大約90%削減（全て flagship の場合と比較）、コード品質は大幅に向上します。**
+> **1つの会話入口で、22個の専門モデルが自動的に協調します。簡単なタスクは Flash（低コスト）、複雑なタスクだけ flagship（高コスト）を呼び出します。コストは最大約90%削減（全て flagship の場合と比較）、コード品質は大幅に向上します。 単純タスクが主体て flagship 呼び出しが最小限のとき、実際の削減はタスク構成に依存します。**
 
 ![OpenCode MoA](.github/opengraph.png)
 
