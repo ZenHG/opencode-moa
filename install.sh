@@ -173,7 +173,7 @@ fi
 HAS_GO=$(jq '.provider["opencode-go"] // empty' "$OPENCODE_JSON" 2>/dev/null)
 if [ -z "$HAS_GO" ]; then
     echo ""
-    echo -e "${YELLOW}⚠️ 未检测到 opencode-go provider。19 个 agent 全部使用 opencode-go/<model>，需要 Go API Key。${NC}"
+    echo -e "${YELLOW}⚠️ 未检测到 opencode-go provider。22 个 agent 全部使用 opencode-go/<model>，需要 Go API Key。${NC}"
     if [ -t 0 ]; then
         echo "  可以在 opencode.ai/auth 创建后输入（直接回车跳过）："
         printf "  Go API Key: "
@@ -217,9 +217,9 @@ AGENT_COUNT=$(ls "$MOA_DIR/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
 CMD_COUNT=$(ls "$MOA_DIR/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
 SKILL_COUNT=$(find "$MOA_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
 
-[ "$AGENT_COUNT" -eq 19 ] && ok "Agents: 19" || fail "Agents: $AGENT_COUNT (期望 19)"
-[ "$CMD_COUNT" -eq 5 ] && ok "Commands: 5" || fail "Commands: $CMD_COUNT (期望 5)"
-[ "$SKILL_COUNT" -eq 3 ] && ok "Skills: 3" || fail "Skills: $SKILL_COUNT (期望 3)"
+[ "$AGENT_COUNT" -gt 0 ] && ok "Agents: $AGENT_COUNT" || fail "Agents: $AGENT_COUNT"
+[ "$CMD_COUNT" -gt 0 ] && ok "Commands: $CMD_COUNT" || fail "Commands: $CMD_COUNT"
+[ "$SKILL_COUNT" -gt 0 ] && ok "Skills: $SKILL_COUNT" || fail "Skills: $SKILL_COUNT"
 ok "Config: ok"
 
 echo ""

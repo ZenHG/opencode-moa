@@ -1,0 +1,19 @@
+task_id: B01
+scenario: README FAQ 修正
+input: >
+  用户指出 README 中「Cost」段某句与当前计费比例不一致，要求修正表述。
+expected_path: lite
+agents_used:
+  - 门童路由员（路由，confidence ≥85 → lite）
+  - 闪电侠（直接改文案）
+success: true
+qa_findings:
+  - 旗舰·质检未触发（lite 路径不强制 QA）
+cost_estimate: >
+  1 次 Flash 调用完成；对照全程旗舰约省 1 次旗舰调用。
+time_elapsed: "< 30s"
+human_intervention: false
+comparison_single_agent: >
+  单 agent 旗舰亦可完成，但 MoA 用 Flash 即以更低成本达成同等质量，无返工。
+notes: >
+  典型 lite 场景：改动小、风险低、可逆，符合「简单任务别浪费旗舰」原则。

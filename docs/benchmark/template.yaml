@@ -1,0 +1,25 @@
+# OpenCode MoA Benchmark — 单任务样例（schema）
+# 复制本文件到 cases/<task_id>.yaml 后填写。
+# 约定见 README.md。采集原则：路由层自动落盘 + 人工补判定项 + 隐私脱敏。
+
+task_id: B01
+session_id: ""          # 来源会话标识（用于跨 case 聚合同一会话的多任务）
+task_boundary: single   # single=单任务 | multi=本 case 含多子任务（需拆分比对时标 multi）
+scenario: README FAQ 修正
+input: >
+  用户要求修正 README 中某条 FAQ 的过时描述。
+expected_path: lite | balanced | strict
+agents_used: []            # 自动填：路由实际走过的链（层级表述，不写具体 agent 名）
+cost_source: estimated | measured
+  # estimated = 用 README「Cost」单价表 × 估算 token 推算（无实测 token 时）
+  # measured  = 执行层回传真实 token/单价（优先，但当前链路拿不到，先标 estimated）
+cost_estimate: >
+  本次调用模型组合与估算单价（对照 README「Cost」blended 单价）。
+  measured 缺失时务必标 estimated，聚合脚本单独归类，不混入"实测"统计。
+success: true | false     # 人工判定项（自动落盘不填，避免路由自述替代真实结果）
+qa_findings: []          # 人工判定项：QA 拦截即 1 次有效返工避免
+human_intervention: true | false
+comparison_single_agent: >
+  与「全程旗舰单 agent」相比：省了几次旗舰调用、质量差异、是否返工。
+  用单价表推算，不需真跑两遍。
+notes: ""

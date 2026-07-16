@@ -35,3 +35,13 @@ skillhub-upload/
 # OS
 Desktop.ini
 ehthumbs.db
+
+
+# Agnes local workspace / session artifacts
+.agnes/
+.opencode/session_summary_*.md
+
+# Benchmark 本地证据资产 — 仅忽略采集到的 case 数据（可能含任务内容/上下文）
+# schema(template.yaml) 与说明(README.md) 必须进仓库，不忽略
+docs/benchmark/cases/*.yaml
+docs/benchmark/cases/*.yml

@@ -149,7 +149,7 @@ try {
     if ($check.provider -and $check.provider.'opencode-go') { $needKey = $false }
 } catch {}
 if ($needKey) {
-    Write-Host "`n⚠️ 未检测到 opencode-go provider。19 个 agent 全部使用 opencode-go/<model>，需要 Go API Key。" -ForegroundColor Yellow
+    Write-Host "`n⚠️ 未检测到 opencode-go provider。22 个 agent 全部使用 opencode-go/<model>，需要 Go API Key。" -ForegroundColor Yellow
     Write-Host "  可以在 opencode.ai/auth 创建后输入（非交互环境直接跳过）。" -ForegroundColor Gray
     try { $apiKey = Read-Host "`n请输入你的 OpenCode Go API Key（留空跳过）" } catch { $apiKey = "" }
     if ($apiKey) {
@@ -208,6 +208,7 @@ if ($needKey) {
     $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
     Write-Ok "opencode-go provider 已写入（占位符 key）"
     }
+}
 
 # 3. 验证
 Write-Step "3/3" "验证部署..."
@@ -220,9 +221,9 @@ $agentCount = if ($agentFiles) { $agentFiles.Count } else { 0 }
 $cmdCount = if ($cmdFiles) { $cmdFiles.Count } else { 0 }
 $skillCount = if ($skillFiles) { $skillFiles.Count } else { 0 }
 
-if ($agentCount -eq 19) { Write-Ok "Agents: 19" } else { Write-Fail "Agents: $agentCount (期望 19)" }
-if ($cmdCount -eq 5) { Write-Ok "Commands: 5" } else { Write-Fail "Commands: $cmdCount (期望 5)" }
-if ($skillCount -eq 3) { Write-Ok "Skills: 3" } else { Write-Fail "Skills: $skillCount (期望 3)" }
+if ($agentCount -gt 0) { Write-Ok "Agents: $agentCount" } else { Write-Fail "Agents: $agentCount" }
+if ($cmdCount -gt 0) { Write-Ok "Commands: $cmdCount" } else { Write-Fail "Commands: $cmdCount" }
+if ($skillCount -gt 0) { Write-Ok "Skills: $skillCount" } else { Write-Fail "Skills: $skillCount" }
 Write-Ok "Config: ok"
 
 Write-Host "`n=== 安装完成 ===" -ForegroundColor Cyan

@@ -1,12 +1,12 @@
 # OpenCode MoA
 
-> 🌐 Languages: [中文](README.zh.md) · English
+> 🌐 Languages: English · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship), code quality significantly up.**
+> **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
 ![OpenCode MoA](.github/opengraph.png)
 
@@ -196,6 +196,8 @@ rm -rf your-project/.opencode/
 **Opinion layer** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — plans from different perspectives. Three opinions naturally form a "consensus + divergence" structure.
 
 **Fusion layer** (Kimi / Qwen-Max / GLM / DeepSeek Pro fallback) — keep consensus, take the best on divergence, with fallback to DeepSeek V4 Pro if fusion fails.
+
+> ⚠️ The call-volume ratios below (~80% / ~18% / ~2%) are **design targets**, not measured statistics. Actual ratios vary by task complexity.
 
 ---
 
@@ -420,7 +422,7 @@ xcopy opencode-moa\.opencode .\.opencode /E /I /Y
 A: Yes. Use Method 1 (AI auto-deploy) or Method 3 (manual config merge).
 
 **Q: How do I install on the desktop app?**
-A: Method 1 is most convenient — drag `docs/opencode-moa.md` into the chat box and let the AI auto-deploy. Methods 2/3 require operating in a terminal (CMD/PowerShell/Terminal) first.
+A: Method 1 is most convenient — drag `docs/opencode-moa.en.md` into the chat box and let the AI auto-deploy. Methods 2/3 require operating in a terminal (CMD/PowerShell/Terminal) first.
 
 ### Usage
 

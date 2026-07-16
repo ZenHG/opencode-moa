@@ -43,8 +43,58 @@
 - 版本之间用 `---` 分隔；`</details>` 与 `---` 之间、`---` 与下一个 `##` 标题之间各留一个空行（缺空行会导致标题被渲染成代码块）。
 
 </details>
+---
+
+## v0.0.10（2026-07-16）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Consistency & verification hardening (no agent/model changes).
+
+### Docs (P1)
+
+- README.md / README.zh.md: added conditional phrasing to the "~90% cost saving" claim — savings are real vs all-flagship baseline but depend on task mix; existing "80/18/2 is design ratio, not measured" caveat preserved.
+
+### Fix (P1)
+
+- `install.ps1` / `install.sh`: verification no longer hard-codes agent/command/skill counts (22/5/3); now reports the actual dynamic counts, so adding agents won't cause false failures.
+
+### Tests (P1)
+
+- `T0-static-verify.ps1`: fixed a PowerShell parse error (`AGENT_COUNT\" -eq 19`); made skill count dynamic; added README core-fact anchor checks for `README.md` (22 agents · 5 commands · 3 skills) and `README.zh.md` (22 个 agent · 5 个命令 · 3 个 skill). Now `PASS: 48 FAIL: 0`.
+
+### Chore (P2)
+
+- Added `docs/benchmark/` skeleton (task set B01–B15 + YAML template) to gather real-task evidence for cost/quality claims.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+一致性与验证加固（无 agent / 模型变更）。
+
+### 文档 (P1)
+
+- README.md / README.zh.md：为「~90% 成本节省」补充条件限定——对比全程旗舰基线属实，但实际取决于任务结构；保留既有「80/18/2 为设计比例非实测」说明。
+
+### 修复 (P1)
+
+- `install.ps1` / `install.sh`：验证不再硬编码 agent/命令/skill 数量（22/5/3），改为报告实际动态计数，新增 agent 不再导致误报失败。
+
+### 测试 (P1)
+
+- `T0-static-verify.ps1`：修复 PowerShell 语法错误（`AGENT_COUNT\" -eq 19`）；skill 计数改为动态；新增 README 核心事实锚点检查（英文 `22 agents · 5 commands · 3 skills`、中文 `22 个 agent · 5 个命令 · 3 个 skill`）。现 `PASS: 48 FAIL: 0`。
+
+### 杂项 (P2)
+
+- 新增 `docs/benchmark/` 骨架（任务集 B01–B15 + YAML 模板），用于收集真实任务的成本/质量证据。
+
+</details>
 
 ---
+
 ## v0.0.9（2026-07-15）
 
 <details open>
@@ -91,6 +141,11 @@ MoA 2.0: Residual-enhanced fusion + confidence routing + 22 agents.
 - ``architecture-moa/SKILL.md``: reflects new flow (残差提取者 + 质检方案审查).
 
 ### Documentation fixes
+
+- Added full multilingual README entry points for Japanese, Korean, Spanish, French, and German, and audited section structure, code fences, technical identifiers, and cross-language residue.
+- Updated README language navigation to point to complete localized README files instead of an inline comparison table.
+- Added translation governance in `docs/TRANSLATION.md` to define source-of-truth files, terminology, synchronization rules, and PR checklist.
+- Fixed install-script documentation/validation drift: current release assets are 22 agents, 5 commands, and 3 core skills; install scripts and T0 now guard against stale 19-agent wording.
 
 - README: agent count updated 19 → 22 (header, deploy section, FAQ).
 - README: clarified "MCP permission isolation" — noted it refers to agent-level ``read: deny`` / ``bash: deny``, not actual MCP server isolation (no MCP servers are configured).
@@ -153,6 +208,11 @@ MoA 2.0：残差增强融合 + 置信度路由 + 22 个 agent。
 - ``architecture-moa/SKILL.md``：反映新流程（残差提取者 + 质检方案审查）。
 
 ### 文档修正
+
+- 新增日语、韩语、西班牙语、法语、德语完整 README 入口，并审计章节结构、代码块、技术标识与跨语言残留。
+- 更新 README 语言导航，指向完整本地化 README 文件，不再使用正文内的多语言对照摘要。
+- 扩展 `docs/TRANSLATION.md` 为翻译治理规范，明确事实源、术语表、同步规则与 PR checklist。
+- 修复安装脚本文档/验证口径漂移：当前发布资产为 22 个 agents、5 个 commands、3 个核心 skills；安装脚本与 T0 现在会防止 19-agent 旧文案回归。
 
 - README：agent 计数 19 → 22（头部、部署节、FAQ）。
 - README：澄清「MCP 权限隔离」— 实际指 agent 级别的 ``read: deny`` / ``bash: deny``，并非真实 MCP 服务器隔离（项目未配置 MCP 服务器）。

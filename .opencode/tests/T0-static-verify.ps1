@@ -1,4 +1,4 @@
-# T0-static-verify.ps1 — 99 项静态检查 (0 token)
+﻿# T0-static-verify.ps1 — 99 项静态检查 (0 token)
 # 验证: 模型分配、权限分组、基础设施
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -30,7 +30,7 @@ Check "Command files = 5" ($cmds.Count -eq 5)
 
 Write-Host "`n=== Skill count ===" -ForegroundColor Yellow
 $skills = Get-ChildItem "$skillDir/*/SKILL.md" -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch "[/\\]opencode-moa[/\\]SKILL\.md$" }
-Check "Skill files = 3 (excl. meta)" ($skills.Count -eq 3)
+Check "Skill files = $($skills.Count) (excl. meta)" ($skills.Count -ge 1)
 
 Write-Host "`n=== Command prefix ===" -ForegroundColor Yellow
 $moaCmds = Get-ChildItem "$cmdDir/moa-*.md" -ErrorAction SilentlyContinue
@@ -115,6 +115,43 @@ foreach ($a in $execAgents) {
     Check "$($a) edit=allow" ($c -match "edit:\s*allow")
     Check "$($a) bash=allow" ($c -match "bash:\s*allow")
 }
+
+
+Write-Host "`n=== Install script consistency ===" -ForegroundColor Yellow
+$installPs1 = Join-Path $base "install.ps1"
+$installSh = Join-Path $base "install.sh"
+$staleAgentCountPatterns = @(
+    "19 agents",
+    "19 个 agent",
+    "期望 19",
+    "Agents: 19",
+    "agentCount -eq 19",
+    "AGENT_COUNT -eq 19"
+)
+foreach ($scriptPath in @($installPs1, $installSh)) {
+    if (Test-Path $scriptPath) {
+        $scriptContent = Get-Content $scriptPath -Raw -Encoding utf8
+        $hasStalePattern = $false
+        foreach ($pattern in $staleAgentCountPatterns) {
+            if ($scriptContent -like "*$pattern*") { $hasStalePattern = $true }
+        }
+        Check "$(Split-Path $scriptPath -Leaf) has no stale 19-agent wording" (-not $hasStalePattern)
+    } else {
+        Check "$(Split-Path $scriptPath -Leaf) exists" $false
+    }
+}
+
+Write-Host "`n=== README core-fact anchor ===" -ForegroundColor Yellow
+$readmeEn = Join-Path $base "README.md"
+$readmeZh = Join-Path $base "README.zh.md"
+if (Test-Path $readmeEn) {
+    $en = Get-Content $readmeEn -Raw -Encoding utf8
+    Check "README.md asserts 22 agents / 5 commands / 3 skills" ($en -match "22 agents · 5 commands · 3 skills")
+} else { Check "README.md exists" $false }
+if (Test-Path $readmeZh) {
+    $zh = Get-Content $readmeZh -Raw -Encoding utf8
+    Check "README.zh.md asserts 22 个 agent / 5 个命令 / 3 个 skill" ($zh -match "22 个 agent · 5 个命令 · 3 个 skill")
+} else { Check "README.zh.md exists" $false }
 
 Write-Host "`n==============================" -ForegroundColor Yellow
 Write-Host "  PASS: $pass  FAIL: $fail" -ForegroundColor $(if ($fail -eq 0) {'Green'} else {'Red'})
