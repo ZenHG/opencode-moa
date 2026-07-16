@@ -1,38 +1,149 @@
-# 多语言翻译规范（i18n）
+# Translation Governance / 翻译治理规范
 
-OpenCode MoA 面向全球用户，但**包只有一个版本号**，贯穿所有语言。本文定义文档与 README 的多语言布局约定。
+> Scope: README and user-facing documentation for OpenCode MoA.  
+> Goal: keep multilingual docs useful without letting translations drift from the runnable configuration.
 
-## 布局
+---
 
-| 内容 | 中文（源） | 其他语言 |
-| --- | --- | --- |
-| 部署手册 | `docs/opencode-moa.md` | `docs/<lang>/opencode-moa.<lang>.md` |
-| README | `README.md`（根，英文首页） | `README.<lang>.md`（根，如 `README.zh.md`） |
-| 版本记录 | `CHANGELOG.md`（**双语，<details> 分隔中/英**） | — |
+## 1. Source of truth
 
-语言代码用 ISO 639-1：`en` / `ja` / `ko` / `fr` / `de` / `zh` ……
+- Primary source for product facts: repository files, not prose.
+  - Agents: `.opencode/agents/*.md`
+  - Commands: `.opencode/commands/*.md`
+  - Core skills: `.opencode/skills/*/SKILL.md` (3 core skills)
+  - Static verification: `.opencode/tests/T0-static-verify.ps1`
+  - Installation behavior: `install.ps1` and `install.sh`
+- Primary README source for wording: `README.md` and `README.zh.md`.
+- Other README files are full localized versions and must preserve the same technical facts.
 
-## 规则
+---
 
-1. **CHANGELOG 是版本真相源，双语（中文 + 英文，用 `<details>` 折叠分隔）**，不移动、文件名固定。
-    解析器只认文件顶部第一个 `## vX.Y.Z` 标题；非版本标题（如 `## 路线图`）请放在版本节**之下**，会被自动忽略。每个版本节内用 `<details>` 包出中文块与英文块。
-2. **中文 `docs/opencode-moa.md` 是部署手册的源 of truth**。其他语言由其翻译而来，源更新后需同步翻译。
-3. **`README.md` 为英文首页**（国际平台默认英文），中文放 `README.zh.md`；`README.<lang>.md` 结构保持一致。
-4. **不按语言拆仓库 / 拆 tag / 拆 Release**。一次发版，归档内含全部语言文档（`git archive` 打整树）。
-5. 翻译 PR 请遵循根 `CONTRIBUTING.md` 的提交与测试规范，并通过 Layer 0 静态检查。
+## 2. Supported README languages
 
-## 当前进度
+| Language | File |
+| --- | --- |
+| English | `README.md` |
+| 中文 | `README.zh.md` |
+| 日本語 | `README.ja.md` |
+| 한국어 | `README.ko.md` |
+| Español | `README.es.md` |
+| Français | `README.fr.md` |
+| Deutsch | `README.de.md` |
 
-| 语言 | 部署手册 | README | 状态 |
-| --- | --- | --- | --- |
-| `zh` | `docs/opencode-moa.md` | `README.zh.md` | ✅ 完整 |
-| `en` | `docs/en/opencode-moa.en.md` | `README.md`（英文首页） | ✅ 完整 |
+Policy:
 
-## 如何新增一种语言
+- README files are maintained as complete language-specific entry points.
+- Deep implementation docs do **not** need to be translated into all languages by default.
+- Core deployment manuals should stay at least bilingual: Chinese + English.
 
-1. 建目录 `docs/<lang>/`。
-2. 复制 `docs/opencode-moa.md` 译为 `docs/<lang>/opencode-moa.<lang>.md`。
-3. 建 `README.<lang>.md`（可先由 `README.md` 翻译首段 + 链接）。
-4. 在本文「当前进度」表加一行。
-5. 在 `README.md` 与各语言 README 加该语言链接。
-6. 发版：在 `CHANGELOG.md` 顶部加新版本节并 push（见 `CONTRIBUTING.md` 发版规范）——**翻译内容本身不触发发版**，版本号随源改动走。
+Recommended coverage:
+
+```text
+README: 7 languages
+Core deploy docs: zh + en
+Internal/evaluation docs: source language only
+Release notes: bilingual when practical
+```
+
+---
+
+## 3. Terms that should usually remain unchanged
+
+Do not translate command names, model IDs, file paths, agent IDs used for invocation, or code blocks.
+
+Examples:
+
+- `opencode --version`
+- `opencode.json`
+- `.opencode/agents`
+- `pwsh .opencode/tests/T0-static-verify.ps1`
+- `/moa-quick`, `/moa-medium`, `/moa-flagship`, `/moa-frontend`, `/moa-describe`
+- `opencode-go/deepseek-v4-flash`
+- `reasoningEffort`
+- `ERROR_PROVIDER`, `ERROR_AUTH`, `ERROR_UNKNOWN`
+- `concierge-router`, `tool-handler`, `flag-qa` when used as English aliases
+
+Chinese display names may be localized in Chinese docs, but English aliases should be preserved when they help cross-language comparison.
+
+---
+
+## 4. Glossary
+
+| Concept | Preferred wording / notes |
+| --- | --- |
+| MoA | Keep as `MoA` or expand once as `Mixture of Agents` |
+| agent | Keep `agent` in technical contexts; localized prose may use equivalent words |
+| command | Keep command names unchanged |
+| skill | Keep `skill` in OpenCode-specific contexts |
+| concierge-router / 门童路由员 | Default routing agent; preserve alias where useful |
+| Doorman / Gatekeeper | Routing/governance concept; avoid inventing new names per language |
+| Flagship QA / 旗舰·质检 | Quality gate; preserve QA meaning |
+| confidence threshold | Use one shared definition across router, QA, and confidence assessor |
+| fallback | Keep as `fallback` in technical prose or translate with the original in parentheses |
+| Lite / Balanced / Strict | Proposed product modes; keep English labels if introduced |
+
+---
+
+## 5. Synchronization rules
+
+When any of the following changes, all README files must be checked:
+
+- Agent count
+- Command count
+- Skill count
+- Installation command
+- Verification command
+- Rollback instruction
+- Free model list
+- Cost claim
+- FAQ answer
+- Language navigation
+- Model/provider naming
+- Permission or security description
+
+Minimum check after README updates:
+
+```powershell
+pwsh .opencode/tests/T0-static-verify.ps1
+```
+
+Recommended manual checks:
+
+```cmd
+findstr /n /c:"22 agents" README.md README.es.md README.fr.md README.de.md README.ja.md README.ko.md
+findstr /n /c:"22 个" README.zh.md
+findstr /n /c:"T0-static-verify.ps1" README*.md
+```
+
+---
+
+## 6. Pull request checklist for documentation changes
+
+- [ ] Did agent / command / skill counts change? If yes, update README, install scripts, T0, and CHANGELOG.
+- [ ] Did installation steps change? If yes, sync all README files.
+- [ ] Did FAQ change? If yes, sync all README files or explicitly document why not.
+- [ ] Did model IDs or provider names change? If yes, update docs and T0 expectations.
+- [ ] Did confidence threshold wording change? If yes, sync router, QA, confidence assessor, and docs.
+- [ ] Did you run `pwsh .opencode/tests/T0-static-verify.ps1`?
+- [ ] Did you ensure `.agnes/` and session summaries are not accidentally committed?
+
+---
+
+## 7. Translation quality bar
+
+A localized README is acceptable only if:
+
+1. It has the same major sections as the source README.
+2. Code blocks are balanced and copyable.
+3. Commands, paths, model IDs, and agent identifiers remain executable.
+4. It does not contain large residue from another non-target language.
+5. It preserves warnings about key paths, install scripts, fallback behavior, and free-model limitations.
+6. It links to other language versions correctly.
+
+---
+
+## 8. Maintenance principle
+
+Prefer fewer, reliable translated surfaces over many stale translations.
+
+The README is the international entry point. Deeper docs should be translated only when they are user-facing and stable enough to maintain.

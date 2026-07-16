@@ -68,6 +68,11 @@ Consistency & verification hardening (no agent/model changes).
 
 - Added `docs/benchmark/` skeleton (task set B01–B15 + YAML template) to gather real-task evidence for cost/quality claims.
 
+### Chore (P2)
+
+- `TRANSLATION.md`: promoted to "Translation Governance" — source-of-truth rules for multilingual docs, now states 3 core skills.
+- `docs/opengraph.png` / `docs/opengraph-zh.png`: optimized (smaller byte size), same content.
+
 </details>
 
 <details>
@@ -90,6 +95,11 @@ Consistency & verification hardening (no agent/model changes).
 ### 杂项 (P2)
 
 - 新增 `docs/benchmark/` 骨架（任务集 B01–B15 + YAML 模板），用于收集真实任务的成本/质量证据。
+
+### 杂项 (P2)
+
+- `TRANSLATION.md`：升级为「翻译治理规范」——多语言文档的 source-of-truth 规则，现写明 3 个 core skills。
+- `docs/opengraph.png` / `docs/opengraph-zh.png`：优化（体积变小），内容不变。
 
 </details>
 
