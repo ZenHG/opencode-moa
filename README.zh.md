@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
+> 🔥 **热点（2026-07）：** 旗舰融合已升级至 **Kimi K3** —— 2.8T 参数、1M 上下文、顶级前沿模型。OpenCode Go 额度 7/24 起 2 倍（140 → 280 / 5h）。MoA 质量天花板现已站在第一梯队最前。
+
 > **一个对话入口，22 个专业模型自动协作。简单任务用 Flash（便宜），复杂任务才调旗舰（贵）。当简单任务占主导、旗舰调用被显著减少时，成本最高降低约 90%（对比全程旗舰）；实际节省取决于任务结构，代码质量显著提升。**
 
 ![OpenCode MoA](.github/opengraph-zh.png)
@@ -34,7 +36,7 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
     ┌─ 旗舰·架构 (Qwen3.7 Max) ─── 从架构师视角出方案
     ├─ 旗舰·规划 (GLM)        ─── 从产品经理视角出方案
     ├─ 旗舰·工程 (MiniMax M3) ─ 从实现者视角出方案
-    └─ 旗舰·融合 (Qwen3.7 Max) ─── 取长补短，一份最优解
+    └─ 旗舰·融合 (Kimi K3) ─── 取长补短，一份最优解
 ```
 
 三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
@@ -195,7 +197,7 @@ rm -rf your-project/.opencode/
 
 **意见层**（MiniMax / DeepSeek Pro / Qwen / MiMo-Pro）—— 从不同视角出方案。三份意见天然形成"共识 + 分歧"结构。
 
-**融合层**（Kimi / Qwen-Max / GLM / DeepSeek Pro 保底）—— 识别共识直接保留，分歧取长补短，融合失败时回退到 DeepSeek V4 Pro。只用在刀刃上。
+**融合层**（Kimi K3 / Qwen-Max / GLM / DeepSeek Pro 保底）—— 识别共识直接保留，分歧取长补短，融合失败时回退到 DeepSeek V4 Pro。只用在刀刃上。旗舰融合现已运行在 **Kimi K3**（2.8T 参数、1M 上下文的顶级前沿模型）上，把 MoA 的质量天花板推到第一梯队最前。
 
 > ⚠️ 以下调用量占比（~80% / ~18% / ~2%）为**设计值**，非实测统计。实际占比因任务复杂度而异。
 
@@ -225,7 +227,7 @@ rm -rf your-project/.opencode/
  │   旗舰·架构 / flag-arch    (Qwen3.7 Max)   顶层架构设计
  │   旗舰·规划 / flag-plan    (GLM)          结构化方案设计
  │   旗舰·工程 / flag-eng    (MiniMax M3)   大规模实现方案
- │   旗舰·融合 / flag-fuse    (Qwen3.7 Max)   三份架构方案融合 [max_tokens: 16384]
+ │   旗舰·融合 / flag-fuse    (Kimi K3)       三份架构方案融合 [max_tokens: 16384]
  │   旗舰·实现 / flag-impl    (Flash)        按融合方案编码 [hidden]
  │   旗舰·质检 / flag-qa    (DeepSeek Pro) 方案审查 + 代码验收 [max_tokens: 16384]
  │
@@ -267,7 +269,7 @@ rm -rf your-project/.opencode/
 若主融合 agent 失败（STUCK / ERROR_PROVIDER / timeout / 空结果），门童路由员自动降级到 `@融合·保底`（DeepSeek V4 Pro）：
 
 ```
-旗舰·融合 (Qwen3.7 Max) 失败
+旗舰·融合 (Kimi K3) 失败
   → task(@融合·保底) (DeepSeek V4 Pro) → 输出保底结果
 中级·融合 (Kimi) 失败
   → task(@融合·保底) (DeepSeek V4 Pro) → 输出保底结果
@@ -342,9 +344,11 @@ MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅，**首月 $
 | 意见层 | DeepSeek V4 Pro | $1.74 / $3.48    | 17,150 次  |       |
 | 意见层 | Qwen3.7 Plus    | $0.40 / $1.60    | 21,600 次  |       |
 | 融合层 | Kimi K2.7 Code  | $0.95 / $4.00    | 9,250 次   | ~2%   |
-| 融合层 | Qwen3.7 Max     | $2.50 / $7.50    | 4,770 次   | （刀刃上） |
+| 融合层 | Kimi K3         | $3.00 / $15.00   | 280 次（7/24 起 2x） | （刀刃上） |
 | 融合层 | GLM-5.2         | $1.40 / $4.40    | 4,300 次   |       |
 
+> 🔥 **热点：** 旗舰融合已升级至 **Kimi K3**（2026-07 发布，2.8T 参数，1M 上下文）。OpenCode Go 额度 7/24 起翻倍（140 → 280 / 5h）。
+>
 > 所有模型 ID 仅作声明，可替换为你偏好的任何模型。
 
 ### 达到限制后

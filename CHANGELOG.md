@@ -45,6 +45,36 @@
 </details>
 ---
 
+## v0.0.11（2026-07-17）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Flagship fuse upgraded to Kimi K3 (top-tier frontier model) — quality ceiling raised to the front of the pack.
+
+### Model (P1)
+
+- `flag-fuse` (旗舰·融合) model changed `qwen3.7-max` → `kimi-k3` (2.8T params, 1M context)
+- README model table + intro updated; OpenCode Go quota 2x from 7/24 (140 → 280 / 5h)
+
+</details>
+
+---
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+旗舰融合升级至 Kimi K3（顶级前沿模型）—— 质量天花板推到第一梯队最前。
+
+### 模型（P1）
+
+- `flag-fuse`（旗舰·融合）模型由 `qwen3.7-max` 改为 `kimi-k3`（2.8T 参数，1M 上下文）
+- README 模型表与介绍同步更新；OpenCode Go 额度 7/24 起翻倍（140 → 280 / 5h）
+
+</details>
+
+---
+
 ## v0.0.10（2026-07-16）
 
 <details open>

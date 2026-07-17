@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
+> 🔥 **Hot (2026-07):** flagship fuse upgraded to **Kimi K3** — 2.8T params, 1M context, top-tier frontier model. OpenCode Go quota 2x from 7/24 (140 → 280 / 5h). MoA quality ceiling now at the front of the pack.
+
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
 ![OpenCode MoA](.github/opengraph.png)
@@ -34,7 +36,7 @@ You: help me design a message queue solution
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
     ├─ flag-plan (GLM        ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
-    └─ flag-fuse (Qwen3.7 Max) ─── take the best of each, one optimal solution
+    └─ flag-fuse (Kimi K3) ─── take the best of each, one optimal solution
 ```
 
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
@@ -195,7 +197,7 @@ rm -rf your-project/.opencode/
 
 **Opinion layer** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — plans from different perspectives. Three opinions naturally form a "consensus + divergence" structure.
 
-**Fusion layer** (Kimi / Qwen-Max / GLM / DeepSeek Pro fallback) — keep consensus, take the best on divergence, with fallback to DeepSeek V4 Pro if fusion fails.
+**Fusion layer** (Kimi K3 / Qwen-Max / GLM / DeepSeek Pro fallback) — keep consensus, take the best on divergence, with fallback to DeepSeek V4 Pro if fusion fails. The flagship fuse now runs on **Kimi K3** (2.8T params, 1M context, top-tier frontier model) — pushing MoA's quality ceiling to the front of the pack.
 
 > ⚠️ The call-volume ratios below (~80% / ~18% / ~2%) are **design targets**, not measured statistics. Actual ratios vary by task complexity.
 
@@ -227,7 +229,7 @@ concierge-router (门童路由员, Flash)
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
  │   flag-plan (旗舰·规划, GLM         ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
- │   flag-fuse (旗舰·融合, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+ │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
  │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
@@ -269,7 +271,7 @@ tool-handler (Flash) failed → immediate retry once
 If the primary fusion agent fails (STUCK / ERROR_PROVIDER / timeout / empty result), the concierge-router automatically falls back to `@融合·保底` (DeepSeek V4 Pro, fallback):
 
 ```
-flag-fuse (旗舰·融合, Qwen3.7 Max) failed
+flag-fuse (旗舰·融合, Kimi K3) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
 mid-fuse (中级·融合, Kimi) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
@@ -346,9 +348,11 @@ Limits are defined by dollar value. Cheap models (Flash) can be used more often,
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Qwen3.7 Max     | $2.50 / $7.50              | 4,770         | ~2% (flagship fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280 (2x from 7/24) | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
+> **🔥 Hot:** flagship fuse upgraded to **Kimi K3** (released 2026-07, 2.8T params, 1M context). OpenCode Go quota 2x from 7/24 (140 → 280 / 5h).
+>
 > All model IDs are declarations only; replace with any model you prefer.
 
 ### After hitting the limit
