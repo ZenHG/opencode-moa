@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **새소식 (2026-07):** 프래그십 퓨전을 **Kimi K3** 로 업그레이드 — 2.8T 파라미터, 1M 컨텍스트, 최상위 frontier 모델. OpenCode Go 할당량 7/24 부터 2배 (140 → 280 / 5h).
+> 🔥 **새소식 (2026-07):** 프래그십 퓨전을 **Kimi K3** 로 업그레이드 — 2.8T 파라미터, 1M 컨텍스트, 최상위 frontier 모델. OpenCode Go 할당량 7/24 까지 2배 (140 → 280 / 5h, 이후 140으로 복귀).
 
 > **하나의 대화 진입점에서 22개의 전문 모델이 자동으로 협업합니다. 간단한 작업은 Flash(저렴), 복잡한 작업만 flagship(비쌈)을 호출합니다. 비용은 최대 약 90% 절감(모두 flagship 사용 대비), 코드 품질은 크게 향상됩니다. 단순 작업이 주를 이루고 flagship 호출이 최소화될 때, 실제 절감은 작업 구성에 따라 다릅니다.**
 
@@ -36,7 +36,7 @@ You: help me design a message queue solution
     ┌─ flag-arch (Qwen3.7 Max) ─── architect 관점의 계획
     ├─ flag-plan (GLM        ) ─── PM 관점의 계획
     ├─ flag-eng  (MiniMax M3 ) ─── implementer 관점의 계획
-    └─ flag-fuse (Qwen3.7 Max) ─── 각 장점을 융합해 하나의 최적안 생성
+    └─ flag-fuse (Kimi K3) ─── 각 장점을 융합해 하나의 최적안 생성
 ```
 
 서로 다른 세 모델의 독립 계획은 자연스럽게 “consensus + divergence” 구조를 만듭니다. fusion model은 consensus를 보존하고 divergence에서는 가장 좋은 부분을 선택합니다. 이는 단일 모델로는 어렵습니다.
@@ -227,7 +227,7 @@ concierge-router (门童路由员, Flash)
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
  │   flag-plan (旗舰·规划, GLM         ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
- │   flag-fuse (旗舰·融合, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
  │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
@@ -269,7 +269,7 @@ tool-handler (Flash) failed → immediate retry once
 primary fusion agent가 실패(STUCK / ERROR_PROVIDER / timeout / empty result)하면 concierge-router는 자동으로 `@融合·保底`(DeepSeek V4 Pro)로 fallback합니다:
 
 ```text
-flag-fuse (旗舰·融合, Qwen3.7 Max) failed
+flag-fuse (旗舰·融合, Kimi K3) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
 mid-fuse (中级·融合, Kimi) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
@@ -317,10 +317,10 @@ MoA는 call-volume-weighted mix로 비용을 계산합니다: 약 80% tool-layer
 | Layer | Share | Output unit price /1M | Weighted |
 | --- | --- | --- | --- |
 | Tool layer | 80% | $0.28 | $0.224 |
-| Opinion | 18% | ~$2.00 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 avg) | $0.36 |
-| Fusion | 2% | ~$5.30 (Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 avg) | $0.106 |
+| Mid tier | 18% | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg) | $0.378 |
+| Flagship | 2% | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse) | $0.12 |
 
-혼합 유효 출력 단가는 ≈ **$0.69 / 1M**입니다. “all-flagship GLM $7.50” 대비 약 9% → **약 90% 절감**; “all-mid-tier DeepSeek Pro $3.48” 대비 약 20% → **약 80% 절감**. “save 90%”는 flagship baseline에 대한 실제 가치입니다.
+혼합 유효 출력 단가는 ≈ **$0.72 / 1M**입니다. “all-flagship GLM $7.50” 대비 약 10% → **약 90% 절감**; “all-mid-tier DeepSeek Pro $3.48” 대비 약 21% → **약 79% 절감**. “save 90%”는 flagship baseline에 대한 실제 가치입니다.
 
 ### OpenCode Go 플랜
 
@@ -346,7 +346,7 @@ Limits는 dollar value로 정의됩니다. 저렴한 models(Flash)는 더 자주
 | Opinion | DeepSeek V4 Pro | $1.74 / $3.48 | 17,150 | |
 | Opinion | Qwen3.7 Plus | $0.40 / $1.60 | 21,600 | |
 | Fusion | Kimi K2.7 Code | $0.95 / $4.00 | 9,250 | ~2% (mid-tier fuse) |
-| Fusion | Kimi K3 | $3.00 / $15.00 | 280 (2x from 7/24) | ~2% (flagship fuse) |
+| Fusion | Kimi K3 | $3.00 / $15.00 | 280 | ~2% (flagship fuse) |
 | Fusion | GLM-5.2 | $1.40 / $4.40 | 4,300 | ~2% (frontend lead) |
 
 > 모든 model IDs는 선언 예시입니다. 선호하는 model로 교체할 수 있습니다.
@@ -452,7 +452,7 @@ A: agent의 `model` field를 바꾸면 됩니다:
 
 ```yaml
 # .opencode/agents/mid-eng.md
-model: anthropic/claude-sonnet-4-20250514
+model: opencode-go/glm-5.2
 ```
 
 **Q: deploy 후 repo를 삭제해도 되나요?**

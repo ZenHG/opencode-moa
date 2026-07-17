@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **Nouveauté (2026-07) :** la fusion flagship passe à **Kimi K3** — 2,8T paramètres, contexte 1M, modèle frontier de premier plan. Quota OpenCode Go 2x dès 7/24 (140 → 280 / 5h).
+> 🔥 **Nouveauté (2026-07) :** la fusion flagship passe à **Kimi K3** — 2,8T paramètres, contexte 1M, modèle frontier de premier plan. Quota OpenCode Go 2x jusqu'à 7/24 (140 → 280 / 5h, puis retour à 140).
 
 > **Un point d’entrée conversationnel unique où 22 modèles spécialisés collaborent automatiquement. Les tâches simples utilisent Flash (peu coûteux), tandis que les tâches complexes appellent le flagship (coûteux). Les coûts peuvent baisser jusqu’à ~90% (par rapport au tout-flagship), avec une qualité de code nettement améliorée.**
 
@@ -38,7 +38,7 @@ You: help me design a message queue solution
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
     ├─ flag-plan (GLM        ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
-    └─ flag-fuse (Qwen3.7 Max) ─── take the best of each, one optimal solution
+    └─ flag-fuse (Kimi K3) ─── take the best of each, one optimal solution
 ```
 
 Trois plans indépendants issus de trois modèles différents forment naturellement une structure “consensus + divergence”. Le modèle de fusion identifie ce qui fait consensus et le conserve, puis sélectionne le meilleur lorsque les avis divergent — ce qu’un modèle unique ne peut pas faire.
@@ -229,7 +229,7 @@ concierge-router (门童路由员, Flash)
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
  │   flag-plan (旗舰·规划, GLM         ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
- │   flag-fuse (旗舰·融合, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
  │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
@@ -271,7 +271,7 @@ tool-handler (Flash) failed → immediate retry once
 Si el agent principal de fusión falla (STUCK / ERROR_PROVIDER / timeout / resultado vacío), concierge-router cae automáticamente a `@融合·保底` (DeepSeek V4 Pro):
 
 ```
-flag-fuse (旗舰·融合, Qwen3.7 Max) failed
+flag-fuse (旗舰·融合, Kimi K3) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
 mid-fuse (中级·融合, Kimi) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
@@ -319,10 +319,10 @@ MoA s’estime avec un mélange pondéré par volume d’appels : ~80% tool-laye
 | Layer      | Share | Output unit price /1M                                             | Weighted |
 | ---------- | ----- | ----------------------------------------------------------------- | -------- |
 | Tool layer | 80%   | $0.28                                                             | $0.224   |
-| Opinion    | 18%   | ~$2.00 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 avg) | $0.36    |
-| Fusion     | 2%    | ~$5.30 (Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 avg)              | $0.106   |
+| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg) | $0.378   |
+| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse)    | $0.12    |
 
-Precio unitario efectivo combinado ≈ **$0.69 / 1M**. Comparado con “all-flagship GLM $7.50” → alrededor del 9% → **~90% de ahorro**; comparado con “all-mid-tier DeepSeek Pro $3.48” → alrededor del 20% → **~80% de ahorro**. La afirmación “save 90%” corresponde al valor real frente al baseline flagship.
+Precio unitario efectivo combinado ≈ **$0.72 / 1M**. Comparado con “all-flagship GLM $7.50” → alrededor del 10% → **~90% de ahorro**; comparado con “all-mid-tier DeepSeek Pro $3.48” → alrededor del 21% → **~79% de ahorro**. La afirmación “save 90%” corresponde al valor real frente al baseline flagship.
 
 ### Plan OpenCode Go
 
@@ -348,7 +348,7 @@ Les limites sont définies en valeur monétaire. Les modèles peu coûteux (Flas
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Kimi K3         | $3.00 / $15.00             | 280 (2x from 7/24) | ~2% (flagship fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280             | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
 > Todos los model IDs son solo declaraciones; puedes sustituirlos por cualquier modelo que prefieras.
@@ -465,7 +465,7 @@ A: Solo cambia el campo `model` del agent:
 
 ```yaml
 # .opencode/agents/mid-eng.md
-model: anthropic/claude-sonnet-4-20250514
+model: opencode-go/glm-5.2
 ```
 
 **Q: ¿Puedo borrar el repo después de desplegar?**
