@@ -206,41 +206,41 @@ rm -rf your-project/.opencode/
 ## 22 Agents
 
 ```
-门童路由员 (concierge-router, Flash)
+concierge-router (门童路由员, Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
- │   工具人      (tool-handler,     Flash ) read code, search files [+ material self-check]
- │   工具人-mimo (tool-handler-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
- │   闪电侠      (swift,            Flash ) simple tasks in one shot
- │   视觉翻译官  (vision-translator, MiMo  ) screenshot/UI/error image to text
+ │   tool-handler      (工具人,      Flash ) read code, search files [+ material self-check]
+ │   tool-handler-mimo (工具人-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
+ │   swift             (闪电侠,      Flash ) simple tasks in one shot
+ │   vision-translator (视觉翻译官,  MiMo  ) screenshot/UI/error image to text
  │
- ├── 残差提取者  (residual extractor,  Flash     ) analyze divergence between plans
- ├── 置信度评估者 (confidence assessor, DS Pro    ) assess fusion result confidence
+ ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
+ ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   中级·工程  (mid-eng,      MiniMax M3  ) engineering view
- │   中级·创意  (mid-creative, DeepSeek Pro) creative view
- │   中级·码农  (mid-coder,    Flash       ) pragmatic view
- │   中级·融合  (mid-fuse,     Kimi        ) fuse three plans [max_tokens: 16384]
+ │   mid-eng      (中级·工程, MiniMax M3  ) engineering view
+ │   mid-creative (中级·创意, DeepSeek Pro) creative view
+ │   mid-coder    (中级·码农, Flash       ) pragmatic view
+ │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
- │   旗舰·架构  (flag-arch, Qwen3.7 Max ) top-level architecture
- │   旗舰·规划  (flag-plan, GLM         ) structured planning
- │   旗舰·工程  (flag-eng,  MiniMax M3  ) large-scale implementation
- │   旗舰·融合  (flag-fuse, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
- │   旗舰·实现  (flag-impl, Flash       ) implement per fused plan [hidden]
- │   旗舰·质检  (flag-qa,  DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
+ │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
+ │   flag-plan (旗舰·规划, GLM         ) structured planning
+ │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
+ │   flag-fuse (旗舰·融合, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+ │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
+ │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── Frontend opinion layer ─────────────────────────────────────────────
-     前端·还原  (fe-restore, MiMo        ) pixel-perfect UI restore
-     前端·逻辑  (fe-logic,   Qwen3.7 Plus) component architecture & state mgmt
-     前端·动效  (fe-motion,  MiMo-Pro     ) interaction & motion
-     前端·总工  (fe-lead,    GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
-```
+     fe-restore (前端·还原, MiMo        ) pixel-perfect UI restore
+     fe-logic   (前端·逻辑, Qwen3.7 Plus) component architecture & state mgmt
+     fe-motion  (前端·动效, MiMo-Pro     ) interaction & motion
+     fe-lead    (前端·总工, GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
+ ```
 
 Fallback agent (not in the router chain above, called only when fusion fails):
 ```
-融合·保底 (fallback, DeepSeek V4 Pro) — same residual-enhanced fusion, used when 旗舰·融合 / 中级·融合 / 前端·总工 fail
+fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, used when flag-fuse / mid-fuse / fe-lead fail
  ```
 
 ---
@@ -269,11 +269,11 @@ tool-handler (Flash) failed → immediate retry once
 Si el agent principal de fusión falla (STUCK / ERROR_PROVIDER / timeout / resultado vacío), concierge-router cae automáticamente a `@融合·保底` (DeepSeek V4 Pro):
 
 ```
-旗舰·融合 (Qwen3.7 Max) failed
+flag-fuse (旗舰·融合, Qwen3.7 Max) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
-中级·融合 (Kimi) failed
+mid-fuse (中级·融合, Kimi) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
-前端·总工 (GLM-5.2) failed
+fe-lead (前端·总工, GLM-5.2) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
 ```
 
