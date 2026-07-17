@@ -163,6 +163,38 @@ After any diagram or table edit, verify alignment programmatically:
 - Tables: all `|` at same column
 ```
 
+### 6.5 Image anchor convention (README 图片锚点规范)
+
+Images in README must be wrapped in fixed HTML-comment anchors so tooling can locate and replace them regardless of surrounding code fences or line position. This prevents the recurring bug where an image gets inserted *inside* an ASCII diagram code block and silently fails to render.
+
+- Architecture diagram `moa-arch*`: wrapped in `<!-- ARCH-IMG -->` ... `<!-- /ARCH-IMG -->`, placed at the top of every README.
+- Cost-down card `moa-cost*`: wrapped in `<!-- COST-IMG -->` ... `<!-- /COST-IMG -->`, placed *outside* any code fence (after the architecture diagram block, never inside it).
+- Social cards `moa-social*` and hero `opengraph*` are share assets and MUST NOT appear in README body.
+- Rule: an image line (`![...](....png)`) must never sit between ` ``` ` and ` ``` ` fence lines.
+
+Example:
+
+```text
+<!-- ARCH-IMG -->
+![MoA architecture](.github/moa-arch.png)
+<!-- /ARCH-IMG -->
+
+<!-- COST-IMG -->
+![Cost down up to 90%](.github/moa-cost.png)
+<!-- /COST-IMG -->
+```
+
+### 6.6 Image verification
+
+Run `pwsh scripts/verify-images.ps1` to assert, for all 7 READMEs:
+
+- ARCH-IMG and COST-IMG anchors exist
+- No image line is located inside a code fence
+- No `opengraph` reference in README body
+- `moa-arch` and `moa-cost` are referenced
+
+This script is local tooling (not pushed) — it guards the single-source-of-truth rule without adding CI surface to a private repo.
+
 ---
 
 ## 7. Pull request checklist for documentation changes
