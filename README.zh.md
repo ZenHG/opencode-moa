@@ -1,4 +1,4 @@
-# OpenCode MoA
+﻿# OpenCode MoA
 
 > 🌐 语言 / Languages: [English](README.md) · 中文 · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
@@ -39,6 +39,7 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
     └─ 旗舰·融合 (Kimi K3)         ─── 取长补短，一份最优解
 ```
 
+![成本降低高达 90%](.github/moa-cost-zh.png)
 三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
 
 ---
@@ -239,7 +240,7 @@ rm -rf your-project/.opencode/
  │   旗舰·工程 / flag-eng    (MiniMax M3)   大规模实现方案
  │   旗舰·融合 / flag-fuse    (Kimi K3)       三份架构方案融合 [max_tokens: 16384]
  │   旗舰·实现 / flag-impl    (Flash)        按融合方案编码 [hidden]
- │   旗舰·质检 / flag-qa    (DeepSeek Pro) 方案审查 + 代码验收 [max_tokens: 16384]
+ │   旗舰·质检 / flag-qa    (DeepSeek V4 Pro) 方案审查 + 代码验收 [max_tokens: 16384]
  │
  └── 前端意见层 ──────────────────────────────────
      前端·还原 / fe-restore    (MiMo)        像素级还原 UI

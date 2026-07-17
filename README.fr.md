@@ -39,6 +39,8 @@ You: help me design a message queue solution
     ├─ flag-plan (GLM 5.2        ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 )     ─── plan from the implementer's view
     └─ flag-fuse (Kimi K3)         ─── take the best of each, one optimal solution
+
+![Cost down up to 90%](.github/moa-cost.png)
 ```
 
 Trois plans indépendants issus de trois modèles différents forment naturellement une structure “consensus + divergence”. Le modèle de fusion identifie ce qui fait consensus et le conserve, puis sélectionne le meilleur lorsque les avis divergent — ce qu’un modèle unique ne peut pas faire.

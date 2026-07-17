@@ -1,4 +1,4 @@
-# OpenCode MoA
+﻿# OpenCode MoA
 
 > 🌐 Languages: English · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
@@ -39,6 +39,7 @@ You: help me design a message queue solution
     └─ flag-fuse (Kimi K3    )  ─── take the best of each, one optimal solution
 ```
 
+![Cost down up to 90%](.github/moa-cost.png)
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
 
 ---
