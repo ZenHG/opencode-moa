@@ -161,7 +161,7 @@ Monthly quota comparison (OpenCode Go plan $10/month):
   Qwen3.7 Plus         21,600 calls
   ─── above are mid-tier opinion models, ~18% (design target, not measured) ───
   Kimi K2.7 Code        9,250 calls
-  Qwen3.7 Max           4,770 calls
+  Kimi K3               280 calls (2x until 7/24, then back to 140)
   GLM-5.2               4,300 calls
   ─── above are flagship fusion models, ~2% (design target, not measured) ───
 ```
@@ -773,7 +773,7 @@ Implementation points | Module split + interfaces | Performance & capacity | Obs
 description: Fuses three architecture plans
 mode: subagent
 hidden: true
-model: opencode-go/qwen3.7-max
+model: opencode-go/kimi-k3
 temperature: 0.3
 reasoningEffort: high
 max_tokens: 16384
