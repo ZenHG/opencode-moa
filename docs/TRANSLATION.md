@@ -80,7 +80,7 @@ Chinese display names may be localized in Chinese docs, but English aliases shou
 | Flagship QA / 旗舰·质检 | Quality gate; preserve QA meaning |
 | confidence threshold | Use one shared definition across router, QA, and confidence assessor |
 | fallback | Keep as `fallback` in technical prose or translate with the original in parentheses |
-| Lite / Balanced / Strict | Proposed product modes; keep English labels if introduced |
+| (reserved for future product modes) | Not yet introduced; do not add to READMEs until finalized |
 
 ---
 
@@ -117,7 +117,55 @@ findstr /n /c:"T0-static-verify.ps1" README*.md
 
 ---
 
-## 6. Pull request checklist for documentation changes
+## 6. Visual alignment rules
+
+ASCII diagrams must be visually aligned across all language READMEs.
+
+### 6.1 First diagram (top of README)
+
+- Left side: `┌─` / `├─` / `└─` with agent name, flush left
+- Right side: `───` with description, flush right
+- Model name in parentheses must be padded to uniform display width
+- `───` must start at the same column in all 4 lines
+- CJK characters count as 2 display columns; ASCII as 1
+- Use programmatic alignment (not manual spacing) to avoid drift
+
+Example (English):
+
+```text
+    ┌─ flag-arch (Qwen3.7 Max)  ─── plan from the architect's view
+    ├─ flag-plan (GLM 5.2    )  ─── plan from the PM's view
+    ├─ flag-eng  (MiniMax M3 )  ─── plan from the implementer's view
+    └─ flag-fuse (Kimi K3    )  ─── take the best of each, one optimal solution
+```
+
+### 6.2 22 Agents section (Flagship / Tool / Mid-tier / Frontend)
+
+- Each line: ` │   <role> (<display-name>, <model>) <description>`
+- The closing `)` must align at the same column within each sub-section
+- Pad `<display-name>, <model>` with spaces to achieve alignment
+- Left `│` must have exactly 1 leading space in all lines
+
+### 6.3 Table alignment
+
+- Markdown tables: pad column cells so `|` aligns vertically
+- Header separator `| --- |` must match column count
+- CJK content in cells counts as 2 display columns
+
+### 6.4 Verification
+
+After any diagram or table edit, verify alignment programmatically:
+
+```text
+- First diagram: all `───` at same column
+- 22 Agents flagship: all `)` at same column
+- Tool / Mid-tier / Frontend: all `)` at same column
+- Tables: all `|` at same column
+```
+
+---
+
+## 7. Pull request checklist for documentation changes
 
 - [ ] Did agent / command / skill counts change? If yes, update README, install scripts, T0, and CHANGELOG.
 - [ ] Did installation steps change? If yes, sync all README files.
@@ -129,7 +177,7 @@ findstr /n /c:"T0-static-verify.ps1" README*.md
 
 ---
 
-## 7. Translation quality bar
+## 8. Translation quality bar
 
 A localized README is acceptable only if:
 
@@ -142,7 +190,7 @@ A localized README is acceptable only if:
 
 ---
 
-## 8. Maintenance principle
+## 9. Maintenance principle
 
 Prefer fewer, reliable translated surfaces over many stale translations.
 
