@@ -33,10 +33,10 @@ OpenCode MoA는 OpenCode용 Mixture of Agents 구성 패키지입니다. 여러 
 ```text
 You: help me design a message queue solution
 
-    ┌─ flag-arch (Qwen3.7 Max) ─── architect 관점의 계획
+    ┌─ flag-arch (Qwen3.7 Max)     ─── architect 관점의 계획
     ├─ flag-plan (GLM 5.2        ) ─── PM 관점의 계획
-    ├─ flag-eng  (MiniMax M3 ) ─── implementer 관점의 계획
-    └─ flag-fuse (Kimi K3) ─── 각 장점을 융합해 하나의 최적안 생성
+    ├─ flag-eng  (MiniMax M3 )     ─── implementer 관점의 계획
+    └─ flag-fuse (Kimi K3)         ─── 각 장점을 융합해 하나의 최적안 생성
 ```
 
 서로 다른 세 모델의 독립 계획은 자연스럽게 “consensus + divergence” 구조를 만듭니다. fusion model은 consensus를 보존하고 divergence에서는 가장 좋은 부분을 선택합니다. 이는 단일 모델로는 어렵습니다.

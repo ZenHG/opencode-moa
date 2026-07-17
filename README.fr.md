@@ -35,10 +35,10 @@ Par défaut, OpenCode utilise un seul modèle du début à la fin. Modifier un c
 ```
 You: help me design a message queue solution
 
-    ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
+    ┌─ flag-arch (Qwen3.7 Max)     ─── plan from the architect's view
     ├─ flag-plan (GLM 5.2        ) ─── plan from the PM's view
-    ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
-    └─ flag-fuse (Kimi K3) ─── take the best of each, one optimal solution
+    ├─ flag-eng  (MiniMax M3 )     ─── plan from the implementer's view
+    └─ flag-fuse (Kimi K3)         ─── take the best of each, one optimal solution
 ```
 
 Trois plans indépendants issus de trois modèles différents forment naturellement une structure “consensus + divergence”. Le modèle de fusion identifie ce qui fait consensus et le conserve, puis sélectionne le meilleur lorsque les avis divergent — ce qu’un modèle unique ne peut pas faire.
