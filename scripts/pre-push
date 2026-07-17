@@ -1,6 +1,19 @@
 #!/bin/sh
 # 发版前最后一道提醒：push master 且含 CHANGELOG 改动时确认
 # 交互终端下会等待确认；CI / 非交互环境自动放行。
+
+# ── T1: README / deploy-doc vs agents model consistency ──
+# 非交互环境（CI）自动放行，本地交互终端阻断不一致提交
+if [ -t 1 ]; then
+  pwsh -File ".opencode/tests/T1-readme-consistency.ps1" >/dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "❌ T1 一致性检查失败：README / 部署手册与 .opencode/agents 的 model 分配不一致。"
+    echo "   请先同步（改 agents 的 model 后，同步 7 个 README 图表 + 2 个部署手册），再 push。"
+    echo "   跳过检查：git push --no-verify"
+    exit 1
+  fi
+fi
+
 master_push=0
 while read -r lref lobj rref robj; do
   [ "$lref" = "refs/heads/master" ] && master_push=1
