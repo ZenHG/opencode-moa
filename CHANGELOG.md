@@ -775,8 +775,8 @@ First formal release.
 
 ### 模型分配
 
-- 中级·工程：MiniMax M3（无上下文陷阱，$0.30/$1.20 per 1M）
-- 中级·创意：DeepSeek V4 Pro（创意视角）
+- 中级·工程：Kimi K2.6（ClawEval 第一、SWE-Verified 80.2，$0.95/$4.00 per 1M）
+- 中级·创意：Qwen3.7 Plus（均衡多档、$0.40/$1.60 per 1M）
 - 旗舰·工程：MiniMax M3（大规模实现）
 
 ### 意见层保底

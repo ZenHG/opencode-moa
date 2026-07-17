@@ -534,7 +534,7 @@ permission:
 ---
 description: 工程视角方案
 mode: subagent
-model: opencode-go/minimax-m3
+model: opencode-go/kimi-k2.6
 temperature: 0.4
 reasoningEffort: high
 max_tokens: 16384
@@ -573,7 +573,7 @@ permission:
 ---
 description: 创意视角方案
 mode: subagent
-model: opencode-go/deepseek-v4-pro
+model: opencode-go/qwen3.7-plus
 temperature: 0.5
 reasoningEffort: medium
 max_tokens: 16384

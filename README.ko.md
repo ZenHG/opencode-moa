@@ -218,8 +218,8 @@ concierge-router (门童路由员, Flash)
  ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   mid-eng      (中级·工程, MiniMax M3  ) engineering view
- │   mid-creative (中级·创意, DeepSeek Pro) creative view
+  │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
+  │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
  │   mid-coder    (中级·码农, Flash       ) pragmatic view
  │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
  │

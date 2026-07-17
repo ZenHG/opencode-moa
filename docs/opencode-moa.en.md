@@ -519,7 +519,7 @@ On failure → retry once immediately
 ---
 description: Engineering-perspective plan
 mode: subagent
-model: opencode-go/minimax-m3
+model: opencode-go/kimi-k2.6
 temperature: 0.4
 reasoningEffort: max
 max_tokens: 16384
@@ -558,7 +558,7 @@ When called without material (tool layer failed):
 ---
 description: Creative-perspective plan
 mode: subagent
-model: opencode-go/deepseek-v4-pro
+model: opencode-go/qwen3.7-plus
 temperature: 0.5
 reasoningEffort: medium
 max_tokens: 16384
