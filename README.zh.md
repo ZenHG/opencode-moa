@@ -228,8 +228,8 @@ rm -rf your-project/.opencode/
  ├── 置信度评估者 (DS Pro)       NEW: 评估融合结果置信度
  │
  ├── 中级意见层 ──────────────────────────────────
-  │   中级·工程 / mid-eng    (Kimi K2.6)   工程视角方案
-  │   中级·创意 / mid-creative    (Qwen3.7 Plus) 创意视角方案
+ │   中级·工程 / mid-eng    (Kimi K2.6)   工程视角方案
+ │   中级·创意 / mid-creative    (Qwen3.7 Plus) 创意视角方案
  │   中级·码农 / mid-coder    (Flash)        实战视角方案
  │   中级·融合 / mid-fuse    (Kimi)         三份方案取长补短 [max_tokens: 16384]
  │

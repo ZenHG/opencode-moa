@@ -218,8 +218,8 @@ concierge-router (门童路由员, Flash)
  ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
-  │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
-  │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
+ │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
+ │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
  │   mid-coder    (中级·码农, Flash       ) pragmatic view
  │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
  │
@@ -227,7 +227,7 @@ concierge-router (门童路由员, Flash)
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
  │   flag-plan (旗舰·规划, GLM 5.2   ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
-  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
+ │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
  │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
