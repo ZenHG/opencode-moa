@@ -480,6 +480,20 @@ A: Consulta “Coste → Modelos gratuitos”: usa `/models` para abrir la lista
 
 ---
 
+
+## Herramientas de mantenedor (no necesarias para usuarios finales)
+
+Los siguientes archivos son para **mantenedores del repo**, no para desplegar MoA. Los usuarios finales pueden ignorarlos.
+
+| Archivo | Propósito |
+| ---- | ------- |
+| `deploy-sync.ps1` | Solo mantenedores — sincroniza el repo con GitHub y sube el skill `opencode-moa` a SkillHub. Soporta `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
+| `scripts/hooks/pre-commit` | Recordatorio de hook git local: avisa al stagear un cambio de `CHANGELOG.md` (auto-release al pushear a `master`). |
+| `scripts/hooks/pre-push` | Recordatorio de hook git local: confirma la versión antes de pushear cambios de `CHANGELOG.md` a `master`; avanza automático en entornos no interactivos/CI. |
+
+> Estos hooks no se instalan automáticamente. Si quieres los avisos, crea un symlink en .git/hooks/.
+
+---
 ## Contribuir
 
 PRs e Issues son bienvenidos. Consulta [CONTRIBUTING.md](CONTRIBUTING.md).

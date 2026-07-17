@@ -478,6 +478,20 @@ A: 上の「Cost → Free models」を参照してください。`/models` で m
 
 ---
 
+
+## メンテナーツール（エンドユーザーは不要）
+
+以下のファイルは **リポジトリのメンテナー** 向けであり、MoA のデプロイ用ではありません。エンドユーザーは無視して構いません。
+
+| ファイル | 目的 |
+| ---- | ------- |
+| `deploy-sync.ps1` | メンテナー専用 — リポジトリを GitHub に同期し `opencode-moa` skill を SkillHub にアップロード。 `-SkipGit` / `-SkipSkillHub` / `-DryRun` をサポート。 |
+| `scripts/hooks/pre-commit` | ローカル git フック通知: `CHANGELOG.md` の変更をステージング時に警告 (master への push で自動リリース)。 |
+| `scripts/hooks/pre-push` | ローカル git フック通知: `CHANGELOG.md` の変更を master に push する前にバージョン確認; 非対話/CI 環境では自動進行。 |
+
+> これらのフックは自動ではインストールされません。通知が必要なら .git/hooks/ にシンボリックリンクしてください。
+
+---
 ## コントリビューション
 
 PRs と Issues を歓迎します。[CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。

@@ -487,10 +487,10 @@ The following files are for **repo maintainers**, not for deploying MoA. End use
 | File | Purpose |
 | ---- | ------- |
 | `deploy-sync.ps1` | Maintainers only — syncs the repo to GitHub and uploads the `opencode-moa` skill to SkillHub. Supports `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
-| `hooks/pre-commit` | Local git hook reminder: warns when you stage a `CHANGELOG.md` change (which auto-releases on push to `master`). |
-| `hooks/pre-push` | Local git hook reminder: confirms the version before pushing `CHANGELOG.md` changes to `master`; auto-proceeds in non-interactive/CI environments. |
+| `scripts/hooks/pre-commit` | Local git hook reminder: warns when you stage a `CHANGELOG.md` change (which auto-releases on push to `master`). |
+| `scripts/hooks/pre-push` | Local git hook reminder: confirms the version before pushing `CHANGELOG.md` changes to `master`; auto-proceeds in non-interactive/CI environments. |
 
-> These hooks are not installed automatically. Symlink them into `.git/hooks/` if you want the reminders.
+> These hooks are not installed automatically. Symlink them into `.git/hooks/` if you want the reminders, e.g. `ln -s ../../scripts/hooks/pre-push .git/hooks/pre-push`.
 
 ---
 

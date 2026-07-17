@@ -461,11 +461,47 @@ A: Despliega cada proyecto por separado. `.opencode/` es configuración a nivel 
 
 ### Fallback
 
-**Q: Toda la tool layer está caída, ¿qué hago?**
+**Q: Was, wenn die gesamte Tool-Layer ausgefallen ist?**
 A: Siehe „Fehlertoleranzdesign → Fallback-Kette“: MoA fragt den Nutzer, ob er A. einige Minuten warten oder B. die Tool Layer überspringen und direkt die Opinion Layer aufrufen möchte (höhere Kosten).
 
-**Q: ¿Dónde están los modelos gratuitos?**
+**Q: Wo sind die kostenlosen Modelle?**
 A: Siehe „Kosten → Kostenlose Modelle“: Verwende `/models`, um die Modellliste zu öffnen, und wähle ein Modell mit dem Label “Free” (im Windows-Desktop-Client funktioniert auch `Ctrl+'`) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free usw.). Kostenlose Modelle haben begrenzten Kontext, können langsamer sein, und Daten können für Training verwendet werden.
+
+---
+
+## Verifikation
+
+Das Repo enthält drei Prüfskripte in `.opencode/tests/`. Layer 0 ist vollständig automatisch; die Layer 1–2 sind geführte Checklisten, die Sie in OpenCode durchgehen.
+
+```bash
+# Layer 0 — statische Prüfung (automatisch, 0 token)
+pwsh .opencode/tests/T0-static-verify.ps1
+# expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
+
+# alle drei Layer auf einmal ausführen
+pwsh .opencode/tests/run-all.ps1
+```
+
+| Script | Layer | Was es tut | Modus |
+| ------ | ----- | ------------ | ---- |
+| `T0-static-verify.ps1` | 0 | Prüft Dateistruktur, agent/command/skill-Anzahl, README-Anker, Key-Pfad-Korrektheit | Automatisch |
+| `T1-behavioral-guide.ps1` | 1 | Druckt eine Schritt-für-Schritt-Checkliste für Routing-/Opinion-/Fusion-Verhalten | Manuell (in OpenCode) |
+| `T2-moa-smoke-guide.ps1` | 2 | Druckt eine Smoke-Test-Checkliste für `/moa-*` Befehle end-to-end | Manuell (in OpenCode) |
+| `run-all.ps1` | 0–2 | Führt T0 aus und druckt dann die T1/T2-Checklisten | Gemischt |
+
+---
+
+## Maintainer-Tooling (für Endnutzer nicht nötig)
+
+Die folgenden Dateien sind für **Repo-Maintainer**, nicht zum Deployment von MoA. Endnutzer können sie ignorieren.
+
+| Datei | Zweck |
+| ---- | ------- |
+| `deploy-sync.ps1` | Nur für Maintainer — synchronisiert das Repo zu GitHub und lädt den `opencode-moa`-Skill zu SkillHub hoch. Unterstützt `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
+| `scripts/hooks/pre-commit` | Lokaler git-Hook-Hinweis: warnt beim Stagen einer `CHANGELOG.md`-Änderung (auto-release bei Push auf `master`). |
+| `scripts/hooks/pre-push` | Lokaler git-Hook-Hinweis: bestätigt die Version vor Push einer `CHANGELOG.md`-Änderung auf `master`; in nicht-interaktiven/CI-Umgebungen automatisch. |
+
+> Diese Hooks werden nicht automatisch installiert. Wenn Sie Hinweise wollen, symlinken Sie sie nach `.git/hooks/`.
 
 ---
 

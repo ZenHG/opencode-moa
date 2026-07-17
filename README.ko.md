@@ -467,6 +467,42 @@ A: 위 “Cost → Free models”를 참고하세요. `/models`로 model list를
 
 ---
 
+## 검증
+
+리포지토리에는 `.opencode/tests/` 아래 세 가지 점검 스크립트가 포함되어 있습니다. Layer 0은 완전 자동, Layer 1–2는 OpenCode 내에서 단계별로 확인하는 수동 가이드입니다.
+
+```bash
+# Layer 0 — 정적 점검 (자동, 0 token)
+pwsh .opencode/tests/T0-static-verify.ps1
+# expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
+
+# 세 레이어를 한 번에 실행
+pwsh .opencode/tests/run-all.ps1
+```
+
+| Script | Layer | 역할 | 모드 |
+| ------ | ----- | ------------ | ---- |
+| `T0-static-verify.ps1` | 0 | 파일 구조, agent/command/skill 개수, README 앵커, key 경로 정확성 점검 | 자동 |
+| `T1-behavioral-guide.ps1` | 1 | routing / opinion / fusion 동작 확인 체크리스트 출력 | 수동 (OpenCode 내) |
+| `T2-moa-smoke-guide.ps1` | 2 | `/moa-*` 명령 end-to-end 스모크 테스트 체크리스트 출력 | 수동 (OpenCode 내) |
+| `run-all.ps1` | 0–2 | T0 실행 후 T1/T2 가이드 체크리스트 출력 | 혼합 |
+
+---
+
+## 유지자 도구 (최종 사용자 불필요)
+
+다음 파일은 **리포지토리 유지자**용이며 MoA 배포용이 아닙니다. 최종 사용자는 무시해도 됩니다.
+
+| 파일 | 용도 |
+| ---- | ------- |
+| `deploy-sync.ps1` | 유지자 전용 — 리포지토리를 GitHub에 동기화하고 `opencode-moa` skill을 SkillHub에 업로드. `-SkipGit` / `-SkipSkillHub` / `-DryRun` 지원. |
+| `scripts/hooks/pre-commit` | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 스테이징할 때 경고 (master push 시 자동 릴리스). |
+| `scripts/hooks/pre-push` | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 master에 push하기 전 버전 확인; 비대화형/CI 환경에서는 자동 진행. |
+
+> 이 훅들은 자동으로 설치되지 않습니다. 알림을 원하면 `.git/hooks/`에 심링크하세요.
+
+---
+
 ## 기여
 
 PR과 Issues를 환영합니다. [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
