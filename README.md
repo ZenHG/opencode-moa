@@ -237,7 +237,7 @@ concierge-router (门童路由员, Flash)
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM 5.2 ) structured planning
+ │   flag-plan (旗舰·规划, GLM 5.2   ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]

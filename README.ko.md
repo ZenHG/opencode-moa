@@ -34,7 +34,7 @@ OpenCode MoA는 OpenCode용 Mixture of Agents 구성 패키지입니다. 여러 
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max) ─── architect 관점의 계획
-    ├─ flag-plan (GLM 5.2    ) ─── PM 관점의 계획
+    ├─ flag-plan (GLM 5.2        ) ─── PM 관점의 계획
     ├─ flag-eng  (MiniMax M3 ) ─── implementer 관점의 계획
     └─ flag-fuse (Kimi K3) ─── 각 장점을 융합해 하나의 최적안 생성
 ```
@@ -225,7 +225,7 @@ concierge-router (门童路由员, Flash)
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM 5.2 ) structured planning
+ │   flag-plan (旗舰·规划, GLM 5.2   ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
   │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
