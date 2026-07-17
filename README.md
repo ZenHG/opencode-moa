@@ -31,6 +31,8 @@ By default OpenCode uses a single model from start to finish. Changing one chara
 **MoA's solution:**
 
 ```
+
+![Cost down up to 90%](.github/moa-cost.png)
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max)  ─── plan from the architect's view
@@ -39,7 +41,6 @@ You: help me design a message queue solution
     └─ flag-fuse (Kimi K3    )  ─── take the best of each, one optimal solution
 ```
 
-![Cost down up to 90%](.github/moa-cost.png)
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
 
 ---

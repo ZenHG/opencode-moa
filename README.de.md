@@ -33,6 +33,8 @@ Standardmäßig verwendet OpenCode von Anfang bis Ende ein einziges Modell. Eine
 **MoAs Lösung:**
 
 ```
+
+![Cost down up to 90%](.github/moa-cost.png)
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max)     ─── plan from the architect's view
@@ -40,7 +42,6 @@ You: help me design a message queue solution
     ├─ flag-eng  (MiniMax M3 )     ─── plan from the implementer's view
     └─ flag-fuse (Kimi K3)         ─── take the best of each, one optimal solution
 
-![Cost down up to 90%](.github/moa-cost.png)
 ```
 
 Drei unabhängige Pläne von drei verschiedenen Modellen bilden natürlich eine Struktur aus „Konsens + Divergenz“. Das Fusionsmodell erkennt den Konsens und behält ihn bei; bei Abweichungen wählt es die besten Teile — etwas, das ein einzelnes Modell nicht leisten kann.

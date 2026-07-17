@@ -31,6 +31,8 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 **MoA 的解法：**
 
 ```
+
+![成本降低高达 90%](.github/moa-cost-zh.png)
 你：帮我设计一个消息队列方案
 
     ┌─ 旗舰·架构 (Qwen3.7 Max)     ─── 从架构师视角出方案
@@ -39,7 +41,6 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
     └─ 旗舰·融合 (Kimi K3)         ─── 取长补短，一份最优解
 ```
 
-![成本降低高达 90%](.github/moa-cost-zh.png)
 三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
 
 ---
