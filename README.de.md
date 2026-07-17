@@ -36,7 +36,7 @@ Standardmäßig verwendet OpenCode von Anfang bis Ende ein einziges Modell. Eine
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
-    ├─ flag-plan (GLM        ) ─── plan from the PM's view
+    ├─ flag-plan (GLM 5.2    ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
     └─ flag-fuse (Kimi K3) ─── take the best of each, one optimal solution
 ```
@@ -227,7 +227,7 @@ concierge-router (门童路由员, Flash)
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM         ) structured planning
+ │   flag-plan (旗舰·规划, GLM 5.2 ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
   │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
@@ -316,11 +316,11 @@ MoA wird über einen nach Call-Volume gewichteten Mix betrachtet: ~80% Tool-Laye
 
 > **Wichtig**: Die 80/18/2-Verhältnisse sind eine von der Architektur entworfene **erwartete Call-Volume-Verteilung**, keine gemessenen Kostenanteile. Die tatsächliche Nutzung hängt von Aufgabentypen und Komplexität ab.
 
-| Layer      | Share | Output unit price /1M                                             | Weighted |
-| ---------- | ----- | ----------------------------------------------------------------- | -------- |
-| Tool layer | 80%   | $0.28                                                             | $0.224   |
-| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg) | $0.378   |
-| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse)    | $0.12    |
+| Layer      | Share | Output unit price /1M                                                                                | Weighted |
+| ---------- | ----- | ---------------------------------------------------------------------------------------------------- | -------- |
+| Tool layer | 80%   | $0.28                                                                                                | $0.224   |
+| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg)       | $0.378   |
+| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse)                                         | $0.12    |
 
 Precio unitario efectivo combinado ≈ **$0.72 / 1M**. Comparado con “all-flagship GLM $7.50” → alrededor del 10% → **~90% de ahorro**; comparado con “all-mid-tier DeepSeek Pro $3.48” → alrededor del 21% → **~79% de ahorro**. La afirmación “save 90%” corresponde al valor real frente al baseline flagship.
 
@@ -348,7 +348,7 @@ Limits werden als Dollarwert definiert. Günstige Modelle (Flash) können häufi
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Kimi K3         | $3.00 / $15.00             | 280             | ~2% (flagship fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280           | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
 > Todos los model IDs son solo declaraciones; puedes sustituirlos por cualquier modelo que prefieras.
@@ -486,12 +486,12 @@ pwsh .opencode/tests/T0-static-verify.ps1
 pwsh .opencode/tests/run-all.ps1
 ```
 
-| Script | Layer | Was es tut | Modus |
-| ------ | ----- | ------------ | ---- |
-| `T0-static-verify.ps1` | 0 | Prüft Dateistruktur, agent/command/skill-Anzahl, README-Anker, Key-Pfad-Korrektheit | Automatisch |
-| `T1-behavioral-guide.ps1` | 1 | Druckt eine Schritt-für-Schritt-Checkliste für Routing-/Opinion-/Fusion-Verhalten | Manuell (in OpenCode) |
-| `T2-moa-smoke-guide.ps1` | 2 | Druckt eine Smoke-Test-Checkliste für `/moa-*` Befehle end-to-end | Manuell (in OpenCode) |
-| `run-all.ps1` | 0–2 | Führt T0 aus und druckt dann die T1/T2-Checklisten | Gemischt |
+| Script                    | Layer | Was es tut                                                                              | Modus                 |
+| ------------------------- | ----- | --------------------------------------------------------------------------------------- | --------------------- |
+| `T0-static-verify.ps1`    | 0     | Prüft Dateistruktur, agent/command/skill-Anzahl, README-Anker, Key-Pfad-Korrektheit      | Automatisch           |
+| `T1-behavioral-guide.ps1` | 1     | Druckt eine Schritt-für-Schritt-Checkliste für Routing-/Opinion-/Fusion-Verhalten        | Manuell (in OpenCode) |
+| `T2-moa-smoke-guide.ps1`  | 2     | Druckt eine Smoke-Test-Checkliste für `/moa-*` Befehle end-to-end                        | Manuell (in OpenCode) |
+| `run-all.ps1`             | 0–2   | Führt T0 aus und druckt dann die T1/T2-Checklisten                                       | Gemischt              |
 
 ---
 
@@ -499,11 +499,11 @@ pwsh .opencode/tests/run-all.ps1
 
 Die folgenden Dateien sind für **Repo-Maintainer**, nicht zum Deployment von MoA. Endnutzer können sie ignorieren.
 
-| Datei | Zweck |
-| ---- | ------- |
-| `deploy-sync.ps1` | Nur für Maintainer — synchronisiert das Repo zu GitHub und lädt den `opencode-moa`-Skill zu SkillHub hoch. Unterstützt `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
-| `scripts/hooks/pre-commit` | Lokaler git-Hook-Hinweis: warnt beim Stagen einer `CHANGELOG.md`-Änderung (auto-release bei Push auf `master`). |
-| `scripts/hooks/pre-push` | Lokaler git-Hook-Hinweis: bestätigt die Version vor Push einer `CHANGELOG.md`-Änderung auf `master`; in nicht-interaktiven/CI-Umgebungen automatisch. |
+| Datei                       | Zweck                                                                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deploy-sync.ps1`           | Nur für Maintainer — synchronisiert das Repo zu GitHub und lädt den `opencode-moa`-Skill zu SkillHub hoch. Unterstützt `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
+| `scripts/hooks/pre-commit`  | Lokaler git-Hock-Hinweis: warnt beim Stagen einer `CHANGELOG.md`-Änderung (auto-release bei Push auf `master`).                                     |
+| `scripts/hooks/pre-push`    | Lokaler git-Hook-Hinweis: bestätigt die Version vor Push einer `CHANGELOG.md`-Änderung auf `master`; in nicht-interaktiven/CI-Umgebungen automatisch. |
 
 > Diese Hooks werden nicht automatisch installiert. Wenn Sie Hinweise wollen, symlinken Sie sie nach `.git/hooks/`.
 

@@ -34,7 +34,7 @@ OpenCode MoA는 OpenCode용 Mixture of Agents 구성 패키지입니다. 여러 
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max) ─── architect 관점의 계획
-    ├─ flag-plan (GLM        ) ─── PM 관점의 계획
+    ├─ flag-plan (GLM 5.2    ) ─── PM 관점의 계획
     ├─ flag-eng  (MiniMax M3 ) ─── implementer 관점의 계획
     └─ flag-fuse (Kimi K3) ─── 각 장점을 융합해 하나의 최적안 생성
 ```
@@ -225,7 +225,7 @@ concierge-router (门童路由员, Flash)
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM         ) structured planning
+ │   flag-plan (旗舰·规划, GLM 5.2 ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
   │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
@@ -314,11 +314,11 @@ MoA는 call-volume-weighted mix로 비용을 계산합니다: 약 80% tool-layer
 
 > **Important**: 80/18/2 ratios는 architecture가 설계한 **expected call volume distribution**이며 measured cost proportions가 아닙니다. 실제 사용량은 task types와 complexity에 따라 달라집니다.
 
-| Layer | Share | Output unit price /1M | Weighted |
-| --- | --- | --- | --- |
-| Tool layer | 80% | $0.28 | $0.224 |
-| Mid tier | 18% | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg) | $0.378 |
-| Flagship | 2% | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse) | $0.12 |
+| Layer      | Share | Output unit price /1M                                                                                | Weighted |
+| ---------- | ----- | ---------------------------------------------------------------------------------------------------- | -------- |
+| Tool layer | 80%   | $0.28                                                                                                | $0.224   |
+| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg)       | $0.378   |
+| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse)                                         | $0.12    |
 
 혼합 유효 출력 단가는 ≈ **$0.72 / 1M**입니다. “all-flagship GLM $7.50” 대비 약 10% → **약 90% 절감**; “all-mid-tier DeepSeek Pro $3.48” 대비 약 21% → **약 79% 절감**. “save 90%”는 flagship baseline에 대한 실제 가치입니다.
 
@@ -338,16 +338,16 @@ Limits는 dollar value로 정의됩니다. 저렴한 models(Flash)는 더 자주
 
 ### 레이어별 월간 quota
 
-| Layer | Model | Unit price (in/out per 1M) | Monthly quota | Call frequency |
-| --- | --- | --- | --- | --- |
-| Tool layer | Flash | $0.14 / $0.28 | 158,150 | ~80% |
-| Tool layer | MiMo-V2.5 | $0.14 / $0.28 | 150,400 | (use freely) |
-| Opinion | MiniMax M3 | $0.30 / $1.20 | 16,000 | ~18% |
-| Opinion | DeepSeek V4 Pro | $1.74 / $3.48 | 17,150 | |
-| Opinion | Qwen3.7 Plus | $0.40 / $1.60 | 21,600 | |
-| Fusion | Kimi K2.7 Code | $0.95 / $4.00 | 9,250 | ~2% (mid-tier fuse) |
-| Fusion | Kimi K3 | $3.00 / $15.00 | 280 | ~2% (flagship fuse) |
-| Fusion | GLM-5.2 | $1.40 / $4.40 | 4,300 | ~2% (frontend lead) |
+| Layer      | Model           | Unit price (in/out per 1M) | Monthly quota | Call frequency      |
+| ---------- | --------------- | -------------------------- | ------------- | ------------------- |
+| Tool layer | Flash           | $0.14 / $0.28              | 158,150       | ~80%                |
+| Tool layer | MiMo-V2.5       | $0.14 / $0.28              | 150,400       | (use freely)        |
+| Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%                |
+| Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
+| Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
+| Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280           | ~2% (flagship fuse) |
+| Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
 > 모든 model IDs는 선언 예시입니다. 선호하는 model로 교체할 수 있습니다.
 
@@ -484,12 +484,12 @@ pwsh .opencode/tests/T0-static-verify.ps1
 pwsh .opencode/tests/run-all.ps1
 ```
 
-| Script | Layer | 역할 | 모드 |
-| ------ | ----- | ------------ | ---- |
-| `T0-static-verify.ps1` | 0 | 파일 구조, agent/command/skill 개수, README 앵커, key 경로 정확성 점검 | 자동 |
-| `T1-behavioral-guide.ps1` | 1 | routing / opinion / fusion 동작 확인 체크리스트 출력 | 수동 (OpenCode 내) |
-| `T2-moa-smoke-guide.ps1` | 2 | `/moa-*` 명령 end-to-end 스모크 테스트 체크리스트 출력 | 수동 (OpenCode 내) |
-| `run-all.ps1` | 0–2 | T0 실행 후 T1/T2 가이드 체크리스트 출력 | 혼합 |
+| Script                    | Layer | 역할                                                                                     | 모드                 |
+| ------------------------- | ----- | ---------------------------------------------------------------------------------------- | -------------------- |
+| `T0-static-verify.ps1`    | 0     | 파일 구조, agent/command/skill 개수, README 앵커, key 경로 정확성 점검                       | 자동                 |
+| `T1-behavioral-guide.ps1` | 1     | routing / opinion / fusion 동작 확인 체크리스트 출력                                       | 수동 (OpenCode 내)   |
+| `T2-moa-smoke-guide.ps1`  | 2     | `/moa-*` 명령 end-to-end 스모크 테스트 체크리스트 출력                                     | 수동 (OpenCode 내)   |
+| `run-all.ps1`             | 0–2   | T0 실행 후 T1/T2 가이드 체크리스트 출력                                                   | 혼합                 |
 
 ---
 
@@ -497,11 +497,11 @@ pwsh .opencode/tests/run-all.ps1
 
 다음 파일은 **리포지토리 유지자**용이며 MoA 배포용이 아닙니다. 최종 사용자는 무시해도 됩니다.
 
-| 파일 | 용도 |
-| ---- | ------- |
-| `deploy-sync.ps1` | 유지자 전용 — 리포지토리를 GitHub에 동기화하고 `opencode-moa` skill을 SkillHub에 업로드. `-SkipGit` / `-SkipSkillHub` / `-DryRun` 지원. |
-| `scripts/hooks/pre-commit` | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 스테이징할 때 경고 (master push 시 자동 릴리스). |
-| `scripts/hooks/pre-push` | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 master에 push하기 전 버전 확인; 비대화형/CI 환경에서는 자동 진행. |
+| 파일                       | 용도                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `deploy-sync.ps1`          | 유지자 전용 — 리포지토리를 GitHub에 동기화하고 `opencode-moa` skill을 SkillHub에 업로드. `-SkipGit` / `-SkipSkillHub` / `-DryRun` 지원. |
+| `scripts/hooks/pre-commit` | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 스테이징할 때 경고 (master push 시 자동 릴리스).                  |
+| `scripts/hooks/pre-push`   | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 master에 push하기 전 버전 확인; 비대화형/CI 환경에서는 자동 진행.  |
 
 > 이 훅들은 자동으로 설치되지 않습니다. 알림을 원하면 `.git/hooks/`에 심링크하세요.
 

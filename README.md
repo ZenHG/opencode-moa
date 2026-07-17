@@ -34,7 +34,7 @@ By default OpenCode uses a single model from start to finish. Changing one chara
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max) ─── plan from the architect's view
-    ├─ flag-plan (GLM        ) ─── plan from the PM's view
+    ├─ flag-plan (GLM 5.2        ) ─── plan from the PM's view
     ├─ flag-eng  (MiniMax M3 ) ─── plan from the implementer's view
     └─ flag-fuse (Kimi K3) ─── take the best of each, one optimal solution
 ```
@@ -230,14 +230,14 @@ concierge-router (门童路由员, Flash)
  ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
-  │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
-  │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
+ │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
+ │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
  │   mid-coder    (中级·码农, Flash       ) pragmatic view
  │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM         ) structured planning
+ │   flag-plan (旗舰·规划, GLM 5.2 ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
@@ -248,12 +248,13 @@ concierge-router (门童路由员, Flash)
      fe-logic   (前端·逻辑, Qwen3.7 Plus) component architecture & state mgmt
      fe-motion  (前端·动效, MiMo-Pro     ) interaction & motion
      fe-lead    (前端·总工, GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
- ```
+```
 
 Fallback agent (not in the router chain above, called only when fusion fails):
+
 ```
 fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, used when flag-fuse / mid-fuse / fe-lead fail
- ```
+```
 
 ---
 
@@ -287,7 +288,7 @@ mid-fuse (中级·融合, Kimi) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
 fe-lead (前端·总工, GLM-5.2) failed
   → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
- ```
+```
 
 The fallback agent uses the same residual-enhanced fusion process.
 
@@ -326,11 +327,11 @@ MoA bills by a call-volume-weighted mix: ~80% tool-layer Flash, ~18% mid-tier, ~
 
 > **Important**: The 80/18/2 ratios are **expected call volume distribution designed by the architecture**, not measured cost proportions. Actual usage depends on task types and complexity.
 
-| Layer      | Share | Output unit price /1M                                             | Weighted |
-| ---------- | ----- | ----------------------------------------------------------------- | -------- |
-| Tool layer | 80%   | $0.28                                                             | $0.224   |
+| Layer      | Share | Output unit price /1M                                                                            | Weighted |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------ | -------- |
+| Tool layer | 80%   | $0.28                                                                                            | $0.224   |
 | Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / **Kimi K2.7 $4.00 mid-fuse** avg) | $0.378   |
-| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + **Kimi K3 $15.00 flag-fuse**)    | $0.12    |
+| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + **Kimi K3 $15.00 flag-fuse**)                                   | $0.12    |
 
 Blended effective output unit price ≈ **$0.72 / 1M**. Compared to "all-flagship GLM $7.50" → about 10% → **~90% saved**; compared to "all-mid-tier DeepSeek Pro $3.48" → about 21% → **~79% saved**. The "save 90%" claim is the real value against the flagship baseline.
 
@@ -358,7 +359,7 @@ Limits are defined by dollar value. Cheap models (Flash) can be used more often,
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Kimi K3         | $3.00 / $15.00             | 280             | ~2% (flagship fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280           | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
 > All model IDs are declarations only; replace with any model you prefer.
@@ -424,12 +425,12 @@ pwsh .opencode/tests/T0-static-verify.ps1
 pwsh .opencode/tests/run-all.ps1
 ```
 
-| Script | Layer | What it does | Mode |
-| ------ | ----- | ------------ | ---- |
-| `T0-static-verify.ps1` | 0 | Checks file structure, agent/command/skill counts, README anchors, key-path correctness | Automatic |
-| `T1-behavioral-guide.ps1` | 1 | Prints a step-by-step checklist for routing / opinion / fusion behavior | Manual (in OpenCode) |
-| `T2-moa-smoke-guide.ps1` | 2 | Prints a smoke-test checklist for `/moa-*` commands end-to-end | Manual (in OpenCode) |
-| `run-all.ps1` | 0–2 | Runs T0 then prints the T1/T2 guided checklists | Mixed |
+| Script                    | Layer | What it does                                                                            | Mode                 |
+| ------------------------- | ----- | --------------------------------------------------------------------------------------- | -------------------- |
+| `T0-static-verify.ps1`    | 0     | Checks file structure, agent/command/skill counts, README anchors, key-path correctness | Automatic            |
+| `T1-behavioral-guide.ps1` | 1     | Prints a step-by-step checklist for routing / opinion / fusion behavior                 | Manual (in OpenCode) |
+| `T2-moa-smoke-guide.ps1`  | 2     | Prints a smoke-test checklist for `/moa-*` commands end-to-end                          | Manual (in OpenCode) |
+| `run-all.ps1`             | 0–2   | Runs T0 then prints the T1/T2 guided checklists                                         | Mixed                |
 
 ---
 
@@ -498,11 +499,11 @@ A: See "Cost → Free models" above: use `/models` to open the model list and pi
 
 The following files are for **repo maintainers**, not for deploying MoA. End users can ignore them.
 
-| File | Purpose |
-| ---- | ------- |
-| `deploy-sync.ps1` | Maintainers only — syncs the repo to GitHub and uploads the `opencode-moa` skill to SkillHub. Supports `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
-| `scripts/hooks/pre-commit` | Local git hook reminder: warns when you stage a `CHANGELOG.md` change (which auto-releases on push to `master`). |
-| `scripts/hooks/pre-push` | Local git hook reminder: confirms the version before pushing `CHANGELOG.md` changes to `master`; auto-proceeds in non-interactive/CI environments. |
+| File                       | Purpose                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deploy-sync.ps1`          | Maintainers only — syncs the repo to GitHub and uploads the `opencode-moa` skill to SkillHub. Supports `-SkipGit` / `-SkipSkillHub` / `-DryRun`.   |
+| `scripts/hooks/pre-commit` | Local git hook reminder: warns when you stage a `CHANGELOG.md` change (which auto-releases on push to `master`).                                   |
+| `scripts/hooks/pre-push`   | Local git hook reminder: confirms the version before pushing `CHANGELOG.md` changes to `master`; auto-proceeds in non-interactive/CI environments. |
 
 > These hooks are not installed automatically. Symlink them into `.git/hooks/` if you want the reminders, e.g. `ln -s ../../scripts/hooks/pre-push .git/hooks/pre-push`.
 
