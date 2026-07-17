@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **热点（2026-07）：** 旗舰融合已升级至 **Kimi K3** —— 2.8T 参数、1M 上下文、顶级前沿模型。OpenCode Go 额度 7/24 起 2 倍（140 → 280 / 5h）。MoA 质量天花板现已站在第一梯队最前。
+> 🔥 **热点（2026-07）：** 旗舰融合已升级至 **Kimi K3** —— 2.8T 参数、1M 上下文、顶级前沿模型。OpenCode Go 额度截至 7/24 翻倍（140 → 280 / 5h，之后回 140）。MoA 质量天花板现已站在第一梯队最前。
 
 > **一个对话入口，22 个专业模型自动协作。简单任务用 Flash（便宜），复杂任务才调旗舰（贵）。当简单任务占主导、旗舰调用被显著减少时，成本最高降低约 90%（对比全程旗舰）；实际节省取决于任务结构，代码质量显著提升。**
 
@@ -113,6 +113,16 @@ bash ../opencode-moa/install.sh
 ```
 
 > 安装脚本会自动备份原 `opencode.json`，只合并 MoA 配置，保留你的 provider 和 API key。
+
+### 自定义任意模型
+
+MoA 是**通用模板**——每个 agent 的模型只是一个可改的 ID。每个 agent 文件开头都有：
+
+```yaml
+model: opencode-go/<model-id>
+```
+
+想换模型，直接改 `.opencode/agents/<agent>.md` 里这一行，换成你有权限的任意 `provider/model-id`（如 `opencode-go/kimi-k2.7-code`、`opencode-go/glm-5.2`）即可。无需重装。随意组合——模板不绑定任何模型。
 > 
 > 注意：此方式会原样复制仓库自带的 `.opencode/`；其中 agent 使用**中文显示名**。如果你想使用英文命名的 agent（便于 `@english-name` 调用），请使用方式一。
 
@@ -315,10 +325,10 @@ MoA 按调用量加权混合计费：~80% 走工具层 Flash、~18% 走中端、
 | 层级  | 占比  | 输出单价/1M                                                         | 加权     |
 | --- | --- | --------------------------------------------------------------- | ------ |
 | 工具层 | 80% | $0.28                                                           | $0.224 |
-| 意见层 | 18% | ~$2.00（MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 均值） | $0.36  |
-| 融合层 | 2%  | ~$5.30（Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 均值）              | $0.106 |
+| 中级链 | 18% | ~$2.10（MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / **Kimi K2.7 $4.00 中级融合** 均值） | $0.378 |
+| 旗舰链 | 2%  | ~$6.00（Qwen/GLM/MiniMax ~$4-7 + **Kimi K3 $15.00 旗舰融合**）    | $0.12  |
 
-混合有效输出单价 ≈ **$0.69 / 1M**。对比「全程最贵旗舰 GLM $7.50」→ 约 9% → **省 ~90%**（旗舰基线）；对比「全程单中端 DeepSeek Pro $3.48」→ 约 20% → **省 ~80%**（中端基线）。这里说的「省 90%」即旗舰基线下的真实值。
+混合有效输出单价 ≈ **$0.72 / 1M**。对比「全程最贵旗舰 GLM $7.50」→ 约 10% → **省 ~90%**（旗舰基线）；对比「全程单中端 DeepSeek Pro $3.48」→ 约 21% → **省 ~79%**（中端基线）。这里说的「省 90%」即旗舰基线下的真实值。
 
 ### OpenCode Go 订阅
 
@@ -344,11 +354,9 @@ MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅，**首月 $
 | 意见层 | DeepSeek V4 Pro | $1.74 / $3.48    | 17,150 次  |       |
 | 意见层 | Qwen3.7 Plus    | $0.40 / $1.60    | 21,600 次  |       |
 | 融合层 | Kimi K2.7 Code  | $0.95 / $4.00    | 9,250 次   | ~2%   |
-| 融合层 | Kimi K3         | $3.00 / $15.00   | 280 次（7/24 起 2x） | （刀刃上） |
+| 融合层 | Kimi K3         | $3.00 / $15.00   | 280 次           | （刀刃上） |
 | 融合层 | GLM-5.2         | $1.40 / $4.40    | 4,300 次   |       |
 
-> 🔥 **热点：** 旗舰融合已升级至 **Kimi K3**（2026-07 发布，2.8T 参数，1M 上下文）。OpenCode Go 额度 7/24 起翻倍（140 → 280 / 5h）。
->
 > 所有模型 ID 仅作声明，可替换为你偏好的任何模型。
 
 ![OpenCode Go 每 5 小时请求数](.github/quota-chart.svg)
@@ -463,7 +471,7 @@ A: 修改 agent 的 `model` 字段即可：
 
 ```yaml
 # .opencode/agents/中级·工程.md
-model: anthropic/claude-sonnet-4-20250514
+model: opencode-go/glm-5.2
 ```
 
 **Q: 部署后能删掉仓库吗？**

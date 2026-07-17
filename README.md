@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **Hot (2026-07):** flagship fuse upgraded to **Kimi K3** — 2.8T params, 1M context, top-tier frontier model. OpenCode Go quota 2x from 7/24 (140 → 280 / 5h). MoA quality ceiling now at the front of the pack.
+> 🔥 **Hot (2026-07):** flagship fuse upgraded to **Kimi K3** — 2.8T params, 1M context, top-tier frontier model. OpenCode Go quota 2x until 7/24 (140 → 280 / 5h, then back to 140). MoA quality ceiling now at the front of the pack.
 
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
@@ -115,6 +115,16 @@ bash ../opencode-moa/install.sh
 > The install script auto-backs up your original `opencode.json`, only merging MoA config while keeping your provider and API key.
 > 
 > Note: this method copies the repo's bundled `.opencode/` as-is — its agents have **Chinese display names**. If you want English-named agents (so you can `@english-name`), use Method 1 instead.
+
+### Customize any model
+
+MoA is a **generic template** — every agent's model is just an ID you can change. Each agent file starts with:
+
+```yaml
+model: opencode-go/<model-id>
+```
+
+To swap a model, edit that one line in `.opencode/agents/<agent>.md` to any `provider/model-id` you have access to (e.g. `opencode-go/kimi-k2.7-code`, `opencode-go/glm-5.2`). No reinstall needed. Mix and match freely — the template binds you to nothing.
 
 ### Method 3: manual install
 
@@ -319,10 +329,10 @@ MoA bills by a call-volume-weighted mix: ~80% tool-layer Flash, ~18% mid-tier, ~
 | Layer      | Share | Output unit price /1M                                             | Weighted |
 | ---------- | ----- | ----------------------------------------------------------------- | -------- |
 | Tool layer | 80%   | $0.28                                                             | $0.224   |
-| Opinion    | 18%   | ~$2.00 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 avg) | $0.36    |
-| Fusion     | 2%    | ~$5.30 (Kimi $4.00 / Qwen Max $7.50 / GLM $4.40 avg)              | $0.106   |
+| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / **Kimi K2.7 $4.00 mid-fuse** avg) | $0.378   |
+| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + **Kimi K3 $15.00 flag-fuse**)    | $0.12    |
 
-Blended effective output unit price ≈ **$0.69 / 1M**. Compared to "all-flagship GLM $7.50" → about 9% → **~90% saved**; compared to "all-mid-tier DeepSeek Pro $3.48" → about 20% → **~80% saved**. The "save 90%" claim is the real value against the flagship baseline.
+Blended effective output unit price ≈ **$0.72 / 1M**. Compared to "all-flagship GLM $7.50" → about 10% → **~90% saved**; compared to "all-mid-tier DeepSeek Pro $3.48" → about 21% → **~79% saved**. The "save 90%" claim is the real value against the flagship baseline.
 
 ### OpenCode Go plan
 
@@ -348,11 +358,9 @@ Limits are defined by dollar value. Cheap models (Flash) can be used more often,
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Kimi K3         | $3.00 / $15.00             | 280 (2x from 7/24) | ~2% (flagship fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280             | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
-> **🔥 Hot:** flagship fuse upgraded to **Kimi K3** (released 2026-07, 2.8T params, 1M context). OpenCode Go quota 2x from 7/24 (140 → 280 / 5h).
->
 > All model IDs are declarations only; replace with any model you prefer.
 
 ![OpenCode Go quota per 5h](.github/quota-chart-en.svg)
@@ -467,7 +475,7 @@ A: Just change the agent's `model` field:
 
 ```yaml
 # .opencode/agents/mid-eng.md
-model: anthropic/claude-sonnet-4-20250514
+model: opencode-go/glm-5.2
 ```
 
 **Q: Can I delete the repo after deploying?**

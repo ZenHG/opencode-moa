@@ -36,7 +36,7 @@
 <!-- Kimi K3: 280 -->
 <text x="180" y="118" class="label" text-anchor="end">280 Kimi K3</text>
 <rect x="190" y="106" width="24" height="18" class="bar" fill="#C8C800"/>
-<text x="220" y="124" font-size="42" font-weight="bold" fill="#C8C800">← Q3 旗舰融合</text>
+<text x="220" y="124" font-size="42" font-weight="bold" fill="#C8C800">← 旗舰融合</text>
 
 <!-- GLM-5.2: 880 -->
 <text x="180" y="148" class="label" text-anchor="end">880 GLM-5.2</text>

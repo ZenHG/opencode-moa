@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
+> 🔥 **새소식 (2026-07):** 프래그십 퓨전을 **Kimi K3** 로 업그레이드 — 2.8T 파라미터, 1M 컨텍스트, 최상위 frontier 모델. OpenCode Go 할당량 7/24 부터 2배 (140 → 280 / 5h).
+
 > **하나의 대화 진입점에서 22개의 전문 모델이 자동으로 협업합니다. 간단한 작업은 Flash(저렴), 복잡한 작업만 flagship(비쌈)을 호출합니다. 비용은 최대 약 90% 절감(모두 flagship 사용 대비), 코드 품질은 크게 향상됩니다. 단순 작업이 주를 이루고 flagship 호출이 최소화될 때, 실제 절감은 작업 구성에 따라 다릅니다.**
 
 ![OpenCode MoA](.github/opengraph.png)

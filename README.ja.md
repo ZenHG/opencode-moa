@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
+> 🔥 **新着 (2026-07):** フラグシップ融合を **Kimi K3** にアップグレード — 2.8T パラメータ、1M コンテキスト、トップティア前沿モデル。OpenCode Go 割り当ては 7/24 から 2 倍 (140 → 280 / 5h)。
+
 > **1つの会話入口で、22個の専門モデルが自動的に協調します。簡単なタスクは Flash（低コスト）、複雑なタスクだけ flagship（高コスト）を呼び出します。コストは最大約90%削減（全て flagship の場合と比較）、コード品質は大幅に向上します。 単純タスクが主体て flagship 呼び出しが最小限のとき、実際の削減はタスク構成に依存します。**
 
 ![OpenCode MoA](.github/opengraph.png)

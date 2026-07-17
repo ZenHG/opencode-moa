@@ -6,6 +6,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
+> 🔥 **Nouveauté (2026-07) :** la fusion flagship passe à **Kimi K3** — 2,8T paramètres, contexte 1M, modèle frontier de premier plan. Quota OpenCode Go 2x dès 7/24 (140 → 280 / 5h).
+
 > **Un point d’entrée conversationnel unique où 22 modèles spécialisés collaborent automatiquement. Les tâches simples utilisent Flash (peu coûteux), tandis que les tâches complexes appellent le flagship (coûteux). Les coûts peuvent baisser jusqu’à ~90% (par rapport au tout-flagship), avec une qualité de code nettement améliorée.**
 
 ![OpenCode MoA](.github/opengraph.png)
