@@ -234,12 +234,12 @@ rm -rf your-project/.opencode/
  │   中级·融合 / mid-fuse    (Kimi)         三份方案取长补短 [max_tokens: 16384]
  │
  ├── 旗舰意见层 ──────────────────────────────────
- │   旗舰·架构 / flag-arch    (Qwen3.7 Max)   顶层架构设计
- │   旗舰·规划 / flag-plan    (GLM-5.2)        结构化方案设计
- │   旗舰·工程 / flag-eng    (MiniMax M3)   大规模实现方案
- │   旗舰·融合 / flag-fuse    (Kimi K3)       三份架构方案融合 [max_tokens: 16384]
- │   旗舰·实现 / flag-impl    (Flash)        按融合方案编码 [hidden]
- │   旗舰·质检 / flag-qa    (DeepSeek Pro) 方案审查 + 代码验收 [max_tokens: 16384]
+ │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
+ │   flag-plan (旗舰·规划, GLM 5.2     ) structured planning
+ │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
+ │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
+ │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
+ │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── 前端意见层 ──────────────────────────────────
      前端·还原 / fe-restore    (MiMo)        像素级还原 UI

@@ -35,10 +35,10 @@ Por defecto, OpenCode usa un único modelo de principio a fin. Cambiar un carác
 ```
 You: help me design a message queue solution
 
-    ┌─ flag-arch (Qwen3.7 Max)     ─── plan from the architect's view
-    ├─ flag-plan (GLM 5.2        ) ─── plan from the PM's view
-    ├─ flag-eng  (MiniMax M3 )     ─── plan from the implementer's view
-    └─ flag-fuse (Kimi K3)         ─── take the best of each, one optimal solution
+    ┌─ flag-arch (Qwen3.7 Max)  ─── plan from the architect's view
+    ├─ flag-plan (GLM 5.2    )  ─── plan from the PM's view
+    ├─ flag-eng  (MiniMax M3 )  ─── plan from the implementer's view
+    └─ flag-fuse (Kimi K3    )  ─── take the best of each, one optimal solution
 ```
 
 Tres planes independientes de tres modelos diferentes forman de manera natural una estructura de “consenso + divergencia”. El modelo de fusión identifica qué es consenso y lo conserva, y toma lo mejor allí donde hay divergencias; algo que un único modelo no puede hacer.
@@ -211,33 +211,33 @@ rm -rf your-project/.opencode/
 concierge-router (门童路由员, Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler      (工具人,      Flash ) read code, search files [+ material self-check]
- │   tool-handler-mimo (工具人-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
- │   swift             (闪电侠,      Flash ) simple tasks in one shot
- │   vision-translator (视觉翻译官,  MiMo  ) screenshot/UI/error image to text
+ │   tool-handler      (工具人, Flash    ) read code, search files [+ material self-check]
+ │   tool-handler-mimo (工具人-mimo, MiMo) reliable file read (fallback + parallel) [hidden]
+ │   swift             (闪电侠, Flash    ) simple tasks in one shot
+ │   vision-translator (视觉翻译官, MiMo ) screenshot/UI/error image to text
  │
  ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
  ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
+ │   mid-eng      (中级·工程, Kimi K2.6 ) engineering view
  │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
- │   mid-coder    (中级·码农, Flash       ) pragmatic view
- │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
+ │   mid-coder    (中级·码农, Flash     ) pragmatic view
+ │   mid-fuse     (中级·融合, Kimi      ) fuse three plans [max_tokens: 16384]
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
  │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM 5.2   ) structured planning
+ │   flag-plan (旗舰·规划, GLM 5.2     ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
  │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
  │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── Frontend opinion layer ─────────────────────────────────────────────
-     fe-restore (前端·还原, MiMo        ) pixel-perfect UI restore
+     fe-restore (前端·还原, MiMo       ) pixel-perfect UI restore
      fe-logic   (前端·逻辑, Qwen3.7 Plus) component architecture & state mgmt
-     fe-motion  (前端·动效, MiMo-Pro     ) interaction & motion
-     fe-lead    (前端·总工, GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
+     fe-motion  (前端·动效, MiMo-Pro   ) interaction & motion
+     fe-lead    (前端·总工, GLM-5.2    ) pick best of three frontend plans [max_tokens: 16384]
  ```
 
 Fallback agent (not in the router chain above, called only when fusion fails):
