@@ -10,7 +10,7 @@
 
 > **Un único punto de conversación donde 22 modelos especializados colaboran automáticamente. Las tareas simples usan Flash (barato) y las tareas complejas llaman al flagship (caro). Coste reducido hasta ~90% (frente a usar flagship en todo) cuando las tareas simples dominan y las llamadas flagship se minimizan — el ahorro real depende del tipo de tareas, con una mejora notable de la calidad del código.**
 
-![OpenCode MoA](.github/opengraph.png)
+![OpenCode MoA Arquitectura](.github/moa-arch.png)
 
 OpenCode MoA es un paquete de configuración Mixture of Agents para OpenCode. Permite que varios modelos **piensen sobre el mismo problema simultáneamente** y luego fusiona sus resultados en una calidad difícil de alcanzar con un único modelo. No necesitas cambiar de herramienta, escribir código ni preparar una cuota de API: coloca los archivos en tu proyecto y reinicia OpenCode.
 
