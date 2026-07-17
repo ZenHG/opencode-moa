@@ -41,10 +41,11 @@ jobs:
         run: |
           VER=${{ steps.ver.outputs.version }}
           if git rev-parse "$VER" >/dev/null 2>&1 || gh release view "$VER" >/dev/null 2>&1; then
-            echo "skip=1"; echo "$VER 已存在，跳过"
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+            echo "$VER 已存在，跳过"
           else
-            echo "skip=0"
-          fi >> "$GITHUB_OUTPUT"
+            echo "skip=0" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Confirm CI is green (wait for Layer 0 Static Verify)
         id: ci
