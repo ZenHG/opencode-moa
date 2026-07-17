@@ -203,38 +203,45 @@ rm -rf your-project/.opencode/
 
 ## 22 Agents
 
+> The names below are the **exact filenames** under `.opencode/agents/` — you call them with `@` (e.g. `@门童路由员`). The English in parentheses is the logical role, for cross-reading with other docs.
+
 ```
-concierge-router (Flash)
+门童路由员 (concierge-router, Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler     (Flash       ) read code, search files [+ material self-check]
- │   tool-handler-mimo (MiMo        ) reliable file read (fallback + parallel) [hidden]
- │   swift            (Flash       ) simple tasks in one shot
- │   vision-translator (MiMo        ) screenshot/UI/error image to text
+ │   工具人      (tool-handler,     Flash ) read code, search files [+ material self-check]
+ │   工具人-mimo (tool-handler-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
+ │   闪电侠      (swift,            Flash ) simple tasks in one shot
+ │   视觉翻译官  (vision-translator, MiMo  ) screenshot/UI/error image to text
  │
- ├── Residual extractor (Flash)    NEW: analyze divergence between plans
- ├── Confidence assessor (DS Pro)  NEW: assess fusion result confidence
+ ├── 残差提取者  (residual extractor,  Flash     ) analyze divergence between plans
+ ├── 置信度评估者 (confidence assessor, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   mid-eng          (MiniMax M3  ) engineering view
- │   mid-creative     (DeepSeek Pro) creative view
- │   mid-coder        (Flash       ) pragmatic view
- │   mid-fuse         (Kimi        ) fuse three plans [max_tokens: 16384]
+ │   中级·工程  (mid-eng,      MiniMax M3  ) engineering view
+ │   中级·创意  (mid-creative, DeepSeek Pro) creative view
+ │   中级·码农  (mid-coder,    Flash       ) pragmatic view
+ │   中级·融合  (mid-fuse,     Kimi        ) fuse three plans [max_tokens: 16384]
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
- │   flag-arch        (Qwen3.7 Max ) top-level architecture
- │   flag-plan        (GLM         ) structured planning
- │   flag-eng         (MiniMax M3  ) large-scale implementation
- │   flag-fuse        (Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
- │   flag-impl        (Flash       ) implement per fused plan [hidden]
- │   flag-qa          (DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
+ │   旗舰·架构  (flag-arch, Qwen3.7 Max ) top-level architecture
+ │   旗舰·规划  (flag-plan, GLM         ) structured planning
+ │   旗舰·工程  (flag-eng,  MiniMax M3  ) large-scale implementation
+ │   旗舰·融合  (flag-fuse, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+ │   旗舰·实现  (flag-impl, Flash       ) implement per fused plan [hidden]
+ │   旗舰·质检  (flag-qa,  DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── Frontend opinion layer ─────────────────────────────────────────────
-     fe-restore       (MiMo        ) pixel-perfect UI restore
-     fe-logic         (Qwen3.7 Plus) component architecture & state mgmt
-     fe-motion        (MiMo-Pro    ) interaction & motion
-     fe-lead          (GLM-5.2     ) pick best of three frontend plans [max_tokens: 16384]
+     前端·还原  (fe-restore, MiMo        ) pixel-perfect UI restore
+     前端·逻辑  (fe-logic,   Qwen3.7 Plus) component architecture & state mgmt
+     前端·动效  (fe-motion,  MiMo-Pro     ) interaction & motion
+     前端·总工  (fe-lead,    GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
 ```
+
+Fallback agent (not in the router chain above, called only when fusion fails):
+```
+融合·保底 (fallback, DeepSeek V4 Pro) — same residual-enhanced fusion, used when 旗舰·融合 / 中级·融合 / 前端·总工 fail
+ ```
 
 ---
 
@@ -392,12 +399,23 @@ See Appendix A of [`docs/opencode-moa.md`](docs/opencode-moa.md).
 
 ## Verification
 
-After deploy, run the static check (needs `pwsh`):
+The repo ships three check scripts under `.opencode/tests/`. Layer 0 is fully automatic; Layers 1–2 are guided checklists you walk through inside OpenCode.
 
 ```bash
+# Layer 0 — static check (automatic, 0 token)
 pwsh .opencode/tests/T0-static-verify.ps1
 # expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
+
+# run all three layers at once
+pwsh .opencode/tests/run-all.ps1
 ```
+
+| Script | Layer | What it does | Mode |
+| ------ | ----- | ------------ | ---- |
+| `T0-static-verify.ps1` | 0 | Checks file structure, agent/command/skill counts, README anchors, key-path correctness | Automatic |
+| `T1-behavioral-guide.ps1` | 1 | Prints a step-by-step checklist for routing / opinion / fusion behavior | Manual (in OpenCode) |
+| `T2-moa-smoke-guide.ps1` | 2 | Prints a smoke-test checklist for `/moa-*` commands end-to-end | Manual (in OpenCode) |
+| `run-all.ps1` | 0–2 | Runs T0 then prints the T1/T2 guided checklists | Mixed |
 
 ---
 
@@ -459,6 +477,20 @@ A: See "Fault tolerance design → Fallback chain" above: MoA asks the user to c
 
 **Q: Where are the free models?**
 A: See "Cost → Free models" above: use `/models` to open the model list and pick one tagged "Free" (Windows desktop client: `Ctrl+'` also works) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free, etc.). Free models have limited context, may be slower, and data may be used for training.
+
+---
+
+## Maintainer tooling (not needed by end users)
+
+The following files are for **repo maintainers**, not for deploying MoA. End users can ignore them.
+
+| File | Purpose |
+| ---- | ------- |
+| `deploy-sync.ps1` | Maintainers only — syncs the repo to GitHub and uploads the `opencode-moa` skill to SkillHub. Supports `-SkipGit` / `-SkipSkillHub` / `-DryRun`. |
+| `hooks/pre-commit` | Local git hook reminder: warns when you stage a `CHANGELOG.md` change (which auto-releases on push to `master`). |
+| `hooks/pre-push` | Local git hook reminder: confirms the version before pushing `CHANGELOG.md` changes to `master`; auto-proceeds in non-interactive/CI environments. |
+
+> These hooks are not installed automatically. Symlink them into `.git/hooks/` if you want the reminders.
 
 ---
 

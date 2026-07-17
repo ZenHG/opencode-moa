@@ -204,37 +204,42 @@ rm -rf your-project/.opencode/
 ## 22 Agents
 
 ```text
-concierge-router (Flash)
+门童路由员 (concierge-router, Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler     (Flash       ) read code, search files [+ material self-check]
- │   tool-handler-mimo (MiMo        ) reliable file read (fallback + parallel) [hidden]
- │   swift            (Flash       ) simple tasks in one shot
- │   vision-translator (MiMo        ) screenshot/UI/error image to text
+ │   工具人      (tool-handler,     Flash ) read code, search files [+ material self-check]
+ │   工具人-mimo (tool-handler-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
+ │   闪电侠      (swift,            Flash ) simple tasks in one shot
+ │   视觉翻译官  (vision-translator, MiMo  ) screenshot/UI/error image to text
  │
- ├── Residual extractor (Flash)    NEW: analyze divergence between plans
- ├── Confidence assessor (DS Pro)  NEW: assess fusion result confidence
+ ├── 残差提取者  (residual extractor,  Flash     ) analyze divergence between plans
+ ├── 置信度评估者 (confidence assessor, DS Pro    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   mid-eng          (MiniMax M3  ) engineering view
- │   mid-creative     (DeepSeek Pro) creative view
- │   mid-coder        (Flash       ) pragmatic view
- │   mid-fuse         (Kimi        ) fuse three plans [max_tokens: 16384]
+ │   中级·工程  (mid-eng,      MiniMax M3  ) engineering view
+ │   中级·创意  (mid-creative, DeepSeek Pro) creative view
+ │   中级·码农  (mid-coder,    Flash       ) pragmatic view
+ │   中级·融合  (mid-fuse,     Kimi        ) fuse three plans [max_tokens: 16384]
  │
  ├── Flagship opinion layer ─────────────────────────────────────────────
- │   flag-arch        (Qwen3.7 Max ) top-level architecture
- │   flag-plan        (GLM         ) structured planning
- │   flag-eng         (MiniMax M3  ) large-scale implementation
- │   flag-fuse        (Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
- │   flag-impl        (Flash       ) implement per fused plan [hidden]
- │   flag-qa          (DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
+ │   旗舰·架构  (flag-arch, Qwen3.7 Max ) top-level architecture
+ │   旗舰·规划  (flag-plan, GLM         ) structured planning
+ │   旗舰·工程  (flag-eng,  MiniMax M3  ) large-scale implementation
+ │   旗舰·融合  (flag-fuse, Qwen3.7 Max ) fuse three architecture plans [max_tokens: 16384]
+ │   旗舰·实现  (flag-impl, Flash       ) implement per fused plan [hidden]
+ │   旗舰·质检  (flag-qa,  DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── Frontend opinion layer ─────────────────────────────────────────────
-     fe-restore       (MiMo        ) pixel-perfect UI restore
-     fe-logic         (Qwen3.7 Plus) component architecture & state mgmt
-     fe-motion        (MiMo-Pro    ) interaction & motion
-     fe-lead          (GLM-5.2     ) pick best of three frontend plans [max_tokens: 16384]
+     前端·还原  (fe-restore, MiMo        ) pixel-perfect UI restore
+     前端·逻辑  (fe-logic,   Qwen3.7 Plus) component architecture & state mgmt
+     前端·动效  (fe-motion,  MiMo-Pro     ) interaction & motion
+     前端·总工  (fe-lead,    GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
 ```
+
+Fallback agent (not in the router chain above, called only when fusion fails):
+```text
+融合·保底 (fallback, DeepSeek V4 Pro) — same residual-enhanced fusion, used when 旗舰·融合 / 中级·融合 / 前端·总工 fail
+ ```
 
 ---
 
@@ -392,12 +397,23 @@ model: ollama-local/qwen3-coder
 
 ## 検証
 
-Deploy 後、static check を実行します（`pwsh` が必要）:
+リポジトリには `.opencode/tests/` に3つのチェックスクリプトが同梱されています。Layer 0 は完全自動、Layer 1–2 は OpenCode 内で確認する手動ガイドです。
 
 ```bash
+# Layer 0 — static check (automatic, 0 token)
 pwsh .opencode/tests/T0-static-verify.ps1
 # expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
+
+# run all three layers at once
+pwsh .opencode/tests/run-all.ps1
 ```
+
+| Script | Layer | What it does | Mode |
+| ------ | ----- | ------------ | ---- |
+| `T0-static-verify.ps1` | 0 | Checks file structure, agent/command/skill counts, README anchors, key-path correctness | Automatic |
+| `T1-behavioral-guide.ps1` | 1 | Prints a step-by-step checklist for routing / opinion / fusion behavior | Manual (in OpenCode) |
+| `T2-moa-smoke-guide.ps1` | 2 | Prints a smoke-test checklist for `/moa-*` commands end-to-end | Manual (in OpenCode) |
+| `run-all.ps1` | 0–2 | Runs T0 then prints the T1/T2 guided checklists | Mixed |
 
 ---
 
