@@ -10,7 +10,9 @@
 
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
+<!-- ARCH-IMG -->
 ![OpenCode MoA Architecture](.github/moa-arch.png)
+<!-- /ARCH-IMG -->
 
 OpenCode MoA is a Mixture of Agents configuration package for OpenCode. It lets multiple models **think about the same problem simultaneously**, then fuse into an output quality a single model can't reach. You don't need to switch tools, write code, or have an API quota — just drop the files into your project and restart OpenCode.
 
@@ -32,7 +34,6 @@ By default OpenCode uses a single model from start to finish. Changing one chara
 
 ```
 
-![Cost down up to 90%](.github/moa-cost.png)
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max)  ─── plan from the architect's view
@@ -40,6 +41,10 @@ You: help me design a message queue solution
     ├─ flag-eng  (MiniMax M3 )  ─── plan from the implementer's view
     └─ flag-fuse (Kimi K3    )  ─── take the best of each, one optimal solution
 ```
+
+<!-- COST-IMG -->
+![Cost down up to 90%](.github/moa-cost.png)
+<!-- /COST-IMG -->
 
 Three independent plans from three different models naturally form a "consensus + divergence" structure. The fusion model identifies what is consensus and keeps it, and takes the best where they diverge — something a single model cannot do.
 

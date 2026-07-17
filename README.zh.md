@@ -10,7 +10,9 @@
 
 > **一个对话入口，22 个专业模型自动协作。简单任务用 Flash（便宜），复杂任务才调旗舰（贵）。当简单任务占主导、旗舰调用被显著减少时，成本最高降低约 90%（对比全程旗舰）；实际节省取决于任务结构，代码质量显著提升。**
 
+<!-- ARCH-IMG -->
 ![OpenCode MoA 架构图](.github/moa-arch-zh.png)
+<!-- /ARCH-IMG -->
 
 OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**同时思考同一个问题**，然后融合出单一模型无法达到的输出质量。你不需要换工具、不需要写代码、不需要 API 额度——只需要把文件放进项目，重启 OpenCode。
 
@@ -32,7 +34,6 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 ```
 
-![成本降低高达 90%](.github/moa-cost-zh.png)
 你：帮我设计一个消息队列方案
 
     ┌─ 旗舰·架构 (Qwen3.7 Max)     ─── 从架构师视角出方案
@@ -40,6 +41,10 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
     ├─ 旗舰·工程 (MiniMax M3)      ─── 从实现者视角出方案
     └─ 旗舰·融合 (Kimi K3)         ─── 取长补短，一份最优解
 ```
+
+<!-- COST-IMG -->
+![成本降低高达 90%](.github/moa-cost-zh.png)
+<!-- /COST-IMG -->
 
 三个不同模型的三份独立方案，天然形成"共识 + 分歧"结构。融合模型识别哪些是共识直接保留、哪些是分歧取长补短——这是单一模型做不到的。
 

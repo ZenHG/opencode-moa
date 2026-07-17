@@ -10,7 +10,9 @@
 
 > **하나의 대화 진입점에서 22개의 전문 모델이 자동으로 협업합니다. 간단한 작업은 Flash(저렴), 복잡한 작업만 flagship(비쌈)을 호출합니다. 비용은 최대 약 90% 절감(모두 flagship 사용 대비), 코드 품질은 크게 향상됩니다. 단순 작업이 주를 이루고 flagship 호출이 최소화될 때, 실제 절감은 작업 구성에 따라 다릅니다.**
 
+<!-- ARCH-IMG -->
 ![OpenCode MoA 아키텍처](.github/moa-arch.png)
+<!-- /ARCH-IMG -->
 
 OpenCode MoA는 OpenCode용 Mixture of Agents 구성 패키지입니다. 여러 모델이 **같은 문제를 동시에 생각**한 뒤, 단일 모델로는 도달하기 어려운 품질의 결과로 융합합니다. 도구를 바꾸거나, 코드를 작성하거나, API quota를 준비할 필요가 없습니다. 파일을 프로젝트에 넣고 OpenCode를 재시작하면 됩니다.
 
@@ -40,7 +42,9 @@ You: help me design a message queue solution
 
 ```
 
+<!-- COST-IMG -->
 ![Cost down up to 90%](.github/moa-cost.png)
+<!-- /COST-IMG -->
 
 서로 다른 세 모델의 독립 계획은 자연스럽게 “consensus + divergence” 구조를 만듭니다. fusion model은 consensus를 보존하고 divergence에서는 가장 좋은 부분을 선택합니다. 이는 단일 모델로는 어렵습니다.
 

@@ -10,7 +10,9 @@
 
 > **Un único punto de conversación donde 22 modelos especializados colaboran automáticamente. Las tareas simples usan Flash (barato) y las tareas complejas llaman al flagship (caro). Coste reducido hasta ~90% (frente a usar flagship en todo) cuando las tareas simples dominan y las llamadas flagship se minimizan — el ahorro real depende del tipo de tareas, con una mejora notable de la calidad del código.**
 
+<!-- ARCH-IMG -->
 ![OpenCode MoA Arquitectura](.github/moa-arch.png)
+<!-- /ARCH-IMG -->
 
 OpenCode MoA es un paquete de configuración Mixture of Agents para OpenCode. Permite que varios modelos **piensen sobre el mismo problema simultáneamente** y luego fusiona sus resultados en una calidad difícil de alcanzar con un único modelo. No necesitas cambiar de herramienta, escribir código ni preparar una cuota de API: coloca los archivos en tu proyecto y reinicia OpenCode.
 
@@ -34,7 +36,6 @@ Por defecto, OpenCode usa un único modelo de principio a fin. Cambiar un carác
 
 ```
 
-![Cost down up to 90%](.github/moa-cost.png)
 You: help me design a message queue solution
 
     ┌─ flag-arch (Qwen3.7 Max)     ─── plan from the architect's view
@@ -43,6 +44,10 @@ You: help me design a message queue solution
     └─ flag-fuse (Kimi K3)         ─── take the best of each, one optimal solution
 
 ```
+
+<!-- COST-IMG -->
+![Cost down up to 90%](.github/moa-cost.png)
+<!-- /COST-IMG -->
 
 Tres planes independientes de tres modelos diferentes forman de manera natural una estructura de “consenso + divergencia”. El modelo de fusión identifica qué es consenso y lo conserva, y toma lo mejor allí donde hay divergencias; algo que un único modelo no puede hacer.
 
