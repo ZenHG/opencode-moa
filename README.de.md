@@ -346,10 +346,12 @@ Limits werden als Dollarwert definiert. Günstige Modelle (Flash) können häufi
 | Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
 | Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
 | Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Qwen3.7 Max     | $2.50 / $7.50              | 4,770         | ~2% (flagship fuse) |
+| Fusion     | Kimi K3         | $3.00 / $15.00             | 280 (2x from 7/24) | ~2% (flagship fuse) |
 | Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
 
 > Todos los model IDs son solo declaraciones; puedes sustituirlos por cualquier modelo que prefieras.
+
+![OpenCode Go quota per 5h](.github/quota-chart-en.svg)
 
 ### Nach Erreichen des Limits
 

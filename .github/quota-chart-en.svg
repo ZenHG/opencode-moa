@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+<defs>
+  <style>
+    text { font-family: 'Consolas', 'SF Mono', monospace; fill: #d4d4d4; }
+    .title { font-size: 16px; font-weight: bold; fill: #e0e0e0; }
+    .label { font-size: 12px; }
+    .axis-label { font-size: 11px; fill: #888; }
+    .grid { stroke: #333; stroke-width: 0.5; }
+    .bar { rx: 3; ry: 3; }
+  </style>
+</defs>
+<rect width="900" height="420" fill="#1a1a1a" rx="8"/>
+<text x="40" y="32" class="title">Requests per 5 Hours</text>
+<text x="40" y="52" class="axis-label">OpenCode Go (as of 2026-07-17)</text>
+
+<line x1="190" y1="70" x2="190" y2="390" class="grid"/>
+<line x1="280" y1="70" x2="280" y2="390" class="grid"/>
+<line x1="370" y1="70" x2="370" y2="390" class="grid"/>
+<line x1="490" y1="70" x2="490" y2="390" class="grid"/>
+<line x1="600" y1="70" x2="600" y2="390" class="grid"/>
+<line x1="780" y1="70" x2="780" y2="390" class="grid"/>
+
+<text x="190" y="406" class="axis-label" text-anchor="middle">1x</text>
+<text x="280" y="406" class="axis-label" text-anchor="middle">5x</text>
+<text x="370" y="406" class="axis-label" text-anchor="middle">10x</text>
+<text x="490" y="406" class="axis-label" text-anchor="middle">25x</text>
+<text x="600" y="406" class="axis-label" text-anchor="middle">50x</text>
+<text x="780" y="406" class="axis-label" text-anchor="middle">100x</text>
+
+<text x="180" y="88" class="label" text-anchor="end">80 Grok 4.5</text>
+<rect x="190" y="76" width="6" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="118" class="label" text-anchor="end">280 Kimi K3</text>
+<rect x="190" y="106" width="24" height="18" class="bar" fill="#C8C800"/>
+<text x="220" y="124" font-size="42" font-weight="bold" fill="#C8C800">← Q3 Flagship Fuse</text>
+
+<text x="180" y="148" class="label" text-anchor="end">880 GLM-5.2</text>
+<rect x="190" y="136" width="68" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="178" class="label" text-anchor="end">950 Qwen3.7 Max</text>
+<rect x="190" y="166" width="74" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="208" class="label" text-anchor="end">1,150 Kimi K2.7 Code</text>
+<rect x="190" y="196" width="88" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="238" class="label" text-anchor="end">3,200 MiniMax M3</text>
+<rect x="190" y="226" width="200" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="268" class="label" text-anchor="end">3,250 MiMo-V2.5-Pro</text>
+<rect x="190" y="256" width="204" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="298" class="label" text-anchor="end">3,450 DeepSeek V4 Pro</text>
+<rect x="190" y="286" width="216" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="328" class="label" text-anchor="end">4,300 Qwen3.7 Plus</text>
+<rect x="190" y="316" width="268" height="18" class="bar" fill="#8B8000"/>
+
+<text x="180" y="358" class="label" text-anchor="end">30,100 MiMo-V2.5</text>
+<rect x="190" y="346" width="500" height="18" class="bar" fill="#C8C800"/>
+
+<text x="180" y="388" class="label" text-anchor="end">31,650 DeepSeek V4 Flash</text>
+<rect x="190" y="376" width="516" height="18" class="bar" fill="#C8C800"/>
+
+<text x="860" y="52" class="axis-label" text-anchor="end" fill="#555">Source: OpenCode Go (2026-07-17)</text>
+</svg>

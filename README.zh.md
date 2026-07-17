@@ -351,6 +351,8 @@ MoA 基于 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 订阅，**首月 $
 >
 > 所有模型 ID 仅作声明，可替换为你偏好的任何模型。
 
+![OpenCode Go 每 5 小时请求数](.github/quota-chart.svg)
+
 ### 达到限制后
 
 - **免费模型保底** — Go 达到限制后可继续使用免费模型

@@ -355,6 +355,8 @@ Limits are defined by dollar value. Cheap models (Flash) can be used more often,
 >
 > All model IDs are declarations only; replace with any model you prefer.
 
+![OpenCode Go quota per 5h](.github/quota-chart-en.svg)
+
 ### After hitting the limit
 
 - **Free model fallback** — after Go hits the limit you can keep using free models
