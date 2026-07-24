@@ -64,9 +64,10 @@ function Call-Model {
         }
         catch {
             $err = $_.Exception.Message
+            $is429 = $err -match '429'
             Write-Host "  [WARN] Attempt $attempt/$MaxRetries failed: $err" -ForegroundColor Yellow
             if ($attempt -lt $MaxRetries) {
-                $delay = [math]::Min(30, [math]::Pow(2, $attempt - 1) * 2)
+                $delay = if ($is429) { 30 } else { [math]::Min(30, [math]::Pow(2, $attempt - 1) * 2) }
                 Write-Host "  Retrying in ${delay}s..." -ForegroundColor Gray
                 Start-Sleep -Seconds $delay
             } else {
@@ -169,6 +170,7 @@ $chunk
         $translated = $translated -replace '(?s)^\s*```[\w]*\s*\n?', ''
         $translated = $translated -replace '(?s)\s*```\s*$', ''
         $translatedChunks += $translated
+        if ($ci -lt $chunks.Count - 1) { Start-Sleep -Seconds 1 }
     }
 
     if (-not $chunkOk) {
