@@ -75,6 +75,11 @@ Opinion-layer fault tolerance (empty-result detection, single retry, degraded fu
 - `flag-fuse` (旗舰·融合) model changed `qwen3.7-max` → `kimi-k3` (2.8T params, 1M context)
 - README model table + intro updated; OpenCode Go quota 2x from 7/24 (140 → 280 / 5h)
 
+### Fix (P1)
+
+- `opencode.json` agent overrides: changed `"task": "allow"` to `"task": { "工具人": "allow", "视觉翻译官": "allow" }` for 8 opinion-layer agents. Previously the unrestricted `"task": "allow"` overrode each agent file's restricted task allowlist, allowing opinion agents to call any agent (e.g., bypass pipeline to `task(@旗舰·实现)`). Now permission layer matches the intended design — opinion agents can only reach tool-layer agents for context gathering.
+- deploy doc (`docs/opencode-moa.md`) synced to match.
+
 ### Docs
 
 - Added `scripts/sync-docs.ps1` — auto-syncs agent YAML frontmatter, `permission.task`, and agent counts from `.opencode/agents/*.md` / `opencode.json` into deploy docs (`docs/opencode-moa.md`).
@@ -109,6 +114,11 @@ Opinion-layer fault tolerance (empty-result detection, single retry, degraded fu
 
 - `flag-fuse`（旗舰·融合）模型由 `qwen3.7-max` 改为 `kimi-k3`（2.8T 参数，1M 上下文）
 - README 模型表与介绍同步更新；OpenCode Go 额度 7/24 起翻倍（140 → 280 / 5h）
+
+### 修复（P1）
+
+- `opencode.json` agent 覆盖段：8 个意见层 agent 的 `"task": "allow"` 改为 `"task": { "工具人": "allow", "视觉翻译官": "allow" }`。原无限制的 `"task": "allow"` 会覆盖每个 agent 文件的 task 白名单，使意见层 agent 可调任意 agent（如绕过 pipeline 直接 `task(@旗舰·实现)`）。修复后权限层与设计意图一致——意见层 agent 只能调工具层 agent。
+- 部署文档（`docs/opencode-moa.md`）同步更新。
 
 ### 文档
 

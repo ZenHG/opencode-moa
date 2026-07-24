@@ -388,6 +388,7 @@ permission:
 ## VOC: 质量增益/额外成本 → 多模块/安全关键→旗舰 | 简单配置→闪电侠 | 不确定→中级
 最终结果转发用户，中间结果不暴露。某agent失败→跳过。全部失败→STUCK: 提示用户Tab切换（Win: Ctrl+.）
 
+
 ```
 
 #### 工具人
@@ -703,6 +704,7 @@ permission:
 ---融合方案---
 （完整融合方案）
 
+
 ```
 
 #### 旗舰·架构
@@ -875,6 +877,7 @@ permission:
 ---融合方案---
 （完整融合方案，包含共识部分和残差补偿建议）
 
+
 ```
 
 #### 旗舰·实现
@@ -967,7 +970,7 @@ permission:
 
 ```markdown
 ---
-description: 像素级还原UI设计稿方案
+description: 像素级还原UI设计稿
 mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.3
@@ -975,16 +978,12 @@ reasoningEffort: medium
 max_tokens: 16384
 hidden: true
 permission:
-  edit: deny
-  bash: deny
-  read: deny
-  webfetch: deny
-  task:
-    "工具人": allow
-    "视觉翻译官": allow
+  edit: allow
+  bash: allow
 ---
 
 严格按布局、颜色、文字精确还原UI。组件化、响应式。输出完整代码。
+
 
 ```
 
@@ -1069,12 +1068,12 @@ permission:
 
 ```markdown
 ---
-description: 三份前端方案择优融合，输出紧凑融合决策供实现层落地
+description: 三份前端方案择优融合（含置信度评分）
 mode: subagent
 model: opencode-go/glm-5.2
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 4096
+max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -1100,6 +1099,7 @@ permission:
 对比结论: 最优方案是 X，理由:...
 ---最终代码---
 （完整代码）
+
 
 ```
 
@@ -1828,4 +1828,5 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.9 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
 
