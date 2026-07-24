@@ -13,7 +13,7 @@ param(
 $ErrorActionPreference = "Continue"
 
 $scriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
-$base        = Split-Path (Split-Path $scriptDir)
+$base        = Split-Path $scriptDir
 $githubToken = $env:GITHUB_TOKEN
 $apiUrl      = "https://models.github.ai/inference/chat/completions"
 $model       = "openai/gpt-4o"
