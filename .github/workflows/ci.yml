@@ -7,6 +7,8 @@ on:
 jobs:
   static-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Run T0 static verify
@@ -14,6 +16,9 @@ jobs:
         run: pwsh .opencode/tests/T0-static-verify.ps1
   verify:
     runs-on: ubuntu-latest
+    needs: static-check
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Run image anchor verify
@@ -22,3 +27,31 @@ jobs:
       - name: Run T1 consistency check
         shell: pwsh
         run: pwsh .opencode/tests/T1-readme-consistency.ps1
+  translate:
+    runs-on: ubuntu-latest
+    needs: verify
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'README')
+    permissions:
+      models: read
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Auto-translate READMEs
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $env:GITHUB_TOKEN = "${{ secrets.GITHUB_TOKEN }}"
+          pwsh scripts/translate-readmes.ps1
+      - name: Commit translations
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && echo "No translation changes" && exit 0
+          git add README.*.md
+          git commit -m "i18n: auto-translate READMEs [skip ci]"
+          git push
