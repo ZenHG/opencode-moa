@@ -110,7 +110,7 @@
   "instructions": ["AGENTS.md"],
   "compaction": {
     "auto": true,
-    "reserved": 10000
+    "reserved": 15000
   },
   "share": "manual",
   "snapshot": true

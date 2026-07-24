@@ -45,18 +45,35 @@
 </details>
 ---
 
-## v0.0.11（2026-07-17）
+## v0.0.12（2026-07-24）
 
 <details open>
 <summary>🇬🇧 English</summary>
 
-Flagship fuse upgraded to Kimi K3 (top-tier frontier model) — quality ceiling raised to the front of the pack.
+Opinion-layer fault tolerance (empty-result detection, single retry, degraded fusion for partial inputs), visual translator fallback second-role, declarative agent preconditions, pipeline stage visualization, unified progress reporting, and 闪电侠 priority parallel shortcut.
+
+### New (P1)
+
+- Opinion-layer fault tolerance: empty-result detection, single retry, and degraded fusion for partial inputs. Prevents pipeline stalls when one of 3 parallel opinion agents fails or returns empty.
+- Visual translator fallback second-role: when no screenshots, decomposes error logs, ASCII diagrams, long documents, and ambiguous user intent — distinct from tool-handler's raw I/O.
+- Declarative agent preconditions: each agent declares activation conditions in `precondition` metadata, replacing hardcoded routing rules. Router reads preconditions instead of encoding conditional logic inline.
+- Pipeline stage visualization: routing decisions output stage identifiers (`工具层|意见层|融合层|实现层`), mapping to user-facing pipeline phases.
+- Unified progress reporting: both success and failure paths follow `[Pipeline] mode=... stage=... status=...` format with five statuses (`idle|in_progress|complete|degraded|stuck`). Agent names never exposed.
+- 闪电侠 priority parallel shortcut: when the main pipeline is executing, 闪电侠 can be dispatched in parallel for independent simple subtasks (e.g., searching TODOs while architecture plans are being designed). Limited scope: same-dependency and opinion-fusion tasks excluded.
+- 残差提取者 supports partial inputs (marks missing perspectives, adjusts consensus coverage denominator to N/M).
+- 旗舰·融合 supports degraded fusion (2/3 inputs: skip missing perspective, fuse available ones; 1/3 input: pass-through with confidence penalty).
+- 门童路由员 added result validation step, `[Partial] N/3 inputs` labeling, and precondition-based activation. README.md / README.zh.md updated with new sections.
+
+### Fix (P1)
+
+- Pipeline no longer stalls (STUCK) when a single opinion agent fails — degraded mode keeps the pipeline moving.
+- 融合·保底 now also covers opinion-layer partial failure cases.
+- 视觉翻译官 no longer idles when there's no screenshot — provides value through content decomposition.
 
 ### Model (P1)
 
 - `flag-fuse` (旗舰·融合) model changed `qwen3.7-max` → `kimi-k3` (2.8T params, 1M context)
 - README model table + intro updated; OpenCode Go quota 2x from 7/24 (140 → 280 / 5h)
-
 </details>
 
 ---
@@ -64,18 +81,35 @@ Flagship fuse upgraded to Kimi K3 (top-tier frontier model) — quality ceiling 
 <details>
 <summary>🇨🇳 中文</summary>
 
-旗舰融合升级至 Kimi K3（顶级前沿模型）—— 质量天花板推到第一梯队最前。
+意见层容错（空结果检测、单次重试、部分输入降级融合）、视觉翻译官降级第二职责、声明式 Agent 预条件、流水线阶段可视化、统一进度报告格式、闪电侠优先并行快捷通道。
+
+### 新增（P1）
+
+- 意见层容错：空结果检测、单次重试、部分输入降级融合。当3条并行意见链中任意一条返回空或超时时，流水线不再卡死，而是以降级模式继续。
+- 视觉翻译官降级第二职责：无截图时解构错误日志、ASCII 图、长文档和含糊用户输入，与工具人的原始 I/O 形成能力互补。
+- 声明式 Agent 预条件：每个 Agent 在 YAML frontmatter 的 `precondition` 元数据中声明激活条件，替代硬编码路由规则。路由器读取 preconditions 而非编码条件激活逻辑。
+- 流水线阶段可视化：路由决策输出阶段标识（`工具层|意见层|融合层|实现层`），对应用户可理解的流水线阶段。
+- 统一进度报告格式：成功与失败路径均遵循 `[Pipeline] mode=... stage=... status=...` 格式。五种状态（`idle|in_progress|complete|degraded|stuck`）让用户无论流水线成功还是失败，都能以相同格式理解当前状态。不暴露内部 Agent 名。
+- 闪电侠优先并行快捷通道：主流水线执行期间，闪电侠可并行处理独立的简单子任务（如架构方案设计中顺便搜索 TODO）。限定范围：与主流水线有依赖关系或参与意见融合的任务除外。
+- 残差提取者支持部分输入（标记缺失视角，共识覆盖率分母调整为 N/M）。
+- 旗舰·融合支持降级融合（2/3 输入：跳过缺失视角，融合可用方案；1/3 输入：直通并施加置信度惩罚）。
+- 门童路由员新增结果校验步骤、`[Partial] N/3 inputs` 标注、基于 precondition 的条件激活。README.md / README.zh.md 新增章节。
+
+### 修复（P1）
+
+- 单条意见代理失败时流水线不再卡死（STUCK），降级模式保持流程继续。
+- 融合·保底现在也覆盖意见层部分失败场景。
+- 视觉翻译官在没有截图时不再闲置，而是通过内容解构持续提供价值。
 
 ### 模型（P1）
 
 - `flag-fuse`（旗舰·融合）模型由 `qwen3.7-max` 改为 `kimi-k3`（2.8T 参数，1M 上下文）
 - README 模型表与介绍同步更新；OpenCode Go 额度 7/24 起翻倍（140 → 280 / 5h）
-
 </details>
 
 ---
 
-## v0.0.10（2026-07-16）
+## v0.0.11（2026-07-17）
 
 <details open>
 <summary>🇬🇧 English</summary>

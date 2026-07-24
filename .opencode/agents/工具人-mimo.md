@@ -4,7 +4,7 @@ mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.1
 reasoningEffort: medium
-max_tokens: 2048
+max_tokens: 4096
 hidden: true
 permission:
   edit: deny

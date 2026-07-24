@@ -177,6 +177,7 @@ rm -rf your-project/.opencode/
 | "design a microservice architecture" | tool layer gathers → 3 flagship parallel → fuse → implement → QA | full-chain 6 agents                 |
 | "restore this screenshot's UI"       | 3 frontend experts parallel → lead picks best                    | frontend quartet                    |
 | message with screenshot              | vision-translator converts to text → normal routing              | vision-translator                   |
+| message with error log / diagram / complex content | vision-translator decomposes content → normal routing  | vision-translator (fallback role)   |
 
 **Direct `@` calls:**
 
@@ -231,7 +232,7 @@ concierge-router (门童路由员, Flash)
  │   tool-handler      (工具人, Flash    ) read code, search files [+ material self-check]
  │   tool-handler-mimo (工具人-mimo, MiMo) reliable file read (fallback + parallel) [hidden]
  │   swift             (闪电侠, Flash    ) simple tasks in one shot
- │   vision-translator (视觉翻译官, MiMo ) screenshot/UI/error image to text
+ │   vision-translator (视觉翻译官, MiMo ) screenshot/UI→text; logs/diagrams/docs→decomposition
  │
  ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
  ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
@@ -298,6 +299,101 @@ fe-lead (前端·总工, GLM-5.2) failed
 ```
 
 The fallback agent uses the same residual-enhanced fusion process.
+
+### Opinion layer partial failure tolerance
+
+Individual opinion agents (架构/规划/工程, 前端·还原/逻辑/动效, 中级·工程/创意/码农) may return empty results or time out independently. The system handles this gracefully:
+
+```
+3 parallel opinion agents dispatched
+  → any agent returns empty result → retry that agent once
+    → retry succeeds → continue normally
+    → retry fails → mark as "degraded" and proceed with N/3 inputs
+      → 残差提取者 works with available inputs only
+      → 旗舰·融合 applies degraded fusion rules
+      → output carries "[Partial] N/3 inputs" label
+      → confidence score is adjusted downward
+```
+
+Degraded fusion rules (N < 3):
+- Consensus coverage denominator is N, not 3
+- Missing perspectives are labeled `[Missing: perspective name]`
+- Consensus coverage < 50% triggers "low confidence degraded fusion" warning
+- Single-source fusion (N=1) applies a 0.7 confidence penalty factor
+
+> This prevents the pipeline from stalling (STUCK) when one opinion agent fails — a common user complaint.
+
+### Declarative agent preconditions
+
+Agent activation is governed by declarative `precondition` metadata, not hardcoded routing rules. Each agent declares when it should be active:
+
+| Agent | preconditions |
+|-------|---------------|
+| 闪电侠 | always |
+| 工具人 | requires codebase context |
+| 视觉翻译官 | primary: `screenshot`; fallback: `error_log OR diagram OR long_document OR ambiguous_intent` |
+| 中级·工程 | requires engineering complexity |
+| 中级·创意 | requires creative complexity |
+| 中级·码农 | requires implementation complexity |
+| 旗舰·架构/规划/工程 | requires system design complexity |
+| 前端·还原/逻辑/动效 | requires frontend task |
+| 融合·保底 | activated when fusion layer fails or opinion layer returns partial results |
+
+Condition activation follows short-circuit logic: preconditions met → activate; none met → ask user for confirmation. This replaces hardcoded trigger rules (like "有截图→+@视觉翻译官") with agent-declared, self-documenting preconditions.
+
+### Pipeline stage visualization
+
+Every routing decision outputs a stage identifier so users can track pipeline progress without learning internal step numbers:
+
+```
+[Stage: 工具层] → [Stage: 意见层] → [Stage: 融合层] → [Stage: 实现层]
+```
+
+Stage-to-phase mapping:
+- `工具层` — material collection
+- `意见层` — parallel plan design (mid-tier / flagship / frontend)
+- `融合层` — plan fusion and verification
+- `实现层` — code implementation and acceptance
+
+### Unified progress reporting
+
+Both success and failure paths follow the same reporting format, never exposing internal agent names:
+
+```
+[Pipeline] mode=<lite|balanced|strict>  stage=<工具层|意见层|融合层|实现层>  status=<idle|in_progress|complete|degraded|stuck>
+  reason: <why this stage>
+  path: <工具层|中级链|旗舰链|前端链>
+  fallback: <recovery strategy>
+```
+
+Status indicators:
+- `in_progress` — executing current stage
+- `complete` — stage finished successfully
+- `degraded` — running with partial inputs, lower confidence
+- `stuck` — all recovery paths exhausted, user intervention needed
+
+### 闪电侠优先并行快捷通道
+
+When the main pipeline is executing, 闪电侠 can be dispatched in parallel for independent simple subtasks:
+
+```
+Main pipeline: 工具层 → 意见层 → 融合层 → 实现层
+Parallel lane: 闪电侠 (always ready, runs alongside main pipeline)
+```
+
+Trigger conditions (any one):
+- User instruction explicitly requests parallel work ("同时做 X", "顺便查 Y")
+- A simple subtask emerges during main pipeline execution (e.g., searching TODOs while architecture plans are being designed)
+- User directly calls @闪电侠
+
+Scope limitations:
+- ✅ Independent tasks with no dependency on main pipeline output
+- ✅ Simple operations: file search, grep, config query, formatting
+- ❌ Tasks that produce input for the main pipeline
+- ❌ Opinion fusion tasks (must remain serial)
+- ❌ Implementation and QA tasks (must remain serial)
+
+If 闪电侠 finishes before the main pipeline, results are held and returned together at the end. If the main pipeline finishes first, 闪电侠 results are returned immediately. 闪电侠 failure does not affect main pipeline execution.
 
 ### MCP permission isolation
 

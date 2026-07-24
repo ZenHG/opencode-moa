@@ -45,3 +45,6 @@ ehthumbs.db
 # schema(template.yaml) 与说明(README.md) 必须进仓库，不忽略
 docs/benchmark/cases/*.yaml
 docs/benchmark/cases/*.yml
+
+# 本地出图方案文档（含本地路径/个人工作流，非仓库共享内容）
+docs/opencode-moa-出图方案.md
