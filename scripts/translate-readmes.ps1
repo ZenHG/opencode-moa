@@ -129,30 +129,50 @@ foreach ($lang in $targetLangsToTranslate) {
         continue
     }
 
-    $targetContent = Get-Content $targetPath -Raw -Encoding utf8
+    # Split source into chunks at ## headings to avoid 413 Payload Too Large
+    $chunks = @(); $buf = ""
+    foreach ($line in $sourceContent -split "`n") {
+        if ($line -match '^## ') {
+            if ($buf) { $chunks += $buf }; $buf = ""
+        }
+        if ($buf) { $buf += "`n" + $line } else { $buf = $line }
+    }
+    if ($buf) { $chunks += $buf }
 
-    # Build translation prompt that preserves structure
-    $prompt = @"
-Translate the English README (source) into $( $targetLangs[$lang] ). Maintain EXACTLY the same structure, headings, table format, ASCII diagrams, anchors, and code blocks.
+    $translatedChunks = @()
+    $chunkOk = $true
+    for ($ci = 0; $ci -lt $chunks.Count; $ci++) {
+        $chunk = $chunks[$ci]
+        $context = if ($ci -eq 0) { "preamble" } else { "section" }
+        $prompt = @"
+Translate the following markdown into $( $targetLangs[$lang] ). Maintain EXACTLY the same structure, headings, tables, ASCII diagrams, anchors, and code blocks.
 
 RULES:
-- DO NOT translate: model IDs (e.g. deepseek-v4-flash, kimi-k3), command names (e.g. /moa-quick, /moa-medium), file paths (e.g. .opencode/agents, install.ps1), anchor comments (<!-- ARCH-IMG -->, <!-- COST-IMG -->), markdown code blocks, or ASCII diagram characters.
+- DO NOT translate: model IDs, command names, file paths, anchor comments (<!-- ARCH-IMG -->), markdown code blocks, or ASCII diagram characters.
 - DO translate: all prose text, table cells with natural language descriptions, headings text, and UI-facing strings.
-- PRESERVE: the exact same heading structure, table column alignment, blank lines, and anchor placement.
-- Output ONLY the translated markdown, no explanations.
+- PRESERVE the exact same heading level, table alignment, blank lines, and anchor placement.
+- Output ONLY the translated markdown with NO extra commentary.
 
-Source README ($sourceReadme):
-$sourceContent
+Content to translate ($context):
+$chunk
 "@
+        Write-Host "  Chunk $($ci+1)/$($chunks.Count) ($($chunk.Length)B)..." -ForegroundColor Gray
+        $translated = Call-Model -Messages $prompt
+        if (-not $translated) {
+            Write-Host "  [FAIL] Chunk $($ci+1) failed for $lang" -ForegroundColor Red
+            $chunkOk = $false
+            $translationSuccess = $false
+            break
+        }
+        $translatedChunks += $translated
+    }
 
-    Write-Host "  Calling GitHub Models $model..." -ForegroundColor Gray
-    $translated = Call-Model -Messages $prompt
-
-    if (-not $translated) {
+    if (-not $chunkOk) {
         Write-Host "  [FAIL] Translation failed for $lang, keeping existing content" -ForegroundColor Red
-        $translationSuccess = $false
         continue
     }
+
+    $translated = $translatedChunks -join "`n`n"
 
     # ── Step 4: Validate output ──
     # Check anchors preserved
