@@ -12,3 +12,13 @@ jobs:
       - name: Run T0 static verify
         shell: pwsh
         run: pwsh .opencode/tests/T0-static-verify.ps1
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run image anchor verify
+        shell: pwsh
+        run: pwsh scripts/verify-images.ps1
+      - name: Run T1 consistency check
+        shell: pwsh
+        run: pwsh .opencode/tests/T1-readme-consistency.ps1
