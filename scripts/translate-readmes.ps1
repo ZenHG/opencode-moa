@@ -143,9 +143,6 @@ RULES:
 
 Source README ($sourceReadme):
 $sourceContent
-
-Target README ($targetFile) for reference (current translation to update):
-$targetContent
 "@
 
     Write-Host "  Calling GitHub Models $model..." -ForegroundColor Gray
