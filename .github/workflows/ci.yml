@@ -51,7 +51,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet && echo "No translation changes" && exit 0
+          git diff --quiet README.*.md && echo "No translation changes" && exit 0
           git add README.*.md
           git commit -m "i18n: auto-translate READMEs [skip ci]"
           git push

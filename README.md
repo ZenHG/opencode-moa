@@ -621,5 +621,3 @@ PRs and Issues welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 [MIT](LICENSE) · [OpenCode MoA](https://github.com/ZenHG/opencode-moa)
-
-<!-- test: verify translate commit workflow -->
