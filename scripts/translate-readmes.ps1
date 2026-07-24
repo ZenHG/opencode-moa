@@ -152,6 +152,7 @@ RULES:
 - DO translate: all prose text, table cells with natural language descriptions, headings text, and UI-facing strings.
 - PRESERVE the exact same heading level, table alignment, blank lines, and anchor placement.
 - Output ONLY the translated markdown with NO extra commentary.
+- DO NOT wrap the output in ``` code fences.
 
 Content to translate ($context):
 $chunk
@@ -164,6 +165,9 @@ $chunk
             $translationSuccess = $false
             break
         }
+        # Strip leading/trailing ``` fences the model may wrap
+        $translated = $translated -replace '(?s)^\s*```[\w]*\s*\n?', ''
+        $translated = $translated -replace '(?s)\s*```\s*$', ''
         $translatedChunks += $translated
     }
 
