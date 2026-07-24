@@ -1,193 +1,204 @@
-﻿# OpenCode MoA
+# OpenCode MoA
 
-> 🌐 Idiomas / Languages: [English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · Español · [Français](README.fr.md) · [Deutsch](README.de.md)
+> 🌐 Idiomas: Inglés · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **Novedad (2026-07):** la fusión flagship se actualizó a **Kimi K3** — 2,8T parámetros, contexto 1M, modelo frontier de primer nivel. Cuota de OpenCode Go 2x hasta 7/24 (140 → 280 / 5h, luego vuelve a 140).
+> 🔥 **Caliente (2026-07):** fusión insignia actualizada a **Kimi K3** — 2.8T params, 1M contexto, modelo de frontera de primer nivel. Cuota de OpenCode Go 2x hasta el 24/7 (140 → 280 / 5h, luego de vuelta a 140). El techo de calidad de MoA ahora está al frente del grupo.
 
-> **Un único punto de conversación donde 22 modelos especializados colaboran automáticamente. Las tareas simples usan Flash (barato) y las tareas complejas llaman al flagship (caro). Coste reducido hasta ~90% (frente a usar flagship en todo) cuando las tareas simples dominan y las llamadas flagship se minimizan — el ahorro real depende del tipo de tareas, con una mejora notable de la calidad del código.**
+> **Un punto de entrada a la conversación, 22 modelos especializados colaborando automáticamente. Tareas simples utilizan Flash (barato), tareas complejas llaman a la insignia (caro). Reducción de costos de hasta ~90% (vs todo insignia) cuando las tareas simples dominan la carga de trabajo y se minimizan las llamadas a la insignia — los ahorros reales dependen de la mezcla de tareas; calidad del código significativamente mejorada.**
 
 <!-- ARCH-IMG -->
-![OpenCode MoA Arquitectura](.github/moa-arch.png)
+![OpenCode MoA Architecture](.github/moa-arch.png)
 <!-- /ARCH-IMG -->
 
-OpenCode MoA es un paquete de configuración Mixture of Agents para OpenCode. Permite que varios modelos **piensen sobre el mismo problema simultáneamente** y luego fusiona sus resultados en una calidad difícil de alcanzar con un único modelo. No necesitas cambiar de herramienta, escribir código ni preparar una cuota de API: coloca los archivos en tu proyecto y reinicia OpenCode.
+OpenCode MoA es un paquete de configuración de Mezcla de Agentes para OpenCode. Permite que múltiples modelos **piensen sobre el mismo problema simultáneamente**, luego se fusionen en una calidad de salida que un solo modelo no puede alcanzar. No necesitas cambiar de herramientas, escribir código o tener una cuota de API — solo coloca los archivos en tu proyecto y reinicia OpenCode.
 
-**22 agents · 5 commands · 3 skills · despliegue en 30 segundos**
-
-> Nota: los nombres de comandos, agents, modelos, rutas y bloques de código se conservan en inglés para que puedan copiarse y ejecutarse directamente.
+**22 agentes · 5 comandos · 3 habilidades · despliegue de 30 segundos**
 
 ---
 
-## ¿Por qué lo necesitas?
 
-Por defecto, OpenCode usa un único modelo de principio a fin. Cambiar un carácter y diseñar una arquitectura de sistema usan el mismo prompt, la misma temperature y el mismo context. No hay división del trabajo.
+## ¿Por qué necesitas esto?
+
+Por defecto, OpenCode utiliza un solo modelo de principio a fin. Cambiar un carácter y diseñar una arquitectura de sistema utilizan el mismo prompt, misma temperatura, mismo contexto. Sin división del trabajo.
 
 **Tres problemas:**
 
-1. **Coste fuera de control** — las tareas simples también usan el modelo caro y la factura mensual se mantiene alta
-2. **Cuello de botella de calidad** — un único modelo tiene una sola forma de pensar y puede quedarse en puntos ciegos
-3. **Sin tolerancia a fallos** — si el modelo falla, todo se bloquea; no hay fallback
+1. **Costo fuera de control** — las tareas simples también utilizan el modelo caro, la factura mensual se mantiene alta
+2. **Cuello de botella de calidad** — un solo modelo tiene solo una forma de pensar, fácilmente atrapado en puntos ciegos
+3. **Sin tolerancia a fallos** — si el modelo falla, se congela, sin respaldo
 
-**La solución de MoA:**
+**Solución de MoA:**
 
 ```
 
 You: help me design a message queue solution
 
-    ┌─ flag-arch (Qwen3.7 Max)     ─── plan from the architect's view
-    ├─ flag-plan (GLM 5.2        ) ─── plan from the PM's view
-    ├─ flag-eng  (MiniMax M3 )     ─── plan from the implementer's view
-    └─ flag-fuse (Kimi K3)         ─── take the best of each, one optimal solution
-
+    ┌─ flag-arch (Qwen3.7 Max)  ─── plan from the architect's view
+    ├─ flag-plan (GLM 5.2    )  ─── plan from the PM's view
+    ├─ flag-eng  (MiniMax M3 )  ─── plan from the implementer's view
+    └─ flag-fuse (Kimi K3    )  ─── take the best of each, one optimal solution
 ```
 
 <!-- COST-IMG -->
 ![Cost down up to 90%](.github/moa-cost.png)
 <!-- /COST-IMG -->
 
-Tres planes independientes de tres modelos diferentes forman de manera natural una estructura de “consenso + divergencia”. El modelo de fusión identifica qué es consenso y lo conserva, y toma lo mejor allí donde hay divergencias; algo que un único modelo no puede hacer.
+Tres planes independientes de tres modelos diferentes forman naturalmente una estructura de "consenso + divergencia". El modelo de fusión identifica qué es consenso y lo mantiene, y toma lo mejor donde divergen — algo que un solo modelo no puede hacer.
 
 ---
 
+
 ## Requisitos previos
 
-### Obligatorio
+### Requerido
 
-| Requirement         | Check command                  | Notes                                                                                                                                                                                                 |
-| ------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenCode installed  | `opencode --version`           | **>= 1.3.4** (agent-level `reasoningEffort`/`hidden`/`task` support; `openai-compatible` provider transparently passes reasoning, no `forceReasoning` needed), [install](https://opencode.ai/install) |
-| OpenCode Go plan    | opencode.ai console            | [Subscribe](https://opencode.ai/auth), first month $5, then $10/month                                                                                                                                 |
-| Git installed       | `git --version`                | Used to clone the repo                                                                                                                                                                                |
-| OpenCode Go API Key | created in opencode.ai console | Created in the Zen console (opencode.ai)                                                                                                                                                              |
+| Requisito           | Comando de verificación           | Notas                                                                                                                                                                                                 |
+| ------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenCode instalado   | `opencode --version`             | **>= 1.3.4** (soporte a nivel de agente `reasoningEffort`/`hidden`/`task`; proveedor `openai-compatible` pasa razonamiento de forma transparente, no se necesita `forceReasoning`), [instalar](https://opencode.ai/install) |
+| Plan OpenCode Go     | consola opencode.ai              | [Suscribirse](https://opencode.ai/auth), primer mes $5, luego $10/mes                                                                                                                                 |
+| Git instalado        | `git --version`                  | Usado para clonar el repositorio                                                                                                                                                                     |
+| Clave API de OpenCode Go | creada en consola opencode.ai | Creada en la consola Zen (opencode.ai)                                                                                                                                                               |
 
-### Opcional (necesario para los scripts de instalación)
+### Opcional (necesario para scripts de instalación)
 
-| Requirement     | Check command    | Notes                                                                     |
-| --------------- | ---------------- | ------------------------------------------------------------------------- |
-| PowerShell Core | `pwsh --version` | needed by install.ps1, bundled with Windows or `brew install powershell`  |
-| jq              | `jq --version`   | needed by install.sh for JSON merge, `apt install jq` / `brew install jq` |
+| Requisito         | Comando de verificación | Notas                                                                     |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------- |
+| PowerShell Core   | `pwsh --version`       | necesario para install.ps1, incluido con Windows o `brew install powershell`  |
+| jq                | `jq --version`         | necesario para install.sh para la fusión de JSON, `apt install jq` / `brew install jq` |
 
-> No pwsh/jq is fine — you can use Method 1 (AI auto-deploy) or Method 3 (manual merge).
+> No tener pwsh/jq está bien — puedes usar el Método 1 (despliegue automático de IA) o el Método 3 (fusión manual).
 
-### Desktop vs CLI
+### Escritorio vs CLI
 
-- **CLI**: todos los métodos están soportados
-- **Desktop**: el Método 1 (despliegue automático con IA) es el más cómodo; los Métodos 2/3 requieren operar primero en la terminal
+- **CLI**: todos los métodos soportados
+- **Escritorio**: el Método 1 (despliegue automático de IA) es el más conveniente; los Métodos 2/3 requieren operación de terminal primero
 
-> ⚠️ **La ruta de la clave a nivel de sistema es fácil de colocar mal** — revisa la escritura correcta en “Leer antes de desplegar”. Una ruta incorrecta provoca “deployment succeeds but all agents can't connect”.
+> ⚠️ **La ruta de clave a nivel de sistema es fácil de colocar incorrectamente** — ortografía correcta en "Leer antes de desplegar" a continuación. Ruta incorrecta lleva a "el despliegue tiene éxito pero todos los agentes no pueden conectarse".
 
-> ⚠️ **Leer antes de desplegar: no coloques mal la ruta de la clave**
-> Coloca el provider + key en el **`opencode.json` de nivel proyecto** (por defecto, autocontenido) o en la ruta compartida **de nivel sistema** — elige **una**.
-> Si usas nivel sistema, la ruta correcta es:
+> ⚠️ **Leer antes de desplegar: no coloques incorrectamente la ruta de clave**
+> Coloca el proveedor + clave en el **`opencode.json` a nivel de proyecto** (por defecto, autónomo) o en la **ruta compartida a nivel de sistema** — elige **una**.
+> Si usas a nivel de sistema, la ruta correcta es:
 > 
 > - Linux/macOS `~/.config/opencode/opencode.json`
-> - Windows `%USERPROFILE%\.config\opencode\opencode.json` (**not** `%APPDATA%\opencode`)
->   Una ruta de sistema incorrecta provoca “deployment succeeds but all agents can't connect”.
+> - Windows `%USERPROFILE%\.config\opencode\opencode.json` (**no** `%APPDATA%\opencode`)
+>   Ruta incorrecta a nivel de sistema lleva a "el despliegue tiene éxito pero todos los agentes no pueden conectarse".
 
 ---
 
 ## Despliegue en 30 segundos
 
-### Método 1: despliegue automático con IA (recomendado)
+### Método 1: auto-despliegue de IA (recomendado)
 
 1. Descarga [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md)
-2. Sube ese documento a OpenCode y envía:
+2. Sube ese documento en OpenCode y envía:
 
-> Deploy all 22 agents, 5 commands, and 3 skills from this manual into the current project
+> Despliega los 22 agentes, 5 comandos y 3 habilidades de este manual en el proyecto actual
 
-3. La IA crea todos los archivos automáticamente. **Reinicia OpenCode** al terminar.
+3. La IA crea todos los archivos automáticamente. **Reinicia OpenCode** cuando termines.
 
-> No necesitas crear archivos manualmente. El manual de despliegue es el instalador.
+> No es necesario crear ningún archivo manualmente. El manual de despliegue es en sí mismo el instalador.
 
-### Método 2: script de instalación de un clic (versión script · cómodo para CLI)
+### Método 2: script de instalación con un clic (versión de script · amigable con CLI)
 
 ```bash
-# clone the repo
+# clona el repositorio
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# enter your project directory
+# entra en tu directorio de proyecto
 cd your-project
 
-# copy the .opencode directory from the repo
+# copia el directorio .opencode del repositorio
 cp -r ../opencode-moa/.opencode/ .
 
-# run the install script (auto-merge config, keeps your API key)
+# ejecuta el script de instalación (fusión automática de configuración, mantiene tu clave API)
 # Windows:
 pwsh ../opencode-moa/install.ps1
 # Linux/macOS:
 bash ../opencode-moa/install.sh
 ```
 
-> El script de instalación hace una copia de seguridad automática de tu `opencode.json` original y solo fusiona la configuración de MoA, conservando tu provider y API key.
+> El script de instalación hace una copia de seguridad automática de tu `opencode.json` original, fusionando solo la configuración de MoA mientras mantiene tu proveedor y clave API.
 > 
-> Nota: este método copia tal cual el `.opencode/` incluido en el repo; sus agents tienen **nombres visibles en chino**. Si quieres agents con nombres en inglés (para poder usar `@english-name`), usa el Método 1.
+> Nota: este método copia el `.opencode/` empaquetado del repositorio tal cual — sus agentes tienen **nombres de visualización en chino**. Si deseas agentes con nombres en inglés (para que puedas `@nombre-en-ingles`), utiliza el Método 1 en su lugar.
+
+### Personaliza cualquier modelo
+
+MoA es una **plantilla genérica** — el modelo de cada agente es solo un ID que puedes cambiar. Cada archivo de agente comienza con:
+
+```yaml
+model: opencode-go/<model-id>
+```
+
+Para cambiar un modelo, edita esa línea en `.opencode/agents/<agent>.md` a cualquier `provider/model-id` al que tengas acceso (por ejemplo, `opencode-go/kimi-k2.7-code`, `opencode-go/glm-5.2`). No es necesario reinstalar. Mezcla y combina libremente — la plantilla no te ata a nada.
 
 ### Método 3: instalación manual
 
 ```bash
-# 1. clone the repo
+# 1. clona el repositorio
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# 2. copy the .opencode directory
+# 2. copia el directorio .opencode
 cp -r opencode-moa/.opencode/ your-project/
 
-# 3. manually merge opencode.json (do NOT replace directly!)
-# open opencode.json, merge MoA's permission.task and agent sections in
-# keep your existing provider and model config
+# 3. fusiona manualmente opencode.json (¡NO reemplaces directamente!)
+# abre opencode.json, fusiona las secciones permission.task y agent de MoA
+# mantén tu configuración existente de proveedor y modelo
 ```
 
-> ⚠️ **No** uses `cat >>` para añadir contenido: corrompe el formato JSON. **No** reemplaces directamente el archivo: perderás tu API key.
+> ⚠️ **No** uses `cat >>` para agregar — corrompe el formato JSON. **No** reemplaces directamente — perderás tu clave API.
 > 
-> Nota: este método copia tal cual el `.opencode/` incluido en el repo; sus agents tienen **nombres visibles en chino**. Si quieres agents con nombres en inglés (para poder usar `@english-name`), usa el Método 1.
+> Nota: este método copia el `.opencode/` empaquetado del repositorio tal cual — sus agentes tienen **nombres de visualización en chino**. Si deseas agentes con nombres en inglés (para que puedas `@nombre-en-ingles`), utiliza el Método 1 en su lugar.
 
-### ¿Cómo saber si el despliegue funcionó?
+### ¿Cómo saber si el despliegue fue exitoso?
 
-1. Después de reiniciar OpenCode, pulsa `Tab` para recorrer los agents (en el cliente desktop de Windows también funciona `Ctrl+.`) y verifica que aparece “concierge-router”
-2. Escribe `@tool-handler` y confirma que responde
-3. Ejecuta el script de verificación: `pwsh .opencode/tests/T0-static-verify.ps1` (generado por el Block 5.5 manual durante el despliegue); se espera all PASS (FAIL=0; con key de nivel sistema, WARN también cuenta como pass)
+1. Después de reiniciar OpenCode, presiona `Tab` para ciclar entre agentes (cliente de escritorio de Windows: `Ctrl+.` también funciona) y ver "concierge-router"
+2. Escribe `@tool-handler` y responde
+3. Ejecuta el script de verificación: `pwsh .opencode/tests/T0-static-verify.ps1` (generado por el Bloque manual 5.5 durante el despliegue), se espera que todo sea PASS (FAIL=0; con clave a nivel de sistema, WARN también cuenta como pass)
 
-### Reversión con un clic
+### Retroceso con un clic
 
 ```bash
 rm -rf your-project/.opencode/
-# manually restore your opencode.json (the install script auto-backs up a .bak file)
+# restaura manualmente tu opencode.json (el script de instalación hace una copia de seguridad automática de un archivo .bak)
 ```
 
 ---
 
-## ¿Cómo se usa?
 
-**No tienes que aprender nada: simplemente habla.** El concierge-router juzga automáticamente la complejidad de la tarea y despacha la cadena de agents correspondiente.
+## ¿Cómo usar?
 
-| What you say                         | What the concierge-router does                                   | Agents used                         |
-| ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------- |
-| "rename this variable"               | judged as a simple task                                          | swift (Flash)                       |
-| "write a user auth module"           | tool layer gathers → 3 mid-tier parallel → fuse                  | tool-handler + mid-tier trio + fuse |
-| "design a microservice architecture" | tool layer gathers → 3 flagship parallel → fuse → implement → QA | full-chain 6 agents                 |
-| "restore this screenshot's UI"       | 3 frontend experts parallel → lead picks best                    | frontend quartet                    |
-| message with screenshot              | vision-translator converts to text → normal routing              | vision-translator                   |
+**No aprendas nada — solo habla.** El concierge-router juzga automáticamente la complejidad de la tarea y despacha la cadena de agentes correspondiente.
 
-**Llamadas directas con `@`:**
+| Lo que dices                          | Lo que hace el concierge-router                                   | Agentes utilizados                     |
+| -------------------------------------- | ---------------------------------------------------------------- | -------------------------------------- |
+| "renombra esta variable"               | juzgado como una tarea simple                                     | swift (Flash)                          |
+| "escribe un módulo de autenticación de usuario" | la capa de herramientas reúne → 3 paralelos de nivel medio → fusiona | tool-handler + trío de nivel medio + fuse |
+| "diseña una arquitectura de microservicios" | la capa de herramientas reúne → 3 paralelos insignia → fusiona → implementa → QA | cadena completa de 6 agentes            |
+| "restaura la interfaz de usuario de esta captura de pantalla" | 3 expertos en frontend en paralelo → el líder elige el mejor      | cuarteto de frontend                   |
+| mensaje con captura de pantalla         | el traductor de visión convierte a texto → enrutamiento normal    | traductor de visión                    |
+| mensaje con registro de errores / diagrama / contenido complejo | el traductor de visión descompone el contenido → enrutamiento normal | traductor de visión (rol de respaldo)  |
+
+**Llamadas directas `@`:**
 
 ```
-@swift help me write a hello world
-@tool-handler search all TODOs in the project
-@flag-arch design a message queue solution
+@swift ayúdame a escribir un hello world
+@tool-handler busca todos los TODOs en el proyecto
+@flag-arch diseña una solución de cola de mensajes
 ```
 
-**Commands de un clic:**
+**Comandos de un clic:**
 
-| Command         | Scenario                                       |
+| Comando         | Escenario                                      |
 | --------------- | ---------------------------------------------- |
-| `/moa-quick`    | simple task, translation, config change        |
-| `/moa-medium`   | function module, bug fix, single-file refactor |
-| `/moa-flagship` | system architecture, large refactor            |
-| `/moa-frontend` | UI restore, CSS, screenshot fix                |
-| `/moa-describe` | screenshot/image to text                       |
+| `/moa-quick`    | tarea simple, traducción, cambio de configuración |
+| `/moa-medium`   | módulo de función, corrección de errores, refactorización de un solo archivo |
+| `/moa-flagship` | arquitectura del sistema, gran refactorización  |
+| `/moa-frontend` | restauración de UI, CSS, corrección de captura de pantalla |
+| `/moa-describe` | captura de pantalla/imágen a texto            |
 
 ---
 
@@ -198,207 +209,308 @@ rm -rf your-project/.opencode/
                                  │
                 ┌────────────────┼─────────────────┐
                 ▼                ▼                 ▼
-             Tool layer     Opinion layer       Fusion layer
-             Flash + MiMo   3 parallel opinions take the best
-             (~80% calls)   (~18% calls)        (~2% calls)
+             Capa de herramientas Capa de opinión   Capa de fusión
+             Flash + MiMo       3 opiniones paralelas toman lo mejor
+             (~80% llamadas)    (~18% llamadas)     (~2% llamadas)
 ```
 
-**Tool layer** (Flash + MiMo) — lee código, busca archivos y convierte capturas a texto. Barato y rápido; puedes llamarlo con libertad.
+**Capa de herramientas** (Flash + MiMo) — leer código, buscar archivos, captura de pantalla a texto. Barato y rápido, llama libremente.
 
-**Opinion layer** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — genera planes desde distintas perspectivas. Tres opiniones forman naturalmente una estructura de “consenso + divergencia”.
+**Capa de opinión** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — planes desde diferentes perspectivas. Tres opiniones forman naturalmente una estructura de "consenso + divergencia".
 
-**Fusion layer** (Kimi / Qwen-Max / GLM / DeepSeek Pro fallback) — conserva el consenso, toma lo mejor en las divergencias y usa DeepSeek V4 Pro como fallback si la fusión falla.
+**Capa de fusión** (Kimi K3 / Qwen-Max / GLM / DeepSeek Pro fallback) — mantener el consenso, tomar lo mejor en la divergencia, con un respaldo a DeepSeek V4 Pro si la fusión falla. La fusión insignia ahora se ejecuta en **Kimi K3** (2.8T params, 1M contexto, modelo de frontera de primer nivel) — empujando el techo de calidad de MoA al frente del grupo.
 
-> ⚠️ Las proporciones de volumen de llamadas (~80% / ~18% / ~2%) son **objetivos de diseño**, no estadísticas medidas. Las proporciones reales varían según la complejidad de la tarea.
+> ⚠️ Las proporciones de volumen de llamadas a continuación (~80% / ~18% / ~2%) son **objetivos de diseño**, no estadísticas medidas. Las proporciones reales varían según la complejidad de la tarea.
 
 ---
 
-## 22 Agents
+
+## 22 Agentes
+
+> El nombre en inglés es el rol lógico; el chino entre paréntesis es el **nombre de archivo exacto** bajo `.opencode/agents/` — los llamas con `@` (por ejemplo, `@门童路由员`).
 
 ```
 concierge-router (门童路由员, Flash)
  │
- ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler      (工具人,      Flash ) read code, search files [+ material self-check]
- │   tool-handler-mimo (工具人-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
- │   swift             (闪电侠,      Flash ) simple tasks in one shot
- │   vision-translator (视觉翻译官,  MiMo  ) screenshot/UI/error image to text
+ ├── Capa de herramientas ─────────────────────────────────────────────
+ │   tool-handler      (工具人, Flash    ) leer código, buscar archivos [+ auto-revisión de material]
+ │   tool-handler-mimo (工具人-mimo, MiMo) lectura de archivos confiable (respaldo + paralelo) [oculto]
+ │   swift             (闪电侠, Flash    ) tareas simples de un solo golpe
+ │   vision-translator (视觉翻译官, MiMo ) captura de pantalla/UI→texto; registros/diagramas/documentos→decomposición
  │
- ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
- ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
+ ├── extractor-residual  (残差提取者,  Flash     ) analizar divergencia entre planes
+ ├── evaluador-confianza (置信度评估者, DS Pro    ) evaluar la confianza del resultado de la fusión
  │
- ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
- │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
- │   mid-coder    (中级·码农, Flash       ) pragmatic view
- │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
+ ├── Capa de opinión de nivel medio ─────────────────────────────────────────────
+ │   mid-eng      (中级·工程, Kimi K2.6 ) vista de ingeniería
+ │   mid-creative (中级·创意, Qwen3.7 Plus) vista creativa
+ │   mid-coder    (中级·码农, Flash     ) vista pragmática
+ │   mid-fuse     (中级·融合, Kimi      ) fusionar tres planes [max_tokens: 16384]
  │
- ├── Flagship opinion layer ─────────────────────────────────────────────
- │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM 5.2   ) structured planning
- │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
- │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
- │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
- │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
+ ├── Capa de opinión insignia ─────────────────────────────────────────────
+ │   flag-arch (旗舰·架构, Qwen3.7 Max ) arquitectura de alto nivel
+ │   flag-plan (旗舰·规划, GLM 5.2     ) planificación estructurada
+ │   flag-eng  (旗舰·工程, MiniMax M3  ) implementación a gran escala
+ │   flag-fuse (旗舰·融合, Kimi K3     ) fusionar tres planes de arquitectura [max_tokens: 16384]
+ │   flag-impl (旗舰·实现, Flash       ) implementar por plan fusionado [oculto]
+ │   flag-qa   (旗舰·质检, DeepSeek Pro) revisión de planes + aceptación de código [max_tokens: 16384]
  │
- └── Frontend opinion layer ─────────────────────────────────────────────
-     fe-restore (前端·还原, MiMo        ) pixel-perfect UI restore
-     fe-logic   (前端·逻辑, Qwen3.7 Plus) component architecture & state mgmt
-     fe-motion  (前端·动效, MiMo-Pro     ) interaction & motion
-     fe-lead    (前端·总工, GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
- ```
-
-Fallback agent (not in the router chain above, called only when fusion fails):
+ └── Capa de opinión de frontend ─────────────────────────────────────────────
+     fe-restore (前端·还原, MiMo       ) restauración de UI pixel-perfect
+     fe-logic   (前端·逻辑, Qwen3.7 Plus) arquitectura de componentes y gestión de estado
+     fe-motion  (前端·动效, MiMo-Pro   ) interacción y movimiento
+     fe-lead    (前端·总工, GLM-5.2    ) elegir lo mejor de tres planes de frontend [max_tokens: 16384]
 ```
-fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, used when flag-fuse / mid-fuse / fe-lead fail
- ```
+
+Agente de respaldo (no en la cadena de enrutador anterior, llamado solo cuando la fusión falla):
+
+```
+fallback (融合·保底, DeepSeek V4 Pro) — misma fusión mejorada por residual, utilizada cuando flag-fuse / mid-fuse / fe-lead fallan
+```
 
 ---
+
 
 ## Diseño de tolerancia a fallos
 
-### Cadena de fallback de la capa de herramientas
+### Cadena de respaldo de la capa de herramientas
 
-Si la tool layer falla, no se queda bloqueada: hace downgrade automático:
-
-```
-tool-handler (Flash) failed → immediate retry once
-  → retry succeeds → return normally
-  → retry fails → tool-handler-mimo (MiMo) failed → immediate retry once
-    → retry succeeds → return normally
-    → retry fails → ask user:
-      A. wait a few minutes and retry
-      B. skip tool layer, call opinion layer directly (higher cost)
-      C. switch to free model
-```
-
-> La mayoría de errores del provider (502/503/timeout) son transitorios; un reintento rápido suele funcionar.
-
-### Fallback de la capa de fusión
-
-Si el agent principal de fusión falla (STUCK / ERROR_PROVIDER / timeout / resultado vacío), concierge-router cae automáticamente a `@融合·保底` (DeepSeek V4 Pro):
+La falla de la capa de herramientas no congela — se degrada automáticamente:
 
 ```
-flag-fuse (旗舰·融合, Kimi K3) failed
-  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
-mid-fuse (中级·融合, Kimi) failed
-  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
-fe-lead (前端·总工, GLM-5.2) failed
-  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
+tool-handler (Flash) falló → reintento inmediato una vez
+  → reintento exitoso → retorno normal
+  → reintento fallido → tool-handler-mimo (MiMo) falló → reintento inmediato una vez
+    → reintento exitoso → retorno normal
+    → reintento fallido → preguntar al usuario:
+      A. esperar unos minutos y reintentar
+      B. omitir la capa de herramientas, llamar a la capa de opinión directamente (costo más alto)
+      C. cambiar a modelo gratuito
 ```
 
-El agent de fallback usa el mismo proceso de fusión mejorado con residuales.
+> La mayoría de los errores del proveedor (502/503/timeout) son transitorios; un reintento rápido generalmente tiene éxito.
+
+### Respaldo de la capa de fusión
+
+Si el agente de fusión principal falla (STUCK / ERROR_PROVIDER / timeout / resultado vacío), el concierge-router automáticamente retrocede a `@融合·保底` (DeepSeek V4 Pro, respaldo):
+
+```
+flag-fuse (旗舰·融合, Kimi K3) falló
+  → tarea(@融合·保底) (DeepSeek V4 Pro) → salida de resultado de respaldo
+mid-fuse (中级·融合, Kimi) falló
+  → tarea(@融合·保底) (DeepSeek V4 Pro) → salida de resultado de respaldo
+fe-lead (前端·总工, GLM-5.2) falló
+  → tarea(@融合·保底) (DeepSeek V4 Pro) → salida de resultado de respaldo
+```
+
+El agente de respaldo utiliza el mismo proceso de fusión mejorada por residual.
+
+### Tolerancia a fallos parciales de la capa de opinión
+
+Los agentes de opinión individuales (arquitectura/planificación/ingeniería, frontend-restaurar/lógica/movimiento, ingeniería/creativa/codificación de nivel medio) pueden devolver resultados vacíos o agotar el tiempo de forma independiente. El sistema maneja esto de manera elegante:
+
+```
+3 agentes de opinión paralelos despachados
+  → cualquier agente devuelve resultado vacío → reintentar ese agente una vez
+    → reintento exitoso → continuar normalmente
+    → reintento fallido → marcar como "degradado" y proceder con N/3 entradas
+      → 残差提取者 trabaja solo con las entradas disponibles
+      → 旗舰·融合 aplica reglas de fusión degradadas
+      → la salida lleva la etiqueta "[Parcial] N/3 entradas"
+      → la puntuación de confianza se ajusta hacia abajo
+```
+
+Reglas de fusión degradadas (N < 3):
+- El denominador de cobertura de consenso es N, no 3
+- Las perspectivas faltantes se etiquetan como `[Faltante: nombre de perspectiva]`
+- La cobertura de consenso < 50% activa la advertencia de "fusión degradada de baja confianza"
+- La fusión de fuente única (N=1) aplica un factor de penalización de confianza de 0.7
+
+> Esto evita que la tubería se detenga (STUCK) cuando un agente de opinión falla — una queja común de los usuarios.
+
+### Condiciones previas declarativas de los agentes
+
+La activación de los agentes está gobernada por metadatos declarativos de `precondition`, no por reglas de enrutamiento codificadas. Cada agente declara cuándo debe estar activo:
+
+| Agente | condiciones previas |
+|-------|---------------|
+| 闪电侠 | siempre |
+| 工具人 | requiere contexto de código |
+| 视觉翻译官 | primaria: `screenshot`; respaldo: `error_log OR diagram OR long_document OR ambiguous_intent` |
+| 中级·工程 | requiere complejidad de ingeniería |
+| 中级·创意 | requiere complejidad creativa |
+| 中级·码农 | requiere complejidad de implementación |
+| 旗舰·架构/规划/工程 | requiere complejidad de diseño del sistema |
+| 前端·还原/逻辑/动效 | requiere tarea de frontend |
+| 融合·保底 | activado cuando la capa de fusión falla o la capa de opinión devuelve resultados parciales |
+
+La activación de condiciones sigue una lógica de cortocircuito: condiciones previas cumplidas → activar; ninguna cumplida → preguntar al usuario por confirmación. Esto reemplaza las reglas de activación codificadas (como "captura de pantalla disponible → @vision-translator") con condiciones previas declaradas por el agente, auto-documentadas.
+
+### Visualización de etapas de la tubería
+
+Cada decisión de enrutamiento produce un identificador de etapa para que los usuarios puedan rastrear el progreso de la tubería sin aprender los números de pasos internos:
+
+```
+[Etapa: Capa de Herramientas] → [Etapa: Capa de Opinión] → [Etapa: Capa de Fusión] → [Etapa: Capa de Implementación]
+```
+
+Mapeo de etapa a fase:
+- `Capa de Herramientas` — fase de recolección de material
+- `Capa de Opinión` — fase de diseño de planes paralelos (nivel medio / insignia / frontend)
+- `Capa de Fusión` — fase de fusión y verificación de planes
+- `Capa de Implementación` — fase de implementación y aceptación de código
+
+### Informe de progreso unificado
+
+Tanto los caminos de éxito como de fallo siguen el mismo formato de informe, nunca exponiendo los nombres internos de los agentes:
+
+```
+[Tubería] modo=<lite|balanced|strict>  etapa=<Capa de Herramientas|Capa de Opinión|Capa de Fusión|Capa de Implementación>  estado=<idle|in_progress|complete|degraded|stuck>
+  razón: <por qué esta etapa>
+  ruta: <Capa de Herramientas|Cadena de nivel medio|Cadena insignia|Cadena de frontend>
+  respaldo: <estrategia de recuperación>
+```
+
+Indicadores de estado:
+- `in_progress` — ejecutando la etapa actual
+- `complete` — etapa finalizada con éxito
+- `degraded` — funcionando con entradas parciales, menor confianza
+- `stuck` — todos los caminos de recuperación agotados, intervención del usuario necesaria
+
+### 闪电侠 Atajo Paralelo
+
+Cuando la tubería principal se está ejecutando, 闪电侠 puede ser despachado en paralelo para subtareas simples independientes:
+
+```
+Tubería principal: Capa de Herramientas → Capa de Opinión → Capa de Fusión → Capa de Implementación
+Carril paralelo: 闪电侠 (siempre listo, corre junto a la tubería principal)
+```
+
+Condiciones de activación (cualquiera de las siguientes):
+- La instrucción del usuario solicita explícitamente trabajo paralelo ("hacer X simultáneamente", "también revisar rápidamente Y")
+- Surge una subtarea simple durante la ejecución de la tubería principal (por ejemplo, buscar TODOs mientras se diseñan los planes de arquitectura)
+- El usuario llama directamente a @闪电侠
+
+Limitaciones de alcance:
+- ✅ Tareas independientes sin dependencia de la salida de la tubería principal
+- ✅ Operaciones simples: búsqueda de archivos, grep, consulta de configuración, formateo
+- ❌ Tareas que producen entrada para la tubería principal
+- ❌ Tareas de fusión de opiniones (deben permanecer en serie)
+- ❌ Tareas de implementación y QA (deben permanecer en serie)
+
+Si 闪电侠 termina antes que la tubería principal, los resultados se retienen y se devuelven juntos al final. Si la tubería principal termina primero, los resultados de 闪电侠 se devuelven inmediatamente. La falla de 闪电侠 no afecta la ejecución de la tubería principal.
 
 ### Aislamiento de permisos MCP
 
-Los agents de la opinion layer tienen prohibido leer código directamente (`read: deny` + `bash: deny`), lo que evita que eludan la tool layer para obtener material por su cuenta:
+Se prohíbe a los agentes de la capa de opinión leer código directamente (a través de `read: deny` + `bash: deny`), evitando que eludan la capa de herramientas para obtener material por sí mismos:
 
-- Tool layer: puede leer código y buscar archivos (tiene acceso `read`/`bash`)
-- Opinion layer: `read: deny` + `bash: deny`; solo puede planificar basándose en material de la tool layer
-- Fusion layer: misma restricción; solo puede fusionar basándose en las tres opiniones
+- Capa de herramientas: puede leer código, buscar archivos (tiene acceso `read`/`bash`)
+- Capa de opinión: `read: deny` + `bash: deny`, solo puede planear basado en material de la capa de herramientas
+- Capa de fusión: misma restricción, solo puede fusionar basado en las tres opiniones
 
-> Nota: este proyecto no configura servidores MCP. El término “MCP permission isolation” se refiere a restricciones de herramientas a nivel de agent (`read: deny` / `bash: deny`), no a aislamiento a nivel de servidor MCP.
+> Nota: Este proyecto no configura ningún servidor MCP. El término "aislamiento de permisos MCP" se refiere a las restricciones de herramientas a nivel de agente (`read: deny` / `bash: deny`), no al aislamiento a nivel de servidor MCP.
 
-### Fallback sin material
+### Respaldo sin material
 
-Cuando se llama a la opinion layer pero no hay material (la tool layer falló por completo), pregunta al usuario:
+Cuando se llama a la capa de opinión pero no tiene material (la capa de herramientas falló completamente), pregunta al usuario:
 
-- Elegir “give plan directly” → razonamiento lógico puro basado en la descripción del requisito (sin leer código)
-- Elegir “wait for tool layer” → salida WAITING y reintento cuando la tool layer se recupere
+- Elegir "dar plan directamente" → razonamiento lógico puro basado en la descripción del requisito (sin lectura de código)
+- Elegir "esperar por la capa de herramientas" → salida ESPERANDO, reintentar después de que la capa de herramientas se recupere
 
 ### Clasificación de errores
 
-La tool layer emite una categoría de error clara al fallar, en lugar de reintentar a ciegas:
+La capa de herramientas produce una categoría de error clara en caso de fallo, en lugar de reintentar ciegamente:
 
-- `ERROR_PROVIDER` — server 502/503/timeout
-- `ERROR_AUTH` — auth failure
-- `ERROR_UNKNOWN` — other errors
+- `ERROR_PROVIDER` — servidor 502/503/timeout
+- `ERROR_AUTH` — fallo de autenticación
+- `ERROR_UNKNOWN` — otros errores
 
 ---
 
-## Coste
+## Costo
 
 ### Por qué se ahorra ~90%
 
-MoA se estima con una mezcla ponderada por volumen de llamadas: ~80% tool-layer Flash, ~18% mid-tier, ~2% flagship. El precio unitario efectivo de salida se estima con los precios por unidad de la tabla de costes:
+MoA cobra según una mezcla ponderada por volumen de llamadas: ~80% capa de herramienta Flash, ~18% de gama media, ~2% insignia. Estime el precio unitario de salida efectivo con los precios por unidad en la tabla de costos de esta sección:
 
-> **Importante**: Las proporciones 80/18/2 son una **distribución esperada del volumen de llamadas diseñada por la arquitectura**, no proporciones de coste medidas. El uso real depende del tipo y complejidad de las tareas.
+> **Importante**: Las proporciones 80/18/2 son **distribuciones de volumen de llamadas esperadas diseñadas por la arquitectura**, no proporciones de costo medidas. El uso real depende de los tipos de tareas y la complejidad.
 
-| Layer      | Share | Output unit price /1M                                                                                | Weighted |
-| ---------- | ----- | ---------------------------------------------------------------------------------------------------- | -------- |
-| Tool layer | 80%   | $0.28                                                                                                | $0.224   |
-| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg)       | $0.378   |
-| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse)                                         | $0.12    |
+| Capa        | Participación | Precio unitario de salida /1M                                                                            | Ponderado |
+| ----------- | ------------- | ------------------------------------------------------------------------------------------------------- | --------- |
+| Capa de herramienta | 80%         | $0.28                                                                                                   | $0.224   |
+| Gama media  | 18%           | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / **Kimi K2.7 $4.00 promedio de fusión media**) | $0.378   |
+| Insignia    | 2%            | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + **Kimi K3 $15.00 fusión insignia**)                                   | $0.12    |
 
-Precio unitario efectivo combinado ≈ **$0.72 / 1M**. Comparado con “all-flagship GLM $7.50” → alrededor del 10% → **~90% de ahorro**; comparado con “all-mid-tier DeepSeek Pro $3.48” → alrededor del 21% → **~79% de ahorro**. La afirmación “save 90%” corresponde al valor real frente al baseline flagship.
+Precio unitario de salida efectivo combinado ≈ **$0.72 / 1M**. Comparado con "GLM todo-insignia $7.50" → alrededor del 10% → **~90% ahorrado**; comparado con "DeepSeek Pro todo-gama media $3.48" → alrededor del 21% → **~79% ahorrado**. La afirmación de "ahorrar 90%" es el valor real contra la línea base de insignia.
 
 ### Plan OpenCode Go
 
-MoA se basa en el plan [OpenCode Go](https://opencode.ai/docs/zh-cn/go/), **primer mes $5 y después $10/mes**.
+MoA se basa en el plan [OpenCode Go](https://opencode.ai/docs/zh-cn/go/), **primer mes $5, luego $10/mes**.
 
 **Límites de uso:**
 
-| Time window   | Quota |
-| ------------- | ----- |
-| Every 5 hours | $12   |
-| Weekly        | $30   |
-| Monthly       | $60   |
+| Ventana de tiempo | Cuota |
+| ----------------- | ----- |
+| Cada 5 horas     | $12   |
+| Semanal           | $30   |
+| Mensual           | $60   |
 
-Los límites se definen por valor en dólares. Los modelos baratos (Flash) pueden usarse más a menudo; los caros (GLM), menos.
+Los límites se definen por valor en dólares. Los modelos baratos (Flash) pueden usarse con más frecuencia, los modelos caros (GLM) con menos frecuencia.
 
 ### Cuota mensual por capa
 
-| Layer      | Model           | Unit price (in/out per 1M) | Monthly quota | Call frequency      |
-| ---------- | --------------- | -------------------------- | ------------- | ------------------- |
-| Tool layer | Flash           | $0.14 / $0.28              | 158,150       | ~80%                |
-| Tool layer | MiMo-V2.5       | $0.14 / $0.28              | 150,400       | (use freely)        |
-| Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%                |
-| Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
-| Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
-| Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Kimi K3         | $3.00 / $15.00             | 280           | ~2% (flagship fuse) |
-| Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
+| Capa        | Modelo           | Precio unitario (entrada/salida por 1M) | Cuota mensual | Frecuencia de llamadas      |
+| ----------- | ---------------- | --------------------------------------- | ------------- | --------------------------- |
+| Capa de herramienta | Flash           | $0.14 / $0.28                          | 158,150       | ~80%                        |
+| Capa de herramienta | MiMo-V2.5       | $0.14 / $0.28                          | 150,400       | (usar libremente)          |
+| Opinión     | MiniMax M3      | $0.30 / $1.20                          | 16,000        | ~18%                        |
+| Opinión     | DeepSeek V4 Pro | $1.74 / $3.48                          | 17,150        |                             |
+| Opinión     | Qwen3.7 Plus    | $0.40 / $1.60                          | 21,600        |                             |
+| Fusión      | Kimi K2.7 Code  | $0.95 / $4.00                          | 9,250         | ~2% (fusión gama media)    |
+| Fusión      | Kimi K3         | $3.00 / $15.00                         | 280           | ~2% (fusión insignia)      |
+| Fusión      | GLM-5.2         | $1.40 / $4.40                          | 4,300         | ~2% (liderazgo frontend)   |
 
-> Todos los model IDs son solo declaraciones; puedes sustituirlos por cualquier modelo que prefieras.
+> Todos los IDs de modelo son solo declaraciones; reemplace con cualquier modelo que prefiera.
 
-![OpenCode Go quota per 5h](.github/quota-chart-en.svg)
+![Cuota OpenCode Go por 5h](.github/quota-chart-en.svg)
 
 ### Después de alcanzar el límite
 
-- **Free model fallback** — cuando Go alcanza el límite, puedes seguir usando modelos gratuitos
-- **Zen balance fallback** — activa “use balance” en la consola; tras el límite de Go, se usará automáticamente el saldo Zen
+- **Retroceso a modelo gratuito** — después de que Go alcance el límite, puede seguir utilizando modelos gratuitos
+- **Retroceso a saldo Zen** — habilite "usar saldo" en la consola; después del límite de Go, uso automático del saldo Zen
 
 ### Modelos gratuitos
 
-OpenCode Zen ofrece modelos gratuitos como último recurso:
+OpenCode Zen proporciona modelos gratuitos como último recurso:
 
-| Model                  | Trait                           |
-| ---------------------- | ------------------------------- |
-| DeepSeek V4 Flash Free | fast, but limited context       |
-| MiMo-V2.5 Free         | better quality, but may be slow |
-| North Mini Code Free   | provided by Cohere              |
-| Nemotron 3 Ultra Free  | NVIDIA free endpoint            |
+| Modelo                  | Característica                     |
+| ---------------------- | ---------------------------------- |
+| DeepSeek V4 Flash Free | rápido, pero contexto limitado     |
+| MiMo-V2.5 Free         | mejor calidad, pero puede ser lento|
+| North Mini Code Free   | proporcionado por Cohere          |
+| Nemotron 3 Ultra Free  | punto final gratuito de NVIDIA     |
 
-> ⚠️ Límites de los modelos gratuitos: ventana de contexto menor, respuestas posiblemente más lentas, los datos pueden usarse para entrenamiento y son gratuitos por tiempo limitado.
+> ⚠️ Límites de modelos gratuitos: ventana de contexto más pequeña, posiblemente respuesta más lenta, los datos pueden ser utilizados para entrenamiento, gratis por un tiempo limitado.
 
 ---
 
+
 ## Seguridad
 
-| Protection                 | Effect                                                                                                                                                                                        |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Global catch-all           | undeclared tool call → popup confirm                                                                                                                                                          |
-| Agent permission isolation | each agent can only use allowed tools                                                                                                                                                         |
-| MCP permission isolation   | opinion layer forbidden from reading code (read: deny / bash: deny), prevents bypassing tool layer (project has no MCP server configured; "MCP" here refers to agent-level tool restrictions) |
-| Task whitelist             | concierge-router can only call declared agents                                                                                                                                                |
-| Fallback chain             | tool layer fails → ask user → wait/skip/free model                                                                                                                                            |
-| One-click rollback         | delete `.opencode/` to restore                                                                                                                                                                |
+| Protección                 | Efecto                                                                                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Captura global             | llamada de herramienta no declarada → confirmación emergente                                                                                                                                  |
+| Aislamiento de permisos de agente | cada agente solo puede usar herramientas permitidas                                                                                                                                         |
+| Aislamiento de permisos MCP   | capa de opinión prohibida de leer código (leer: denegar / bash: denegar), previene el eludir la capa de herramienta (el proyecto no tiene servidor MCP configurado; "MCP" aquí se refiere a restricciones de herramientas a nivel de agente) |
+| Lista blanca de tareas     | el conserje-enrutador solo puede llamar a agentes declarados                                                                                                                                  |
+| Cadena de retroceso        | falla de la capa de herramienta → preguntar al usuario → esperar/saltar/modelo gratuito                                                                                                         |
+| Retroceso de un clic       | eliminar `.opencode/` para restaurar                                                                                                                                                          |
 
 ---
 
 ## Modelos locales
 
-Permite mezclar modelos locales como Ollama / LM Studio:
+Soporta la mezcla de modelos locales como Ollama / LM Studio:
 
 ```yaml
 # .opencode/agents/mid-coder.md
@@ -409,37 +521,39 @@ Consulta el Apéndice A de [`docs/opencode-moa.md`](docs/opencode-moa.md).
 
 ---
 
+
 ## Verificación
 
-El repo incluye tres scripts de comprobación en `.opencode/tests/`. La Capa 0 es automática; las Capas 1–2 son listas guía que sigues dentro de OpenCode.
+El repositorio incluye tres scripts de verificación bajo `.opencode/tests/`. La Capa 0 es completamente automática; las Capas 1–2 son listas de verificación guiadas que se recorren dentro de OpenCode.
 
 ```bash
-# Capa 0 — comprobación estática (automática, 0 token)
+# Capa 0 — verificación estática (automática, 0 token)
 pwsh .opencode/tests/T0-static-verify.ps1
-# expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
+# esperado: todo PASS / FAIL=0 (con clave a nivel de sistema, WARN también cuenta como pass)
 
-# ejecuta las tres capas de una vez
+# ejecutar las tres capas a la vez
 pwsh .opencode/tests/run-all.ps1
 ```
 
-| Script                    | Capa | Qué hace                                                                                | Modo                 |
-| ------------------------- | ---- | --------------------------------------------------------------------------------------- | -------------------- |
-| `T0-static-verify.ps1`    | 0    | Comprueba estructura de archivos, conteo de agent/command/skill, anclas del README, ruta de la key | Automático           |
-| `T1-behavioral-guide.ps1` | 1    | Imprime una lista paso a paso para comportamiento de routing / opinion / fusion          | Manual (en OpenCode) |
-| `T2-moa-smoke-guide.ps1`  | 2    | Imprime una lista de smoke-test para los comandos `/moa-*` end-to-end                   | Manual (en OpenCode) |
-| `run-all.ps1`             | 0–2  | Ejecuta T0 y luego imprime las listas guía T1/T2                                        | Mixto                |
+| Script                    | Capa | Qué hace                                                                                 | Modo                 |
+| ------------------------- | ----- | ---------------------------------------------------------------------------------------- | -------------------- |
+| `T0-static-verify.ps1`    | 0     | Verifica la estructura de archivos, conteos de agente/comando/habilidad, anclajes de README, corrección de rutas clave | Automático           |
+| `T1-behavioral-guide.ps1` | 1     | Imprime una lista de verificación paso a paso para el comportamiento de enrutamiento / opinión / fusión | Manual (en OpenCode) |
+| `T2-moa-smoke-guide.ps1`  | 2     | Imprime una lista de verificación de prueba de humo para comandos `/moa-*` de extremo a extremo | Manual (en OpenCode) |
+| `run-all.ps1`             | 0–2   | Ejecuta T0 y luego imprime las listas de verificación guiadas T1/T2                      | Mixto                |
 
 ---
 
-## FAQ
+
+## Preguntas frecuentes
 
 ### Instalación
 
-**Q: Ya tengo un opencode.json, ¿se sobrescribirá?**
-A: No. El script de instalación solo fusiona la configuración `permission`, `agent`, `default_agent` de MoA y conserva tus `provider`, `model`, etc. El archivo original se guarda automáticamente como `.bak.timestamp`.
+**P: Ya tengo un opencode.json, ¿se sobrescribirá?**  
+R: No. El script de instalación solo fusiona la configuración de `permission`, `agent`, `default_agent` de MoA, manteniendo tu `provider`, `model`, etc. El archivo original se respalda automáticamente como `.bak.timestamp`.
 
-**Q: Windows no tiene el comando `cp`, ¿qué hago?**
-A: Usa `Copy-Item` o `xcopy`:
+**P: Windows no tiene el comando `cp`, ¿qué hago?**  
+R: Usa `Copy-Item` o `xcopy`:
 
 ```powershell
 # PowerShell
@@ -448,70 +562,74 @@ Copy-Item -Recurse -Force opencode-moa\.opencode .\.opencode
 xcopy opencode-moa\.opencode .\.opencode /E /I /Y
 ```
 
-**Q: ¿Puedo instalar sin pwsh/jq?**
-A: Sí. Usa el Método 1 (despliegue automático con IA) o el Método 3 (merge manual de configuración).
+**P: ¿Puedo instalar sin pwsh/jq?**  
+R: Sí. Usa el Método 1 (despliegue automático de IA) o el Método 3 (fusión de configuración manual).
 
-**Q: ¿Cómo instalo en la app de escritorio?**
-A: El Método 1 es el más cómodo: arrastra `docs/opencode-moa.en.md` al cuadro de chat y deja que la IA haga el despliegue automático. Los Métodos 2/3 requieren usar antes una terminal (CMD/PowerShell/Terminal).
+**P: ¿Cómo instalo en la aplicación de escritorio?**  
+R: El Método 1 es el más conveniente: arrastra `docs/opencode-moa.en.md` a la caja de chat y deja que la IA lo despliegue automáticamente. Los Métodos 2/3 requieren operar primero en un terminal (CMD/PowerShell/Terminal).
 
 ### Uso
 
-**Q: ¿No ves “concierge-router”?**
-A: Revisa las tres comprobaciones en “Despliegue en 30 segundos → ¿Cómo saber si el despliegue funcionó?”: `opencode.json` en la raíz del proyecto, 22 archivos .md en `.opencode/agents/`, y cambiar con `Tab` tras reiniciar (en Windows desktop también funciona `Ctrl+.`).
+**P: ¿No puedo ver "concierge-router"?**  
+R: Consulta las tres verificaciones bajo "despliegue de 30 segundos → Cómo saber si el despliegue fue exitoso": `opencode.json` en la raíz del proyecto, 22 .md bajo `.opencode/agents/`, cambia con `Tab` después de reiniciar (cliente de escritorio de Windows: `Ctrl+.` también funciona).
 
-**Q: `@tool-handler` no responde?**
-A: Confirma que `.opencode/agents/tool-handler.md` existe y que el formato del frontmatter es correcto.
+**P: `@tool-handler` sin respuesta?**  
+R: Confirma que `.opencode/agents/tool-handler.md` existe y que el formato del frontmatter es correcto.
 
-**Q: Error “model not found”?**
-A: El formato de Model ID debe ser `provider/model-id` (por ejemplo `opencode-go/kimi-k2.7-code`). Registra el provider correspondiente en el archivo de configuración (system-level `~/.config/opencode/opencode.json` o `opencode.json` del proyecto), y luego usa `/models` dentro del TUI para ver los modelos disponibles.
+**P: ¿Error "modelo no encontrado"?**  
+R: El formato del ID del modelo debe ser `provider/model-id` (por ejemplo, `opencode-go/kimi-k2.7-code`). Registra el proveedor correspondiente en el archivo de configuración (a nivel de sistema `~/.config/opencode/opencode.json` o proyecto `opencode.json`), luego usa `/models` dentro del TUI para ver los modelos disponibles.
 
-**Q: ¿Cómo vuelvo al agent build/plan original?**
-A: Pulsa `Tab` para cambiar (en Windows desktop también funciona `Ctrl+.`), o escribe `/build`, `/plan`. MoA no afecta a los agents integrados.
+**P: ¿Cómo vuelvo al agente de construcción/plan original?**  
+R: Presiona `Tab` para cambiar (cliente de escritorio de Windows: `Ctrl+.` también funciona), o escribe `/build`, `/plan`. MoA no afecta a los agentes integrados.
 
-**Q: Quiero usar mi propio modelo, no el plan Go.**
-A: Solo cambia el campo `model` del agent:
+**P: Quiero usar mi propio modelo, ¿no el plan Go?**  
+R: Solo cambia el campo `model` del agente:
 
 ```yaml
 # .opencode/agents/mid-eng.md
 model: opencode-go/glm-5.2
 ```
 
-**Q: ¿Puedo borrar el repo después de desplegar?**
-A: Sí. MoA ya está copiado en el directorio `.opencode/` de tu proyecto; el repo original puede eliminarse.
+**P: ¿Puedo eliminar el repositorio después de desplegar?**  
+R: Sí. MoA ya está copiado en el directorio `.opencode/` de tu proyecto; el repositorio original puede ser eliminado.
 
-**Q: ¿Cómo despliego en varios proyectos?**
-A: Despliega cada proyecto por separado. `.opencode/` es configuración a nivel de proyecto y no afecta a otros proyectos.
+**P: ¿Cómo despliego en múltiples proyectos?**  
+R: Despliega cada proyecto por separado. `.opencode/` es la configuración a nivel de proyecto y no afecta a otros proyectos.
 
-### Fallback
+### Respaldo
 
-**Q: Toda la tool layer está caída, ¿qué hago?**
-A: Consulta “Diseño de tolerancia a fallos → Cadena de fallback”: MoA pide elegir A. esperar unos minutos / B. saltar la tool layer y llamar directamente a la opinion layer (mayor coste).
+**P: ¿Toda la capa de herramientas está caída, qué hago ahora?**  
+R: Consulta "Diseño de tolerancia a fallos → Cadena de respaldo" arriba: MoA le pide al usuario elegir A. esperar unos minutos / B. omitir la capa de herramientas y llamar a la capa de opinión directamente (costo más alto).
 
-**Q: ¿Dónde están los modelos gratuitos?**
-A: Consulta “Coste → Modelos gratuitos”: usa `/models` para abrir la lista de modelos y elige uno con etiqueta “Free” (en Windows desktop también funciona `Ctrl+'`) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free, etc.). Los modelos gratuitos tienen contexto limitado, pueden ser más lentos y los datos pueden usarse para entrenamiento.
+**P: ¿Dónde están los modelos gratuitos?**  
+R: Consulta "Costo → Modelos gratuitos" arriba: usa `/models` para abrir la lista de modelos y elige uno etiquetado como "Gratis" (cliente de escritorio de Windows: `Ctrl+'` también funciona) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free, etc.). Los modelos gratuitos tienen contexto limitado, pueden ser más lentos y los datos pueden ser utilizados para entrenamiento.
+
+---
+
+## Herramientas para mantenedores (no necesarias para usuarios finales)
+
+Los siguientes archivos son para **mantenedores del repositorio**, no para desplegar MoA. Los usuarios finales pueden ignorarlos.
+
+| Archivo                     | Propósito                                                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deploy-sync.ps1`           | Solo para mantenedores — sincroniza el repositorio con GitHub y sube la habilidad `opencode-moa` a SkillHub. Soporta `-SkipGit` / `-SkipSkillHub` / `-DryRun`.   |
+| `scripts/hooks/pre-commit`  | Recordatorio de gancho git local: advierte cuando preparas un cambio en `CHANGELOG.md` (que se libera automáticamente al hacer push a `master`).                                   |
+| `scripts/hooks/pre-push`    | Recordatorio de gancho git local: confirma la versión antes de hacer push de los cambios en `CHANGELOG.md` a `master`; procede automáticamente en entornos no interactivos/CI. |
+
+> Estos ganchos no se instalan automáticamente. Crea un enlace simbólico en `.git/hooks/` si deseas los recordatorios, por ejemplo, `ln -s ../../scripts/hooks/pre-push .git/hooks/pre-push`.
 
 ---
 
 
-## Herramientas de mantenedor (no necesarias para usuarios finales)
+## Contribuyendo
 
-Los siguientes archivos son para **mantenedores del repo**, no para desplegar MoA. Los usuarios finales pueden ignorarlos.
-
-| Archivo                       | Propósito                                                                                                                                                |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `deploy-sync.ps1`             | Solo mantenedores — sincroniza el repo con GitHub y sube el skill `opencode-moa` a SkillHub. Soporta `-SkipGit` / `-SkipSkillHub` / `-DryRun`.           |
-| `scripts/hooks/pre-commit`    | Recordatorio de hook git local: avisa al stagear un cambio de `CHANGELOG.md` (auto-release al pushear a `master`).                                       |
-| `scripts/hooks/pre-push`      | Recordatorio de hook git local: confirma la versión antes de pushear cambios de `CHANGELOG.md` a `master`; avanza automático en entornos no interactivos/CI. |
-
-> Estos hooks no se instalan automáticamente. Si quieres los avisos, crea un symlink en .git/hooks/.
-
----
-## Contribuir
-
-PRs e Issues son bienvenidos. Consulta [CONTRIBUTING.md](CONTRIBUTING.md).
+Se aceptan PRs e Issues. Consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## License
+
+## Licencia
 
 [MIT](LICENSE) · [OpenCode MoA](https://github.com/ZenHG/opencode-moa)
+
+<!-- ci-trigger-rate-limit-fix-v2 -->

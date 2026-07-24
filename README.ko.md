@@ -1,430 +1,558 @@
-﻿# OpenCode MoA
+# OpenCode MoA
 
-> 🌐 Languages: [English](README.md) · [中文](README.zh.md) · [日本語](README.ja.md) · 한국어 · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
+> 🌐 언어: 영어 · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **새소식 (2026-07):** 프래그십 퓨전을 **Kimi K3** 로 업그레이드 — 2.8T 파라미터, 1M 컨텍스트, 최상위 frontier 모델. OpenCode Go 할당량 7/24 까지 2배 (140 → 280 / 5h, 이후 140으로 복귀).
+> 🔥 **핫 (2026-07):** 플래그십 퓨즈가 **Kimi K3**로 업그레이드됨 — 2.8T 파라미터, 1M 컨텍스트, 최상급 프론티어 모델. OpenCode Go 쿼타 7/24까지 2배 (140 → 280 / 5시간, 그 후 다시 140). MoA 품질 한계가 이제 선두에 있습니다.
 
-> **하나의 대화 진입점에서 22개의 전문 모델이 자동으로 협업합니다. 간단한 작업은 Flash(저렴), 복잡한 작업만 flagship(비쌈)을 호출합니다. 비용은 최대 약 90% 절감(모두 flagship 사용 대비), 코드 품질은 크게 향상됩니다. 단순 작업이 주를 이루고 flagship 호출이 최소화될 때, 실제 절감은 작업 구성에 따라 다릅니다.**
+> **하나의 대화 진입점, 22개의 전문 모델이 자동으로 협력합니다. 간단한 작업은 Flash(저렴함)를 사용하고, 복잡한 작업은 플래그십(비쌈)을 호출합니다. 간단한 작업이 작업 부하를 지배하고 플래그십 호출이 최소화될 때 비용이 최대 ~90% 절감됩니다(모든 플래그십 대비) — 실제 절감액은 작업 조합에 따라 다르며, 코드 품질이 크게 향상됩니다.**
 
 <!-- ARCH-IMG -->
-![OpenCode MoA 아키텍처](.github/moa-arch.png)
+![OpenCode MoA Architecture](.github/moa-arch.png)
 <!-- /ARCH-IMG -->
 
-OpenCode MoA는 OpenCode용 Mixture of Agents 구성 패키지입니다. 여러 모델이 **같은 문제를 동시에 생각**한 뒤, 단일 모델로는 도달하기 어려운 품질의 결과로 융합합니다. 도구를 바꾸거나, 코드를 작성하거나, API quota를 준비할 필요가 없습니다. 파일을 프로젝트에 넣고 OpenCode를 재시작하면 됩니다.
+OpenCode MoA는 OpenCode를 위한 에이전트 혼합 구성 패키지입니다. 여러 모델이 **동시에 같은 문제에 대해 생각**한 다음, 단일 모델이 도달할 수 없는 출력 품질로 융합됩니다. 도구를 전환하거나 코드를 작성하거나 API 쿼타가 필요하지 않습니다 — 파일을 프로젝트에 드롭하고 OpenCode를 재시작하기만 하면 됩니다.
 
-**22 agents · 5 commands · 3 skills · 30초 배포**
+**22개의 에이전트 · 5개의 명령어 · 3개의 기술 · 30초 배포**
 
 ---
 
-## 왜 필요할까요?
 
-기본 OpenCode는 처음부터 끝까지 단일 모델을 사용합니다. 한 글자를 바꾸는 작업과 시스템 아키텍처를 설계하는 작업이 같은 prompt, 같은 temperature, 같은 context를 사용합니다. 역할 분담이 없습니다.
+## 왜 이게 필요할까요?
+
+기본적으로 OpenCode는 시작부터 끝까지 단일 모델을 사용합니다. 하나의 문자를 변경하고 시스템 아키텍처를 설계하는 데 동일한 프롬프트, 동일한 온도, 동일한 컨텍스트를 사용합니다. 노동 분담이 없습니다.
 
 **세 가지 문제:**
 
-1. **비용 통제 어려움** — 간단한 작업에도 비싼 모델을 사용해 월 비용이 높아짐
-2. **품질 병목** — 단일 모델은 하나의 사고 방식만 가지며 blind spot에 빠지기 쉬움
-3. **장애 허용성 없음** — 모델이 실패하면 멈추고 fallback이 없음
+1. **비용 통제 불가능** — 간단한 작업도 비싼 모델을 사용하여 월 청구서가 높게 유지됨
+2. **품질 병목 현상** — 단일 모델은 사고 방식이 하나뿐이며, 쉽게 맹점에 갇힘
+3. **장애 허용 없음** — 모델이 죽으면 멈추고, 대체 수단이 없음
 
 **MoA의 해결책:**
 
-```text
+```
+
 You: help me design a message queue solution
 
-    ┌─ flag-arch (Qwen3.7 Max)     ─── architect 관점의 계획
-    ├─ flag-plan (GLM 5.2        ) ─── PM 관점의 계획
-    ├─ flag-eng  (MiniMax M3 )     ─── implementer 관점의 계획
-    └─ flag-fuse (Kimi K3)         ─── 각 장점을 융합해 하나의 최적안 생성
-
+    ┌─ flag-arch (Qwen3.7 Max)  ─── 건축가의 관점에서 계획
+    ├─ flag-plan (GLM 5.2    )  ─── PM의 관점에서 계획
+    ├─ flag-eng  (MiniMax M3 )  ─── 구현자의 관점에서 계획
+    └─ flag-fuse (Kimi K3    )  ─── 각 모델의 최상의 것을 취합하여 최적의 솔루션
 ```
 
 <!-- COST-IMG -->
 ![Cost down up to 90%](.github/moa-cost.png)
 <!-- /COST-IMG -->
 
-서로 다른 세 모델의 독립 계획은 자연스럽게 “consensus + divergence” 구조를 만듭니다. fusion model은 consensus를 보존하고 divergence에서는 가장 좋은 부분을 선택합니다. 이는 단일 모델로는 어렵습니다.
+세 개의 독립적인 계획이 세 개의 서로 다른 모델에서 자연스럽게 "합의 + 분기" 구조를 형성합니다. 융합 모델은 무엇이 합의인지 식별하고 이를 유지하며, 분기된 부분에서 최상의 것을 취합니다 — 이는 단일 모델이 할 수 없는 작업입니다.
 
 ---
 
-## 사전 요구사항
+
+## 필수 조건
 
 ### 필수
 
-| Requirement | Check command | Notes |
-| --- | --- | --- |
-| OpenCode installed | `opencode --version` | **>= 1.3.4** (agent-level `reasoningEffort`/`hidden`/`task` support; `openai-compatible` provider transparently passes reasoning, no `forceReasoning` needed), [install](https://opencode.ai/install) |
-| OpenCode Go plan | opencode.ai console | [Subscribe](https://opencode.ai/auth), first month $5, then $10/month |
-| Git installed | `git --version` | repo clone에 사용 |
-| OpenCode Go API Key | opencode.ai console에서 생성 | Zen console(opencode.ai)에서 생성 |
+| 요구 사항            | 확인 명령어                  | 비고                                                                                                                                                                                                 |
+| ------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenCode 설치됨     | `opencode --version`         | **>= 1.3.4** (에이전트 수준 `reasoningEffort`/`hidden`/`task` 지원; `openai-compatible` 제공자가 추론을 투명하게 전달, `forceReasoning` 필요 없음), [설치](https://opencode.ai/install) |
+| OpenCode Go 플랜    | opencode.ai 콘솔            | [구독](https://opencode.ai/auth), 첫 달 $5, 이후 $10/월                                                                                                                                         |
+| Git 설치됨         | `git --version`              | 리포지토리를 클론하는 데 사용됨                                                                                                                                                                    |
+| OpenCode Go API 키  | opencode.ai 콘솔에서 생성   | Zen 콘솔(opencode.ai)에서 생성됨                                                                                                                                                                   |
 
-### 선택 사항(install scripts에 필요)
+### 선택 사항 (설치 스크립트에서 필요)
 
-| Requirement | Check command | Notes |
-| --- | --- | --- |
-| PowerShell Core | `pwsh --version` | install.ps1에 필요, Windows 포함 또는 `brew install powershell` |
-| jq | `jq --version` | install.sh JSON merge에 필요, `apt install jq` / `brew install jq` |
+| 요구 사항        | 확인 명령어    | 비고                                                                     |
+| ---------------- | ---------------- | ------------------------------------------------------------------------- |
+| PowerShell Core  | `pwsh --version` | install.ps1에서 필요, Windows에 포함되거나 `brew install powershell`로 설치  |
+| jq               | `jq --version`   | JSON 병합을 위한 install.sh에서 필요, `apt install jq` / `brew install jq`로 설치 |
 
-> pwsh/jq가 없어도 괜찮습니다. Method 1(AI auto-deploy) 또는 Method 3(manual merge)을 사용할 수 있습니다.
+> pwsh/jq가 없어도 괜찮습니다 — 방법 1(AI 자동 배포) 또는 방법 3(수동 병합)을 사용할 수 있습니다.
 
-### Desktop vs CLI
+### 데스크탑 vs CLI
 
 - **CLI**: 모든 방법 지원
-- **Desktop**: Method 1(AI auto-deploy)이 가장 편리하며, Methods 2/3은 먼저 terminal 작업이 필요합니다
+- **데스크탑**: 방법 1(AI 자동 배포)이 가장 편리하며, 방법 2/3은 먼저 터미널 작업이 필요합니다.
 
-> ⚠️ **system-level key path는 틀리기 쉽습니다** — 아래 “배포 전 읽기”의 정확한 철자를 확인하세요. 잘못된 경로는 “deployment succeeds but all agents can't connect”로 이어집니다.
+> ⚠️ **시스템 수준의 키 경로를 잘못 배치하기 쉽습니다** — 아래 "배포 전에 읽기"에서 올바른 철자를 확인하세요. 잘못된 경로는 "배포가 성공했지만 모든 에이전트가 연결할 수 없음"으로 이어집니다.
 
-> ⚠️ **배포 전 읽기: key path를 잘못 두지 마세요**
-> provider + key는 **project-level `opencode.json`**(기본, self-contained) 또는 **system-level** shared path 중 하나에만 둡니다.
-> system-level을 쓰는 경우 올바른 경로는:
->
+> ⚠️ **배포 전에 읽기: 키 경로를 잘못 배치하지 마세요**
+> 제공자 + 키를 **프로젝트 수준의 `opencode.json`** (기본값, 자급자족) 또는 **시스템 수준** 공유 경로 중 하나에 넣으세요 — **하나**를 선택하세요.
+> 시스템 수준을 사용하는 경우, 올바른 경로는 다음과 같습니다:
+> 
 > - Linux/macOS `~/.config/opencode/opencode.json`
-> - Windows `%USERPROFILE%\.config\opencode\opencode.json` (**`%APPDATA%\opencode`가 아님**)
->   잘못된 system-level path는 “deployment succeeds but all agents can't connect”를 유발합니다.
+> - Windows `%USERPROFILE%\.config\opencode\opencode.json` (**아니오** `%APPDATA%\opencode`)
+>   잘못된 시스템 수준 경로는 "배포가 성공했지만 모든 에이전트가 연결할 수 없음"으로 이어집니다.
 
 ---
 
 ## 30초 배포
 
-### Method 1: AI auto-deploy(권장)
+### 방법 1: AI 자동 배포 (추천)
 
 1. [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md) 다운로드
-2. OpenCode에 해당 문서를 업로드하고 전송:
+2. OpenCode에 해당 문서를 업로드하고 다음을 전송:
 
-> Deploy all 22 agents, 5 commands, and 3 skills from this manual into the current project
+> 이 매뉴얼에서 22개의 에이전트, 5개의 명령어, 3개의 기술을 현재 프로젝트에 배포합니다.
 
-3. AI가 모든 파일을 자동 생성합니다. 완료 후 **OpenCode를 재시작**하세요.
+3. AI가 모든 파일을 자동으로 생성합니다. 완료되면 **OpenCode를 재시작**하세요.
 
-> 파일을 수동으로 만들 필요가 없습니다. 배포 매뉴얼 자체가 installer입니다.
+> 파일을 수동으로 생성할 필요가 없습니다. 배포 매뉴얼 자체가 설치 프로그램입니다.
 
-### Method 2: one-click install script(script version · CLI-friendly)
+### 방법 2: 원클릭 설치 스크립트 (스크립트 버전 · CLI 친화적)
 
 ```bash
-# clone the repo
+# 레포지토리 클론
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# enter your project directory
+# 프로젝트 디렉토리로 이동
 cd your-project
 
-# copy the .opencode directory from the repo
+# 레포지토리에서 .opencode 디렉토리 복사
 cp -r ../opencode-moa/.opencode/ .
 
-# run the install script (auto-merge config, keeps your API key)
+# 설치 스크립트 실행 (구성 자동 병합, API 키 유지)
 # Windows:
 pwsh ../opencode-moa/install.ps1
 # Linux/macOS:
 bash ../opencode-moa/install.sh
 ```
 
-> install script는 기존 `opencode.json`을 자동 백업하고, provider와 API key는 유지한 채 MoA config만 merge합니다.
->
-> Note: 이 방법은 repo에 포함된 `.opencode/`를 그대로 복사합니다. agents는 **중국어 표시 이름**을 사용합니다. 영어 이름 agents(`@english-name`)를 원하면 Method 1을 사용하세요.
+> 설치 스크립트는 원본 `opencode.json`을 자동으로 백업하며, 제공자와 API 키를 유지하면서 MoA 구성을 병합합니다.
+> 
+> 참고: 이 방법은 레포지토리의 번들된 `.opencode/`를 그대로 복사합니다 — 에이전트의 **중국어 표시 이름**이 있습니다. 영어 이름의 에이전트를 원하신다면 (그래서 `@english-name`을 사용할 수 있도록) 방법 1을 대신 사용하세요.
 
-### Method 3: manual install
+### 모델 사용자 정의
 
-```bash
-# 1. clone the repo
-git clone https://github.com/ZenHG/opencode-moa.git
+MoA는 **일반 템플릿**입니다 — 모든 에이전트의 모델은 변경할 수 있는 ID입니다. 각 에이전트 파일은 다음으로 시작합니다:
 
-# 2. copy the .opencode directory
-cp -r opencode-moa/.opencode/ your-project/
-
-# 3. manually merge opencode.json (do NOT replace directly!)
-# open opencode.json, merge MoA's permission.task and agent sections in
-# keep your existing provider and model config
+```yaml
+model: opencode-go/<model-id>
 ```
 
-> ⚠️ `cat >>`로 append하지 마세요. JSON format이 깨집니다. 직접 교체하지 마세요. API key를 잃습니다.
->
-> Note: 이 방법은 repo에 포함된 `.opencode/`를 그대로 복사합니다. agents는 **중국어 표시 이름**을 사용합니다. 영어 이름 agents(`@english-name`)를 원하면 Method 1을 사용하세요.
+모델을 교체하려면, `.opencode/agents/<agent>.md`에서 해당 한 줄을 접근할 수 있는 `provider/model-id`로 수정하세요 (예: `opencode-go/kimi-k2.7-code`, `opencode-go/glm-5.2`). 재설치가 필요 없습니다. 자유롭게 혼합하고 매칭하세요 — 템플릿은 당신을 어떤 것에도 묶지 않습니다.
 
-### 배포 성공 확인
+### 방법 3: 수동 설치
 
-1. OpenCode 재시작 후 `Tab`으로 agents를 순환(Windows desktop client: `Ctrl+.`도 가능)하여 “concierge-router” 확인
-2. `@tool-handler`를 입력했을 때 응답 확인
-3. verification script 실행: `pwsh .opencode/tests/T0-static-verify.ps1`(deploy 중 manual Block 5.5에서 생성), expected all PASS(FAIL=0; system-level key에서는 WARN도 pass)
+```bash
+# 1. 레포지토리 클론
+git clone https://github.com/ZenHG/opencode-moa.git
 
-### one-click rollback
+# 2. .opencode 디렉토리 복사
+cp -r opencode-moa/.opencode/ your-project/
+
+# 3. opencode.json 수동 병합 (직접 교체하지 마세요!)
+# opencode.json을 열고 MoA의 permission.task와 agent 섹션을 병합하세요
+# 기존의 제공자 및 모델 구성은 유지하세요
+```
+
+> ⚠️ **사용하지 마세요** `cat >>`로 추가하기 — JSON 형식이 손상됩니다. **직접 교체하지 마세요** — API 키를 잃게 됩니다.
+> 
+> 참고: 이 방법은 레포지토리의 번들된 `.opencode/`를 그대로 복사합니다 — 에이전트의 **중국어 표시 이름**이 있습니다. 영어 이름의 에이전트를 원하신다면 (그래서 `@english-name`을 사용할 수 있도록) 방법 1을 대신 사용하세요.
+
+### 배포 성공 여부 확인 방법
+
+1. OpenCode를 재시작한 후, `Tab`을 눌러 에이전트를 순환하세요 (Windows 데스크탑 클라이언트: `Ctrl+.`도 작동합니다) 그리고 "concierge-router"를 확인하세요.
+2. `@tool-handler`를 입력하면 응답합니다.
+3. 검증 스크립트를 실행하세요: `pwsh .opencode/tests/T0-static-verify.ps1` (배포 중 수동 블록 5.5에 의해 생성됨), 모든 PASS가 예상됩니다 (FAIL=0; 시스템 수준 키로 WARN도 PASS로 간주됨).
+
+### 원클릭 롤백
 
 ```bash
 rm -rf your-project/.opencode/
-# manually restore your opencode.json (the install script auto-backs up a .bak file)
+# 수동으로 opencode.json을 복원하세요 (설치 스크립트가 .bak 파일을 자동으로 백업합니다)
 ```
 
 ---
 
-## 사용 방법
 
-**배울 필요 없이 그냥 말하세요.** concierge-router가 task complexity를 자동 판단해 적절한 agent chain으로 dispatch합니다.
+## 어떻게 사용하나요?
 
-| What you say | What the concierge-router does | Agents used |
-| --- | --- | --- |
-| "rename this variable" | simple task로 판단 | swift (Flash) |
-| "write a user auth module" | tool layer gathers → 3 mid-tier parallel → fuse | tool-handler + mid-tier trio + fuse |
-| "design a microservice architecture" | tool layer gathers → 3 flagship parallel → fuse → implement → QA | full-chain 6 agents |
-| "restore this screenshot's UI" | 3 frontend experts parallel → lead picks best | frontend quartet |
-| screenshot 포함 message | vision-translator가 text로 변환 → normal routing | vision-translator |
+**아무것도 배우지 마세요 — 그냥 이야기하세요.** concierge-router는 자동으로 작업의 복잡성을 판단하고 해당 에이전트 체인을 배치합니다.
+
+| 당신이 말하는 내용                   | concierge-router가 하는 일                                    | 사용된 에이전트                   |
+| ------------------------------------ | ------------------------------------------------------------ | --------------------------------- |
+| "이 변수를 이름 변경해줘"           | 간단한 작업으로 판단됨                                       | swift (Flash)                     |
+| "사용자 인증 모듈을 작성해줘"       | 도구 레이어 수집 → 3개의 중간 계층 병렬 → 융합               | tool-handler + mid-tier trio + fuse |
+| "마이크로서비스 아키텍처를 설계해줘" | 도구 레이어 수집 → 3개의 플래그십 병렬 → 융합 → 구현 → QA   | full-chain 6 agents               |
+| "이 스크린샷의 UI를 복원해줘"       | 3명의 프론트엔드 전문가 병렬 → 리드가 최선 선택               | frontend quartet                  |
+| 스크린샷과 함께 메시지              | vision-translator가 텍스트로 변환 → 일반 라우팅              | vision-translator                 |
+| 오류 로그 / 다이어그램 / 복잡한 콘텐츠와 함께 메시지 | vision-translator가 콘텐츠를 분해 → 일반 라우팅   | vision-translator (백업 역할)      |
 
 **직접 `@` 호출:**
 
-```text
+```
 @swift help me write a hello world
 @tool-handler search all TODOs in the project
 @flag-arch design a message queue solution
 ```
 
-**one-click commands:**
+**원클릭 명령어:**
 
-| Command | Scenario |
-| --- | --- |
-| `/moa-quick` | simple task, translation, config change |
-| `/moa-medium` | function module, bug fix, single-file refactor |
-| `/moa-flagship` | system architecture, large refactor |
-| `/moa-frontend` | UI restore, CSS, screenshot fix |
-| `/moa-describe` | screenshot/image to text |
+| 명령어         | 시나리오                                      |
+| --------------- | --------------------------------------------- |
+| `/moa-quick`    | 간단한 작업, 번역, 구성 변경                  |
+| `/moa-medium`   | 함수 모듈, 버그 수정, 단일 파일 리팩토링      |
+| `/moa-flagship` | 시스템 아키텍처, 대규모 리팩토링              |
+| `/moa-frontend` | UI 복원, CSS, 스크린샷 수정                   |
+| `/moa-describe` | 스크린샷/이미지를 텍스트로 변환              |
 
 ---
 
 ## 아키텍처
 
-```text
+```
                       concierge-router (Flash)
                                  │
                 ┌────────────────┼─────────────────┐
                 ▼                ▼                 ▼
-             Tool layer     Opinion layer       Fusion layer
-             Flash + MiMo   3 parallel opinions take the best
-             (~80% calls)   (~18% calls)        (~2% calls)
+             도구 계층       의견 계층           융합 계층
+             Flash + MiMo   3개의 병렬 의견이 최선 선택
+             (~80% 호출)    (~18% 호출)        (~2% 호출)
 ```
 
-**Tool layer**(Flash + MiMo) — code read, file search, screenshot to text. 저렴하고 빠르며 자유롭게 호출할 수 있습니다.
+**도구 계층** (Flash + MiMo) — 코드 읽기, 파일 검색, 스크린샷을 텍스트로 변환. 저렴하고 빠르며, 자유롭게 호출 가능.
 
-**Opinion layer**(MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — 다양한 관점에서 plan을 만듭니다. 세 의견은 자연스럽게 “consensus + divergence” 구조를 형성합니다.
+**의견 계층** (MiniMax / DeepSeek Pro / Qwen / MiMo-Pro) — 다양한 관점에서의 계획. 세 가지 의견이 자연스럽게 "합의 + 분기" 구조를 형성.
 
-**Fusion layer**(Kimi / Qwen-Max / GLM / DeepSeek Pro fallback) — consensus는 유지하고 divergence에서는 최선을 선택하며, fusion 실패 시 DeepSeek V4 Pro로 fallback합니다.
+**융합 계층** (Kimi K3 / Qwen-Max / GLM / DeepSeek Pro fallback) — 합의를 유지하고, 분기에서 최선 선택, 융합 실패 시 DeepSeek V4 Pro로 대체. 현재 주력 융합은 **Kimi K3** (2.8T 파라미터, 1M 컨텍스트, 최상급 프론티어 모델)에서 실행되며, MoA의 품질 한계를 선두로 끌어올립니다.
 
-> ⚠️ 아래 call-volume ratios(~80% / ~18% / ~2%)는 **design targets**이며 measured statistics가 아닙니다. 실제 비율은 task complexity에 따라 달라집니다.
+> ⚠️ 아래의 호출 비율 (~80% / ~18% / ~2%)는 **설계 목표**이며, 측정된 통계가 아닙니다. 실제 비율은 작업 복잡도에 따라 달라집니다.
 
 ---
 
-## 22 Agents
 
-```text
+## 22 에이전트
+
+> 영어 이름은 논리적 역할을 나타내며, 괄호 안의 중국어는 `.opencode/agents/` 아래의 **정확한 파일 이름**입니다 — `@`로 호출합니다 (예: `@门童路由员`).
+
+```
 concierge-router (门童路由员, Flash)
  │
- ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler      (工具人,      Flash ) read code, search files [+ material self-check]
- │   tool-handler-mimo (工具人-mimo, MiMo  ) reliable file read (fallback + parallel) [hidden]
- │   swift             (闪电侠,      Flash ) simple tasks in one shot
- │   vision-translator (视觉翻译官,  MiMo  ) screenshot/UI/error image to text
+ ├── 도구 계층 ─────────────────────────────────────────────
+ │   tool-handler      (工具人, Flash    ) 코드 읽기, 파일 검색 [+ 자료 자기 점검]
+ │   tool-handler-mimo (工具人-mimo, MiMo) 신뢰할 수 있는 파일 읽기 (대체 + 병렬) [숨김]
+ │   swift             (闪电侠, Flash    ) 간단한 작업을 한 번에 수행
+ │   vision-translator (视觉翻译官, MiMo ) 스크린샷/UI→텍스트; 로그/다이어그램/문서→분해
  │
- ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
- ├── confidence-assessor (置信度评估者, DS Pro    ) assess fusion result confidence
+ ├── 잔여물 추출기  (残差提取者,  Flash     ) 계획 간의 분기 분석
+ ├── 신뢰도 평가자 (置信度评估者, DS Pro    ) 융합 결과 신뢰도 평가
  │
- ├── Mid-tier opinion layer ─────────────────────────────────────────────
- │   mid-eng      (中级·工程, Kimi K2.6   ) engineering view
- │   mid-creative (中级·创意, Qwen3.7 Plus) creative view
- │   mid-coder    (中级·码农, Flash       ) pragmatic view
- │   mid-fuse     (中级·融合, Kimi        ) fuse three plans [max_tokens: 16384]
+ ├── 중간 의견 계층 ─────────────────────────────────────────────
+ │   mid-eng      (中级·工程, Kimi K2.6 ) 엔지니어링 관점
+ │   mid-creative (中级·创意, Qwen3.7 Plus) 창의적 관점
+ │   mid-coder    (中级·码农, Flash     ) 실용적 관점
+ │   mid-fuse     (中级·融合, Kimi      ) 세 가지 계획 융합 [max_tokens: 16384]
  │
- ├── Flagship opinion layer ─────────────────────────────────────────────
- │   flag-arch (旗舰·架构, Qwen3.7 Max ) top-level architecture
- │   flag-plan (旗舰·规划, GLM 5.2   ) structured planning
- │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
- │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
- │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
- │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
+ ├── 주력 의견 계층 ─────────────────────────────────────────────
+ │   flag-arch (旗舰·架构, Qwen3.7 Max ) 최상위 아키텍처
+ │   flag-plan (旗舰·规划, GLM 5.2     ) 구조화된 계획
+ │   flag-eng  (旗舰·工程, MiniMax M3  ) 대규모 구현
+ │   flag-fuse (旗舰·融合, Kimi K3     ) 세 가지 아키텍처 계획 융합 [max_tokens: 16384]
+ │   flag-impl (旗舰·实现, Flash       ) 융합된 계획에 따라 구현 [숨김]
+ │   flag-qa   (旗舰·质检, DeepSeek Pro) 계획 검토 + 코드 수용 [max_tokens: 16384]
  │
- └── Frontend opinion layer ─────────────────────────────────────────────
-     fe-restore (前端·还原, MiMo        ) pixel-perfect UI restore
-     fe-logic   (前端·逻辑, Qwen3.7 Plus) component architecture & state mgmt
-     fe-motion  (前端·动效, MiMo-Pro     ) interaction & motion
-     fe-lead    (前端·总工, GLM-5.2      ) pick best of three frontend plans [max_tokens: 16384]
- ```
+ └── 프론트엔드 의견 계층 ─────────────────────────────────────────────
+     fe-restore (前端·还原, MiMo       ) 픽셀 완벽 UI 복원
+     fe-logic   (前端·逻辑, Qwen3.7 Plus) 구성 요소 아키텍처 및 상태 관리
+     fe-motion  (前端·动效, MiMo-Pro   ) 상호작용 및 동작
+     fe-lead    (前端·总工, GLM-5.2    ) 세 가지 프론트엔드 계획 중 최선 선택 [max_tokens: 16384]
+```
 
-Fallback agent (not in the router chain above, called only when fusion fails):
-```text
-fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, used when flag-fuse / mid-fuse / fe-lead fail
- ```
+대체 에이전트 (위의 라우터 체인에 포함되지 않으며, 융합 실패 시에만 호출):
+
+```
+fallback (融合·保底, DeepSeek V4 Pro) — 동일한 잔여물 강화 융합, flag-fuse / mid-fuse / fe-lead 실패 시 사용
+```
 
 ---
 
-## 장애 허용 설계
 
-### Tool layer fallback 체인
+## 결함 허용 설계
 
-Tool layer가 실패해도 멈추지 않습니다. 자동 downgrade합니다:
+### 도구 계층 대체 체인
 
-```text
-tool-handler (Flash) failed → immediate retry once
-  → retry succeeds → return normally
-  → retry fails → tool-handler-mimo (MiMo) failed → immediate retry once
-    → retry succeeds → return normally
-    → retry fails → ask user:
-      A. wait a few minutes and retry
-      B. skip tool layer, call opinion layer directly (higher cost)
-      C. switch to free model
+도구 계층이 실패하더라도 정지하지 않으며 — 자동으로 다운그레이드됩니다:
+
+```
+tool-handler (Flash) 실패 → 즉시 한 번 재시도
+  → 재시도 성공 → 정상적으로 반환
+  → 재시도 실패 → tool-handler-mimo (MiMo) 실패 → 즉시 한 번 재시도
+    → 재시도 성공 → 정상적으로 반환
+    → 재시도 실패 → 사용자에게 요청:
+      A. 몇 분 기다렸다가 재시도
+      B. 도구 계층을 건너뛰고 의견 계층을 직접 호출 (비용 증가)
+      C. 무료 모델로 전환
 ```
 
-> 대부분의 provider errors(502/503/timeout)는 일시적이며, 빠른 retry로 보통 성공합니다.
+> 대부분의 제공자 오류 (502/503/타임아웃)는 일시적입니다; 빠른 재시도가 보통 성공합니다.
 
-### Fusion layer fallback
+### 융합 계층 대체
 
-primary fusion agent가 실패(STUCK / ERROR_PROVIDER / timeout / empty result)하면 concierge-router는 자동으로 `@融合·保底`(DeepSeek V4 Pro)로 fallback합니다:
+주 융합 에이전트가 실패하면 (STUCK / ERROR_PROVIDER / 타임아웃 / 빈 결과), concierge-router는 자동으로 `@融合·保底` (DeepSeek V4 Pro, 대체)로 전환됩니다:
 
-```text
-flag-fuse (旗舰·融合, Kimi K3) failed
-  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
-mid-fuse (中级·融合, Kimi) failed
-  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
-fe-lead (前端·总工, GLM-5.2) failed
-  → task(@融合·保底) (DeepSeek V4 Pro) → output fallback result
+```
+flag-fuse (旗舰·融合, Kimi K3) 실패
+  → 작업(@融合·保底) (DeepSeek V4 Pro) → 대체 결과 출력
+mid-fuse (中级·融合, Kimi) 실패
+  → 작업(@融合·保底) (DeepSeek V4 Pro) → 대체 결과 출력
+fe-lead (前端·总工, GLM-5.2) 실패
+  → 작업(@融合·保底) (DeepSeek V4 Pro) → 대체 결과 출력
 ```
 
-fallback agent는 동일한 residual-enhanced fusion process를 사용합니다.
+대체 에이전트는 동일한 잔여물 강화 융합 프로세스를 사용합니다.
+
+### 의견 계층 부분 실패 허용
+
+개별 의견 에이전트 (아키텍처/계획/엔지니어링, 프론트엔드 복원/논리/동작, 중간 엔지니어링/창의성/코딩)는 독립적으로 빈 결과를 반환하거나 타임아웃될 수 있습니다. 시스템은 이를 우아하게 처리합니다:
+
+```
+3개의 병렬 의견 에이전트가 배치됨
+  → 어떤 에이전트가 빈 결과를 반환 → 해당 에이전트를 한 번 재시도
+    → 재시도 성공 → 정상적으로 계속 진행
+    → 재시도 실패 → "저하"로 표시하고 N/3 입력으로 진행
+      → 잔여물 추출자는 사용 가능한 입력만 작업
+      → 旗舰·融合은 저하된 융합 규칙을 적용
+      → 출력에 "[부분] N/3 입력" 레이블이 붙음
+      → 신뢰도 점수는 하향 조정됨
+```
+
+저하된 융합 규칙 (N < 3):
+- 합의 범위 분모는 3이 아닌 N
+- 누락된 관점은 `[Missing: 관점 이름]`으로 레이블이 붙음
+- 합의 범위 < 50%는 "낮은 신뢰도 저하된 융합" 경고를 유발
+- 단일 출처 융합 (N=1)은 0.7 신뢰도 패널티 계수를 적용
+
+> 이는 하나의 의견 에이전트가 실패할 때 파이프라인이 정지하는 것을 방지합니다 (STUCK) — 일반적인 사용자 불만입니다.
+
+### 선언적 에이전트 전제 조건
+
+에이전트 활성화는 하드코딩된 라우팅 규칙이 아닌 선언적 `precondition` 메타데이터에 의해 관리됩니다. 각 에이전트는 활성화되어야 할 때를 선언합니다:
+
+| 에이전트 | 전제 조건 |
+|-------|---------------|
+| 闪电侠 | 항상 |
+| 工具人 | 코드베이스 컨텍스트 필요 |
+| 视觉翻译官 | 주요: `screenshot`; 대체: `error_log OR diagram OR long_document OR ambiguous_intent` |
+| 中级·工程 | 엔지니어링 복잡도 필요 |
+| 中级·创意 | 창의적 복잡도 필요 |
+| 中级·码农 | 구현 복잡도 필요 |
+| 旗舰·架构/规划/工程 | 시스템 설계 복잡도 필요 |
+| 前端·还原/逻辑/动效 | 프론트엔드 작업 필요 |
+| 融合·保底 | 융합 계층 실패 시 또는 의견 계층이 부분 결과를 반환할 때 활성화 |
+
+조건 활성화는 단락 회로 논리를 따릅니다: 전제 조건 충족 → 활성화; 충족되지 않음 → 사용자에게 확인 요청. 이는 하드코딩된 트리거 규칙 (예: "스크린샷 사용 가능 → @vision-translator")을 에이전트 선언, 자기 문서화된 전제 조건으로 대체합니다.
+
+### 파이프라인 단계 시각화
+
+모든 라우팅 결정은 단계 식별자를 출력하여 사용자가 내부 단계 번호를 배우지 않고도 파이프라인 진행 상황을 추적할 수 있도록 합니다:
+
+```
+[단계: 도구 계층] → [단계: 의견 계층] → [단계: 융합 계층] → [단계: 구현 계층]
+```
+
+단계-단계 매핑:
+- `도구 계층` — 자료 수집 단계
+- `의견 계층` — 병렬 계획 설계 단계 (중간 / 주력 / 프론트엔드)
+- `융합 계층` — 계획 융합 및 검증 단계
+- `구현 계층` — 코드 구현 및 수용 단계
+
+### 통합 진행 보고
+
+성공 및 실패 경로 모두 동일한 보고 형식을 따르며, 내부 에이전트 이름을 노출하지 않습니다:
+
+```
+[파이프라인] 모드=<lite|balanced|strict>  단계=<도구 계층|의견 계층|융합 계층|구현 계층>  상태=<idle|in_progress|complete|degraded|stuck>
+  이유: <이 단계의 이유>
+  경로: <도구 계층|중간 체인|주력 체인|프론트엔드 체인>
+  대체: <복구 전략>
+```
+
+상태 표시기:
+- `in_progress` — 현재 단계 실행 중
+- `complete` — 단계가 성공적으로 완료됨
+- `degraded` — 부분 입력으로 실행 중, 신뢰도 낮음
+- `stuck` — 모든 복구 경로 소진, 사용자 개입 필요
+
+### 闪电侠 병렬 단축키
+
+주 파이프라인이 실행 중일 때, 闪电侠는 독립적인 간단한 하위 작업을 위해 병렬로 배치될 수 있습니다:
+
+```
+주 파이프라인: 도구 계층 → 의견 계층 → 융합 계층 → 구현 계층
+병렬 경로: 闪电侠 (항상 준비, 주 파이프라인과 함께 실행)
+```
+
+트리거 조건 (하나라도):
+- 사용자 지시가 병렬 작업을 명시적으로 요청 ("X를 동시에 수행", "Y도 빠르게 확인")
+- 주 파이프라인 실행 중 간단한 하위 작업이 발생 (예: 아키텍처 계획이 설계되는 동안 TODO 검색)
+- 사용자가 직접 @闪电侠 호출
+
+범위 제한:
+- ✅ 주 파이프라인 출력에 의존하지 않는 독립적인 작업
+- ✅ 간단한 작업: 파일 검색, grep, 구성 쿼리, 포맷팅
+- ❌ 주 파이프라인에 입력을 생성하는 작업
+- ❌ 의견 융합 작업 (직렬로 유지해야 함)
+- ❌ 구현 및 QA 작업 (직렬로 유지해야 함)
+
+만약 闪电侠가 주 파이프라인보다 먼저 완료되면, 결과는 보류되고 마지막에 함께 반환됩니다. 주 파이프라인이 먼저 완료되면, 闪电侠 결과는 즉시 반환됩니다. 闪电侠의 실패는 주 파이프라인 실행에 영향을 미치지 않습니다.
 
 ### MCP 권한 격리
 
-Opinion-layer agents는 code를 직접 읽는 것이 금지됩니다(`read: deny` + `bash: deny`). tool layer를 우회해 자료를 가져오는 것을 막습니다:
+의견 계층 에이전트는 코드에 직접 접근하는 것이 금지되어 있습니다 (`read: deny` + `bash: deny`), 이를 통해 도구 계층을 우회하여 자료를 직접 가져오는 것을 방지합니다:
 
-- Tool layer: code read, file search 가능(`read`/`bash` access)
-- Opinion layer: `read: deny` + `bash: deny`, tool layer가 제공한 material에만 기반해 plan
-- Fusion layer: 동일한 제한, 세 opinions만 기반으로 fuse
+- 도구 계층: 코드 읽기, 파일 검색 가능 ( `read`/`bash` 접근 권한 있음)
+- 의견 계층: `read: deny` + `bash: deny`, 도구 계층의 자료를 기반으로만 계획 가능
+- 융합 계층: 동일한 제한, 세 가지 의견을 기반으로만 융합 가능
 
-> Note: 이 project는 MCP servers를 설정하지 않습니다. 여기서 “MCP permission isolation”은 MCP server-level isolation이 아니라 agent-level tool restrictions(`read: deny` / `bash: deny`)를 의미합니다.
+> 참고: 이 프로젝트는 MCP 서버를 구성하지 않습니다. "MCP 권한 격리"라는 용어는 에이전트 수준의 도구 제한 (`read: deny` / `bash: deny`)을 의미하며, MCP 서버 수준의 격리가 아닙니다.
 
-### 자료 없음 fallback
+### 무자료 대체
 
-Opinion layer가 호출되었지만 material이 없을 때(tool layer 완전 실패) 사용자에게 묻습니다:
+의견 계층이 호출되지만 자료가 없는 경우 (도구 계층이 완전히 실패), 사용자에게 요청합니다:
 
-- “give plan directly” 선택 → requirement description 기반의 순수 logical reasoning(code read 없음)
-- “wait for tool layer” 선택 → WAITING 출력, tool layer 회복 후 retry
+- "계획을 직접 제공" 선택 → 요구 사항 설명에 기반한 순수 논리적 추론 (코드 읽기 없음)
+- "도구 계층을 기다리기" 선택 → WAITING 출력, 도구 계층이 복구된 후 재시도
 
 ### 오류 분류
 
-Tool layer는 실패 시 명확한 error category를 출력하고, 무작정 retry하지 않습니다:
+도구 계층은 실패 시 명확한 오류 범주를 출력하며, 맹목적으로 재시도하지 않습니다:
 
-- `ERROR_PROVIDER` — server 502/503/timeout
-- `ERROR_AUTH` — auth failure
-- `ERROR_UNKNOWN` — other errors
+- `ERROR_PROVIDER` — 서버 502/503/타임아웃
+- `ERROR_AUTH` — 인증 실패
+- `ERROR_UNKNOWN` — 기타 오류
 
 ---
 
 ## 비용
 
-### 왜 약 90% 절감되는가
+### 약 90% 절감 이유
 
-MoA는 call-volume-weighted mix로 비용을 계산합니다: 약 80% tool-layer Flash, 18% mid-tier, 2% flagship. 아래 cost table의 per-unit prices로 effective output unit price를 추정합니다:
+MoA는 호출량 가중 혼합에 따라 청구됩니다: 약 80% 도구 계층 Flash, 약 18% 중간 계층, 약 2% 플래그십. 이 섹션의 비용 표에 있는 단위 가격으로 효과적인 출력 단위 가격을 추정합니다:
 
-> **Important**: 80/18/2 ratios는 architecture가 설계한 **expected call volume distribution**이며 measured cost proportions가 아닙니다. 실제 사용량은 task types와 complexity에 따라 달라집니다.
+> **중요**: 80/18/2 비율은 **아키텍처에 의해 설계된 예상 호출량 분포**이며, 측정된 비용 비율이 아닙니다. 실제 사용은 작업 유형과 복잡성에 따라 다릅니다.
 
-| Layer      | Share | Output unit price /1M                                                                                | Weighted |
-| ---------- | ----- | ---------------------------------------------------------------------------------------------------- | -------- |
-| Tool layer | 80%   | $0.28                                                                                                | $0.224   |
-| Mid tier   | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / Kimi K2.7 $4.00 mid-fuse avg)       | $0.378   |
-| Flagship   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + Kimi K3 $15.00 flag-fuse)                                         | $0.12    |
+| 계층       | 비율  | 출력 단위 가격 /1M                                                                            | 가중치   |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------ | -------- |
+| 도구 계층  | 80%   | $0.28                                                                                            | $0.224   |
+| 중간 계층  | 18%   | ~$2.10 (MiniMax $1.20 / DeepSeek Pro $3.48 / Qwen Plus $1.60 / **Kimi K2.7 $4.00 중간 융합** 평균) | $0.378   |
+| 플래그십   | 2%    | ~$6.00 (Qwen/GLM/MiniMax ~$4-7 + **Kimi K3 $15.00 플래그 융합**)                                   | $0.12    |
 
-혼합 유효 출력 단가는 ≈ **$0.72 / 1M**입니다. “all-flagship GLM $7.50” 대비 약 10% → **약 90% 절감**; “all-mid-tier DeepSeek Pro $3.48” 대비 약 21% → **약 79% 절감**. “save 90%”는 flagship baseline에 대한 실제 가치입니다.
+혼합된 효과적인 출력 단위 가격 ≈ **$0.72 / 1M**. "모든 플래그십 GLM $7.50"과 비교 → 약 10% → **~90% 절감**; "모든 중간 계층 DeepSeek Pro $3.48"과 비교 → 약 21% → **~79% 절감**. "90% 절감" 주장은 플래그십 기준에 대한 실제 가치입니다.
 
-### OpenCode Go 플랜
+### OpenCode Go 계획
 
-MoA는 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) plan 기반이며, **첫 달 $5, 이후 $10/month**입니다.
+MoA는 [OpenCode Go](https://opencode.ai/docs/zh-cn/go/) 계획을 기반으로 하며, **첫 달 $5, 그 후 $10/월**입니다.
 
-**Usage limits:**
+**사용 한도:**
 
-| Time window | Quota |
-| --- | --- |
-| Every 5 hours | $12 |
-| Weekly | $30 |
-| Monthly | $60 |
+| 시간 창      | 할당량 |
+| ------------- | ----- |
+| 5시간마다    | $12   |
+| 주간         | $30   |
+| 월간         | $60   |
 
-Limits는 dollar value로 정의됩니다. 저렴한 models(Flash)는 더 자주, 비싼 models(GLM)는 덜 자주 사용할 수 있습니다.
+한도는 달러 가치로 정의됩니다. 저렴한 모델(Flash)은 더 자주 사용할 수 있고, 비싼 모델(GLM)은 덜 자주 사용할 수 있습니다.
 
-### 레이어별 월간 quota
+### 계층별 월간 할당량
 
-| Layer      | Model           | Unit price (in/out per 1M) | Monthly quota | Call frequency      |
-| ---------- | --------------- | -------------------------- | ------------- | ------------------- |
-| Tool layer | Flash           | $0.14 / $0.28              | 158,150       | ~80%                |
-| Tool layer | MiMo-V2.5       | $0.14 / $0.28              | 150,400       | (use freely)        |
-| Opinion    | MiniMax M3      | $0.30 / $1.20              | 16,000        | ~18%                |
-| Opinion    | DeepSeek V4 Pro | $1.74 / $3.48              | 17,150        |                     |
-| Opinion    | Qwen3.7 Plus    | $0.40 / $1.60              | 21,600        |                     |
-| Fusion     | Kimi K2.7 Code  | $0.95 / $4.00              | 9,250         | ~2% (mid-tier fuse) |
-| Fusion     | Kimi K3         | $3.00 / $15.00             | 280           | ~2% (flagship fuse) |
-| Fusion     | GLM-5.2         | $1.40 / $4.40              | 4,300         | ~2% (frontend lead) |
+| 계층       | 모델             | 단위 가격 (입출력 per 1M) | 월간 할당량 | 호출 빈도       |
+| ---------- | ---------------- | -------------------------- | ------------- | ---------------- |
+| 도구 계층  | Flash            | $0.14 / $0.28              | 158,150       | ~80%             |
+| 도구 계층  | MiMo-V2.5        | $0.14 / $0.28              | 150,400       | (자유롭게 사용)  |
+| 의견       | MiniMax M3       | $0.30 / $1.20              | 16,000        | ~18%             |
+| 의견       | DeepSeek V4 Pro  | $1.74 / $3.48              | 17,150        |                    |
+| 의견       | Qwen3.7 Plus     | $0.40 / $1.60              | 21,600        |                    |
+| 융합       | Kimi K2.7 코드   | $0.95 / $4.00              | 9,250         | ~2% (중간 계층 융합) |
+| 융합       | Kimi K3          | $3.00 / $15.00             | 280           | ~2% (플래그십 융합) |
+| 융합       | GLM-5.2          | $1.40 / $4.40              | 4,300         | ~2% (프론트엔드 리드) |
 
-> 모든 model IDs는 선언 예시입니다. 선호하는 model로 교체할 수 있습니다.
+> 모든 모델 ID는 선언일 뿐이며, 원하는 모델로 교체할 수 있습니다.
 
-![OpenCode Go quota per 5h](.github/quota-chart-en.svg)
+![OpenCode Go 5시간당 할당량](.github/quota-chart-en.svg)
 
-### 한도 도달 후
+### 한도 초과 후
 
-- **Free model fallback** — Go limit 도달 후에도 free models를 계속 사용할 수 있습니다
-- **Zen balance fallback** — console에서 “use balance”를 활성화하면 Go limit 후 Zen balance를 자동 사용합니다
+- **무료 모델 대체** — Go가 한도에 도달한 후에도 무료 모델을 계속 사용할 수 있습니다.
+- **Zen 잔액 대체** — 콘솔에서 "잔액 사용"을 활성화합니다; Go 한도 초과 후 자동으로 Zen 잔액 사용
 
 ### 무료 모델
 
-OpenCode Zen은 마지막 fallback으로 free models를 제공합니다:
+OpenCode Zen은 최후의 수단으로 무료 모델을 제공합니다:
 
-| Model | Trait |
-| --- | --- |
-| DeepSeek V4 Flash Free | fast, but limited context |
-| MiMo-V2.5 Free | better quality, but may be slow |
-| North Mini Code Free | provided by Cohere |
-| Nemotron 3 Ultra Free | NVIDIA free endpoint |
+| 모델                   | 특성                           |
+| ---------------------- | ------------------------------- |
+| DeepSeek V4 Flash Free | 빠르지만 제한된 컨텍스트       |
+| MiMo-V2.5 Free         | 품질이 더 좋지만 느릴 수 있음  |
+| North Mini Code Free   | Cohere에서 제공                |
+| Nemotron 3 Ultra Free  | NVIDIA 무료 엔드포인트        |
 
-> ⚠️ Free model limits: context window가 더 작고, 응답이 느릴 수 있으며, data가 training에 사용될 수 있고, 기간 한정 무료입니다.
+> ⚠️ 무료 모델 한도: 더 작은 컨텍스트 창, 응답이 느릴 수 있음, 데이터는 학습에 사용될 수 있음, 제한된 시간 동안 무료 제공.
 
 ---
 
+
 ## 보안
 
-| Protection | Effect |
-| --- | --- |
-| Global catch-all | undeclared tool call → popup confirm |
-| Agent permission isolation | each agent can only use allowed tools |
-| MCP permission isolation | opinion layer forbidden from reading code (`read: deny` / `bash: deny`), prevents bypassing tool layer (project has no MCP server configured; “MCP” here refers to agent-level tool restrictions) |
-| Task whitelist | concierge-router can only call declared agents |
-| Fallback chain | tool layer fails → ask user → wait/skip/free model |
-| One-click rollback | delete `.opencode/` to restore |
+| 보호                   | 효과                                                                                                                                                                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 글로벌 포괄적 보호     | 선언되지 않은 도구 호출 → 팝업 확인                                                                                                                                                          |
+| 에이전트 권한 격리     | 각 에이전트는 허용된 도구만 사용할 수 있습니다.                                                                                                                                                         |
+| MCP 권한 격리         | 의견 계층이 코드를 읽는 것이 금지됨 (읽기: 거부 / bash: 거부), 도구 계층 우회를 방지합니다 (프로젝트에 MCP 서버가 구성되어 있지 않음; 여기서 "MCP"는 에이전트 수준의 도구 제한을 의미함) |
+| 작업 화이트리스트      | 컨시어지 라우터는 선언된 에이전트만 호출할 수 있습니다.                                                                                                                                                |
+| 대체 체인             | 도구 계층 실패 → 사용자에게 요청 → 대기/건너뛰기/무료 모델                                                                                                                                            |
+| 원클릭 롤백          | `.opencode/`를 삭제하여 복원합니다.                                                                                                                                                                |
 
 ---
 
 ## 로컬 모델
 
-Ollama / LM Studio 같은 local models를 혼합해 사용할 수 있습니다:
+Ollama / LM Studio와 같은 로컬 모델 혼합을 지원합니다:
 
 ```yaml
 # .opencode/agents/mid-coder.md
 model: ollama-local/qwen3-coder
 ```
 
-[`docs/opencode-moa.md`](docs/opencode-moa.md)의 Appendix A를 참고하세요.
+[`docs/opencode-moa.md`](docs/opencode-moa.md)의 부록 A를 참조하세요.
 
 ---
+
 
 ## 검증
 
-Deploy 후 static check를 실행하세요(`pwsh` 필요):
+이 저장소는 `.opencode/tests/` 아래에 세 개의 체크 스크립트를 포함하고 있습니다. 레이어 0은 완전히 자동이며, 레이어 1–2는 OpenCode 내에서 진행하는 가이드 체크리스트입니다.
 
 ```bash
+# 레이어 0 — 정적 검사 (자동, 0 토큰)
 pwsh .opencode/tests/T0-static-verify.ps1
-# expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
+# 예상: 모두 PASS / FAIL=0 (시스템 수준 키와 함께, WARN도 PASS로 간주됨)
+
+# 세 개의 레이어를 한 번에 실행
+pwsh .opencode/tests/run-all.ps1
 ```
+
+| 스크립트                     | 레이어 | 수행하는 작업                                                                          | 모드                  |
+| ---------------------------- | ----- | ------------------------------------------------------------------------------------- | --------------------- |
+| `T0-static-verify.ps1`       | 0     | 파일 구조, 에이전트/명령/기술 수, README 앵커, 키 경로 정확성 검사                   | 자동                  |
+| `T1-behavioral-guide.ps1`    | 1     | 라우팅 / 의견 / 융합 동작에 대한 단계별 체크리스트 출력                              | 수동 (OpenCode 내)    |
+| `T2-moa-smoke-guide.ps1`     | 2     | `/moa-*` 명령에 대한 엔드 투 엔드 스모크 테스트 체크리스트 출력                     | 수동 (OpenCode 내)    |
+| `run-all.ps1`                | 0–2   | T0를 실행한 후 T1/T2 가이드 체크리스트 출력                                         | 혼합                  |
 
 ---
 
-## FAQ
 
-### Installation
+## 자주 묻는 질문
 
-**Q: 이미 opencode.json이 있습니다. 덮어쓰나요?**
-A: 아니요. install script는 MoA의 `permission`, `agent`, `default_agent` config만 merge하고 기존 `provider`, `model` 등을 유지합니다. 원본 파일은 `.bak.timestamp`로 자동 backup됩니다.
+### 설치
 
-**Q: Windows에 `cp` command가 없으면 어떻게 하나요?**
+**Q: 이미 opencode.json이 있는데, 덮어쓰여지나요?**  
+A: 아니요. 설치 스크립트는 MoA의 `permission`, `agent`, `default_agent` 구성을 병합하며, 기존의 `provider`, `model` 등을 유지합니다. 원본 파일은 `.bak.timestamp`로 자동 백업됩니다.
+
+**Q: Windows에는 `cp` 명령이 없는데, 어떻게 하나요?**  
 A: `Copy-Item` 또는 `xcopy`를 사용하세요:
 
 ```powershell
@@ -434,92 +562,74 @@ Copy-Item -Recurse -Force opencode-moa\.opencode .\.opencode
 xcopy opencode-moa\.opencode .\.opencode /E /I /Y
 ```
 
-**Q: pwsh/jq 없이 install할 수 있나요?**
-A: 네. Method 1(AI auto-deploy) 또는 Method 3(manual config merge)을 사용하세요.
+**Q: pwsh/jq 없이 설치할 수 있나요?**  
+A: 네. 방법 1 (AI 자동 배포) 또는 방법 3 (수동 구성 병합)을 사용하세요.
 
-**Q: desktop app에서는 어떻게 install하나요?**
-A: Method 1이 가장 편리합니다. `docs/opencode-moa.en.md`를 chat box에 drag하고 AI auto-deploy를 실행하세요. Methods 2/3은 먼저 terminal(CMD/PowerShell/Terminal) 작업이 필요합니다.
+**Q: 데스크톱 앱에서 어떻게 설치하나요?**  
+A: 방법 1이 가장 편리합니다 — `docs/opencode-moa.en.md`를 채팅 상자로 드래그하여 AI가 자동 배포하도록 하세요. 방법 2/3은 먼저 터미널(CMD/PowerShell/Terminal)에서 작업해야 합니다.
 
-### Usage
+### 사용법
 
-**Q: “concierge-router”가 보이지 않습니다.**
-A: “30-second deploy → How to tell deployment succeeded”의 세 가지 확인을 참고하세요: project root의 `opencode.json`, `.opencode/agents/` 아래 22개 `.md`, restart 후 `Tab` 전환(Windows desktop client: `Ctrl+.`도 가능).
+**Q: "concierge-router"가 보이지 않나요?**  
+A: "30초 배포 → 배포 성공 여부 확인 방법" 아래의 세 가지 체크를 참조하세요: 프로젝트 루트의 `opencode.json`, `.opencode/agents/` 아래의 22 .md 파일, 재시작 후 `Tab`으로 전환 (Windows 데스크톱 클라이언트: `Ctrl+.`도 작동합니다).
 
-**Q: `@tool-handler`가 응답하지 않습니다.**
-A: `.opencode/agents/tool-handler.md`가 존재하고 frontmatter format이 올바른지 확인하세요.
+**Q: `@tool-handler`가 응답하지 않나요?**  
+A: `.opencode/agents/tool-handler.md`가 존재하고 프론트매터 형식이 올바른지 확인하세요.
 
-**Q: Error “model not found”?**
-A: Model ID format은 `provider/model-id`입니다(예: `opencode-go/kimi-k2.7-code`). config file(system-level `~/.config/opencode/opencode.json` 또는 project `opencode.json`)에 provider를 등록한 뒤 TUI에서 `/models`로 available models를 확인하세요.
+**Q: "모델을 찾을 수 없습니다"라는 오류가 발생하나요?**  
+A: 모델 ID 형식은 `provider/model-id`여야 합니다 (예: `opencode-go/kimi-k2.7-code`). 해당 공급자를 구성 파일에 등록한 후 (시스템 수준 `~/.config/opencode/opencode.json` 또는 프로젝트 `opencode.json`), TUI 내에서 `/models`를 사용하여 사용 가능한 모델을 확인하세요.
 
-**Q: 원래 build/plan agent로 돌아가려면?**
-A: `Tab`으로 전환(Windows desktop client: `Ctrl+.`도 가능)하거나 `/build`, `/plan`을 입력하세요. MoA는 built-in agents에 영향을 주지 않습니다.
+**Q: 원래 빌드/플랜 에이전트로 어떻게 돌아가나요?**  
+A: `Tab`을 눌러 전환하세요 (Windows 데스크톱 클라이언트: `Ctrl+.`도 작동합니다), 또는 `/build`, `/plan`을 입력하세요. MoA는 내장 에이전트에 영향을 미치지 않습니다.
 
-**Q: Go plan이 아니라 내 model을 쓰고 싶습니다.**
-A: agent의 `model` field를 바꾸면 됩니다:
+**Q: Go 플랜이 아닌 내 모델을 사용하고 싶어요?**  
+A: 에이전트의 `model` 필드만 변경하세요:
 
 ```yaml
 # .opencode/agents/mid-eng.md
 model: opencode-go/glm-5.2
 ```
 
-**Q: deploy 후 repo를 삭제해도 되나요?**
-A: 네. MoA는 이미 project의 `.opencode/` directory로 복사되었으므로 원본 repo는 삭제해도 됩니다.
+**Q: 배포 후 저장소를 삭제할 수 있나요?**  
+A: 네. MoA는 이미 프로젝트의 `.opencode/` 디렉토리에 복사되었으므로, 원본 저장소는 삭제할 수 있습니다.
 
-**Q: 여러 projects에 deploy하려면?**
-A: project마다 별도로 deploy하세요. `.opencode/`는 project-level config이며 다른 projects에 영향을 주지 않습니다.
+**Q: 여러 프로젝트에 걸쳐 배포하려면 어떻게 하나요?**  
+A: 각 프로젝트를 별도로 배포하세요. `.opencode/`는 프로젝트 수준 구성이며 다른 프로젝트에 영향을 미치지 않습니다.
 
-### Fallback
+### 대체
 
-**Q: tool layer 전체가 down되면 어떻게 하나요?**
-A: 위 “Fault tolerance design → Fallback chain”을 참고하세요. MoA는 사용자에게 A. 몇 분 기다림 / B. tool layer를 skip하고 opinion layer 직접 호출(higher cost)을 선택하도록 ask합니다.
+**Q: 전체 도구 레이어가 다운되었어요, 이제 어떻게 하나요?**  
+A: 위의 "내결함성 설계 → 대체 체인"을 참조하세요: MoA는 사용자에게 A. 몇 분 기다리기 / B. 도구 레이어를 건너뛰고 의견 레이어를 직접 호출하도록 요청합니다 (비용이 더 높습니다).
 
-**Q: free models는 어디에 있나요?**
-A: 위 “Cost → Free models”를 참고하세요. `/models`로 model list를 열고 “Free” tag가 붙은 model을 선택하세요(Windows desktop client: `Ctrl+'`도 가능)(DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free 등). Free models는 context가 제한되고, 느릴 수 있으며, data가 training에 사용될 수 있습니다.
-
----
-
-## 검증
-
-리포지토리에는 `.opencode/tests/` 아래 세 가지 점검 스크립트가 포함되어 있습니다. Layer 0은 완전 자동, Layer 1–2는 OpenCode 내에서 단계별로 확인하는 수동 가이드입니다.
-
-```bash
-# Layer 0 — 정적 점검 (자동, 0 token)
-pwsh .opencode/tests/T0-static-verify.ps1
-# expected: all PASS / FAIL=0 (with system-level key, WARN also counts as pass)
-
-# 세 레이어를 한 번에 실행
-pwsh .opencode/tests/run-all.ps1
-```
-
-| Script                    | Layer | 역할                                                                                     | 모드                 |
-| ------------------------- | ----- | ---------------------------------------------------------------------------------------- | -------------------- |
-| `T0-static-verify.ps1`    | 0     | 파일 구조, agent/command/skill 개수, README 앵커, key 경로 정확성 점검                       | 자동                 |
-| `T1-behavioral-guide.ps1` | 1     | routing / opinion / fusion 동작 확인 체크리스트 출력                                       | 수동 (OpenCode 내)   |
-| `T2-moa-smoke-guide.ps1`  | 2     | `/moa-*` 명령 end-to-end 스모크 테스트 체크리스트 출력                                     | 수동 (OpenCode 내)   |
-| `run-all.ps1`             | 0–2   | T0 실행 후 T1/T2 가이드 체크리스트 출력                                                   | 혼합                 |
+**Q: 무료 모델은 어디에 있나요?**  
+A: 위의 "비용 → 무료 모델"을 참조하세요: `/models`를 사용하여 모델 목록을 열고 "무료"로 태그된 모델을 선택하세요 (Windows 데스크톱 클라이언트: `Ctrl+'`도 작동합니다) (DeepSeek V4 Flash Free, MiMo-V2.5 Free, North Mini Code Free 등). 무료 모델은 제한된 컨텍스트를 가지며, 느릴 수 있고 데이터가 학습에 사용될 수 있습니다.
 
 ---
 
-## 유지자 도구 (최종 사용자 불필요)
+## 유지 관리 도구 (최종 사용자에게 필요하지 않음)
 
-다음 파일은 **리포지토리 유지자**용이며 MoA 배포용이 아닙니다. 최종 사용자는 무시해도 됩니다.
+다음 파일은 **레포 유지 관리자**를 위한 것이며, MoA 배포를 위한 것이 아닙니다. 최종 사용자는 무시할 수 있습니다.
 
-| 파일                       | 용도                                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `deploy-sync.ps1`          | 유지자 전용 — 리포지토리를 GitHub에 동기화하고 `opencode-moa` skill을 SkillHub에 업로드. `-SkipGit` / `-SkipSkillHub` / `-DryRun` 지원. |
-| `scripts/hooks/pre-commit` | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 스테이징할 때 경고 (master push 시 자동 릴리스).                  |
-| `scripts/hooks/pre-push`   | 로컬 git 훅 알림: `CHANGELOG.md` 변경을 master에 push하기 전 버전 확인; 비대화형/CI 환경에서는 자동 진행.  |
+| 파일                        | 목적                                                                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deploy-sync.ps1`          | 유지 관리자 전용 — 레포를 GitHub에 동기화하고 `opencode-moa` 스킬을 SkillHub에 업로드합니다. `-SkipGit` / `-SkipSkillHub` / `-DryRun`을 지원합니다.   |
+| `scripts/hooks/pre-commit` | 로컬 git 훅 알림: `CHANGELOG.md` 변경 사항을 스테이징할 때 경고합니다 (이 변경 사항은 `master`에 푸시할 때 자동으로 릴리스됩니다).                                   |
+| `scripts/hooks/pre-push`   | 로컬 git 훅 알림: `CHANGELOG.md` 변경 사항을 `master`에 푸시하기 전에 버전을 확인합니다; 비대화형/CI 환경에서는 자동으로 진행됩니다. |
 
-> 이 훅들은 자동으로 설치되지 않습니다. 알림을 원하면 `.git/hooks/`에 심링크하세요.
+> 이러한 훅은 자동으로 설치되지 않습니다. 알림을 원하시면 `.git/hooks/`에 심볼릭 링크를 만드세요. 예: `ln -s ../../scripts/hooks/pre-push .git/hooks/pre-push`.
 
 ---
+
 
 ## 기여
 
-PR과 Issues를 환영합니다. [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
+PR 및 이슈를 환영합니다. [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하세요.
 
 ---
 
-## 라이선스
+
+## 라이센스
 
 [MIT](LICENSE) · [OpenCode MoA](https://github.com/ZenHG/opencode-moa)
+
+<!-- ci-trigger-rate-limit-fix-v2 -->
