@@ -1,4 +1,4 @@
-﻿# OpenCode MoA
+# OpenCode MoA
 
 > 🌐 Languages: English · [中文](README.zh.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md)
 
@@ -622,4 +622,3 @@ PRs and Issues welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [MIT](LICENSE) · [OpenCode MoA](https://github.com/ZenHG/opencode-moa)
 
-<!-- trigger-auto-translate -->
