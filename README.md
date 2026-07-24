@@ -302,7 +302,7 @@ The fallback agent uses the same residual-enhanced fusion process.
 
 ### Opinion layer partial failure tolerance
 
-Individual opinion agents (架构/规划/工程, 前端·还原/逻辑/动效, 中级·工程/创意/码农) may return empty results or time out independently. The system handles this gracefully:
+Individual opinion agents (architecture/planning/engineering, frontend-restore/logic/motion, mid-tier engineering/creative/coding) may return empty results or time out independently. The system handles this gracefully:
 
 ```
 3 parallel opinion agents dispatched
@@ -339,30 +339,30 @@ Agent activation is governed by declarative `precondition` metadata, not hardcod
 | 前端·还原/逻辑/动效 | requires frontend task |
 | 融合·保底 | activated when fusion layer fails or opinion layer returns partial results |
 
-Condition activation follows short-circuit logic: preconditions met → activate; none met → ask user for confirmation. This replaces hardcoded trigger rules (like "有截图→+@视觉翻译官") with agent-declared, self-documenting preconditions.
+Condition activation follows short-circuit logic: preconditions met → activate; none met → ask user for confirmation. This replaces hardcoded trigger rules (like "screenshot available → @vision-translator") with agent-declared, self-documenting preconditions.
 
 ### Pipeline stage visualization
 
 Every routing decision outputs a stage identifier so users can track pipeline progress without learning internal step numbers:
 
 ```
-[Stage: 工具层] → [Stage: 意见层] → [Stage: 融合层] → [Stage: 实现层]
+[Stage: Tool Layer] → [Stage: Opinion Layer] → [Stage: Fusion Layer] → [Stage: Implementation Layer]
 ```
 
 Stage-to-phase mapping:
-- `工具层` — material collection
-- `意见层` — parallel plan design (mid-tier / flagship / frontend)
-- `融合层` — plan fusion and verification
-- `实现层` — code implementation and acceptance
+- `Tool Layer` — material collection phase
+- `Opinion Layer` — parallel plan design phase (mid-tier / flagship / frontend)
+- `Fusion Layer` — plan fusion and verification phase
+- `Implementation Layer` — code implementation and acceptance phase
 
 ### Unified progress reporting
 
 Both success and failure paths follow the same reporting format, never exposing internal agent names:
 
 ```
-[Pipeline] mode=<lite|balanced|strict>  stage=<工具层|意见层|融合层|实现层>  status=<idle|in_progress|complete|degraded|stuck>
+[Pipeline] mode=<lite|balanced|strict>  stage=<Tool Layer|Opinion Layer|Fusion Layer|Implementation Layer>  status=<idle|in_progress|complete|degraded|stuck>
   reason: <why this stage>
-  path: <工具层|中级链|旗舰链|前端链>
+  path: <Tool Layer|Mid-tier chain|Flagship chain|Frontend chain>
   fallback: <recovery strategy>
 ```
 
@@ -372,17 +372,17 @@ Status indicators:
 - `degraded` — running with partial inputs, lower confidence
 - `stuck` — all recovery paths exhausted, user intervention needed
 
-### 闪电侠优先并行快捷通道
+### 闪电侠 Parallel Shortcut
 
 When the main pipeline is executing, 闪电侠 can be dispatched in parallel for independent simple subtasks:
 
 ```
-Main pipeline: 工具层 → 意见层 → 融合层 → 实现层
+Main pipeline: Tool Layer → Opinion Layer → Fusion Layer → Implementation Layer
 Parallel lane: 闪电侠 (always ready, runs alongside main pipeline)
 ```
 
 Trigger conditions (any one):
-- User instruction explicitly requests parallel work ("同时做 X", "顺便查 Y")
+- User instruction explicitly requests parallel work ("do X simultaneously", "also quickly check Y")
 - A simple subtask emerges during main pipeline execution (e.g., searching TODOs while architecture plans are being designed)
 - User directly calls @闪电侠
 
