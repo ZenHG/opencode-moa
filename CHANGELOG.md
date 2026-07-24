@@ -74,6 +74,10 @@ Opinion-layer fault tolerance (empty-result detection, single retry, degraded fu
 
 - `flag-fuse` (旗舰·融合) model changed `qwen3.7-max` → `kimi-k3` (2.8T params, 1M context)
 - README model table + intro updated; OpenCode Go quota 2x from 7/24 (140 → 280 / 5h)
+
+### Docs
+
+- Added `scripts/sync-docs.ps1` — auto-syncs agent YAML frontmatter, `permission.task`, and agent counts from `.opencode/agents/*.md` / `opencode.json` into deploy docs (`docs/opencode-moa.md`).
 </details>
 
 ---
@@ -105,6 +109,10 @@ Opinion-layer fault tolerance (empty-result detection, single retry, degraded fu
 
 - `flag-fuse`（旗舰·融合）模型由 `qwen3.7-max` 改为 `kimi-k3`（2.8T 参数，1M 上下文）
 - README 模型表与介绍同步更新；OpenCode Go 额度 7/24 起翻倍（140 → 280 / 5h）
+
+### 文档
+
+- 新增 `scripts/sync-docs.ps1` — 从 `.opencode/agents/*.md` / `opencode.json` 自动同步 agent YAML frontmatter、`permission.task`、agent 计数到部署手册（`docs/opencode-moa.md`）。
 </details>
 
 ---

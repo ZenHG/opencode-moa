@@ -325,7 +325,7 @@ OpenCode 的 `@` 自动补全菜单有**显示行数上限**（约 10 行），a
 
 ```markdown
 ---
-description: 智能路由引擎，负责任务理解、路由决策和链路组装
+description: 智能路由引擎，负责任务理解、条件激活与流水线编排
 mode: primary
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
@@ -387,6 +387,7 @@ permission:
 
 ## VOC: 质量增益/额外成本 → 多模块/安全关键→旗舰 | 简单配置→闪电侠 | 不确定→中级
 最终结果转发用户，中间结果不暴露。某agent失败→跳过。全部失败→STUCK: 提示用户Tab切换（Win: Ctrl+.）
+
 ```
 
 #### 工具人
@@ -400,7 +401,7 @@ mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
 reasoningEffort: medium
-max_tokens: 2048
+max_tokens: 4096
 permission:
   edit: deny
   bash: deny
@@ -420,6 +421,7 @@ permission:
 - **相关性评分**: [高/中/低 — 与用户需求的匹配程度]
 
 示例：
+
 ```
 <<材料包>>
 文件名清单: src/main.py, src/config.yaml
@@ -447,7 +449,7 @@ mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.1
 reasoningEffort: medium
-max_tokens: 2048
+max_tokens: 4096
 hidden: true
 permission:
   edit: deny
@@ -468,6 +470,7 @@ permission:
     ERROR_AUTH: 认证失败
     ERROR_UNKNOWN: 其他错误
     ERROR_QUOTA_FREE: 免费模型调用次数已达上限
+
 ```
 
 #### 闪电侠
@@ -493,6 +496,7 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
 ```
 
 #### 视觉翻译官
@@ -501,12 +505,15 @@ permission:
 
 ```markdown
 ---
-description: 截图/UI图/报错图转文字描述
+description: 截图/UI图/报错图转文字描述；无截图时降级为复杂内容解构
 mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.2
 reasoningEffort: medium
-max_tokens: 2048
+max_tokens: 4096
+precondition:
+  primary: screenshot
+  fallback: error_log OR diagram OR long_document OR ambiguous_intent
 permission:
   edit: deny
   bash: deny
@@ -524,6 +531,7 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
 ```
 
 #### 中级·工程
@@ -563,6 +571,7 @@ permission:
 ---记忆层---
 （核心思路+关键决策）
 ---方案---
+
 ```
 
 #### 中级·创意
@@ -602,6 +611,7 @@ permission:
 ---记忆层---
 （与工程方案的差异+独特优势）
 ---方案---
+
 ```
 
 #### 中级·码农
@@ -641,6 +651,7 @@ permission:
 ---记忆层---
 （与另两方案的核心差异）
 ---方案---
+
 ```
 
 #### 中级·融合
@@ -691,6 +702,7 @@ permission:
 
 ---融合方案---
 （完整融合方案）
+
 ```
 
 #### 旗舰·架构
@@ -729,6 +741,7 @@ permission:
 
 ---架构设计---
 核心决策(≤5) | 技术选型+理由 | 模块划分+数据流 | 接口定义 | 风险+mitigation
+
 ```
 
 #### 旗舰·规划
@@ -767,6 +780,7 @@ permission:
 
 ---规划方案---
 问题域分析 | 方案结构 | 实施路径 | 风险与应对
+
 ```
 
 #### 旗舰·工程
@@ -805,6 +819,7 @@ permission:
 
 ---工程方案---
 实现要点 | 模块划分+接口 | 性能与容量 | 可观测性
+
 ```
 
 #### 旗舰·融合
@@ -859,6 +874,7 @@ permission:
 
 ---融合方案---
 （完整融合方案，包含共识部分和残差补偿建议）
+
 ```
 
 #### 旗舰·实现
@@ -887,6 +903,7 @@ permission:
 ---实现说明---
 （范围+关键决策）
 ---代码---
+
 ```
 
 #### 旗舰·质检
@@ -941,6 +958,7 @@ permission:
   → 重试失败 → 卡住 → STUCK: 说明原因
 
 通过 / 有条件通过 / 打回
+
 ```
 
 #### 前端·还原
@@ -949,7 +967,7 @@ permission:
 
 ```markdown
 ---
-description: 像素级还原UI设计稿
+description: 像素级还原UI设计稿方案
 mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.3
@@ -957,11 +975,17 @@ reasoningEffort: medium
 max_tokens: 16384
 hidden: true
 permission:
-  edit: allow
-  bash: allow
+  edit: deny
+  bash: deny
+  read: deny
+  webfetch: deny
+  task:
+    "工具人": allow
+    "视觉翻译官": allow
 ---
 
 严格按布局、颜色、文字精确还原UI。组件化、响应式。输出完整代码。
+
 ```
 
 #### 前端·逻辑
@@ -1000,6 +1024,7 @@ permission:
 
 ---逻辑方案---
 组件树+职责 | 类型定义 | 状态管理层 | API接口层
+
 ```
 
 #### 前端·动效
@@ -1035,6 +1060,7 @@ permission:
   → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
   → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
   → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+
 ```
 
 #### 前端·总工
@@ -1043,12 +1069,12 @@ permission:
 
 ```markdown
 ---
-description: 三份前端方案择优融合（含置信度评分）
+description: 三份前端方案择优融合，输出紧凑融合决策供实现层落地
 mode: subagent
 model: opencode-go/glm-5.2
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 16384
+max_tokens: 4096
 hidden: true
 permission:
   edit: deny
@@ -1074,6 +1100,7 @@ permission:
 对比结论: 最优方案是 X，理由:...
 ---最终代码---
 （完整代码）
+
 ```
 
 #### 残差提取者
@@ -1131,6 +1158,7 @@ permission:
 
 【残差补偿建议】
 （共识之外的增量信息，建议补充的内容）
+
 ```
 
 #### 置信度评估者
@@ -1144,7 +1172,7 @@ mode: subagent
 model: opencode-go/deepseek-v4-pro
 temperature: 0.2
 reasoningEffort: max
-max_tokens: 4096
+max_tokens: 8192
 hidden: true
 permission:
   edit: deny
@@ -1195,6 +1223,7 @@ permission:
 置信度 ≥ 85: 直接采纳
 置信度 60-84: 有条件采纳 — [需修正的点]
 置信度 < 60: 打回重做 — [主要原因]
+
 ```
 
 #### 融合·保底
@@ -1203,7 +1232,7 @@ permission:
 
 ```markdown
 ---
-description: 融合层失败保底，对比三份输入输出一份（继承残差融合流程）
+description: 融合层失败保底，对比多份输入输出一份（继承残差融合流程，支持部分输入降级）
 mode: subagent
 model: opencode-go/deepseek-v4-pro
 temperature: 0.3
@@ -1237,6 +1266,7 @@ permission:
 
 简述融合决策理由
 ---融合方案---
+
 ```
 ### Block 3：5 个 `/moa-*` 命令
 
@@ -1798,3 +1828,4 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.9 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
