@@ -622,5 +622,5 @@ PRs and Issues welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [MIT](LICENSE) · [OpenCode MoA](https://github.com/ZenHG/opencode-moa)
 
-<!-- ci-trigger-rate-limit-fix -->
+<!-- ci-trigger-rate-limit-fix-v2 -->
 

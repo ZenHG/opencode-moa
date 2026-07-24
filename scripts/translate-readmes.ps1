@@ -16,7 +16,7 @@ $scriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base        = Split-Path $scriptDir
 $githubToken = $env:GITHUB_TOKEN
 $apiUrl      = "https://models.github.ai/inference/chat/completions"
-$model       = "openai/gpt-4o"
+$model       = "openai/gpt-4o-mini"
 
 $targetLangs = @{
     "ja" = "日本語"
@@ -67,7 +67,7 @@ function Call-Model {
             $is429 = $err -match '429'
             Write-Host "  [WARN] Attempt $attempt/$MaxRetries failed: $err" -ForegroundColor Yellow
             if ($attempt -lt $MaxRetries) {
-                $delay = if ($is429) { 30 } else { [math]::Min(30, [math]::Pow(2, $attempt - 1) * 2) }
+                $delay = if ($is429) { 120 } else { [math]::Min(30, [math]::Pow(2, $attempt - 1) * 2) }
                 Write-Host "  Retrying in ${delay}s..." -ForegroundColor Gray
                 Start-Sleep -Seconds $delay
             } else {
@@ -130,15 +130,21 @@ foreach ($lang in $targetLangsToTranslate) {
         continue
     }
 
-    # Split source into chunks at ## headings to avoid 413 Payload Too Large
-    $chunks = @(); $buf = ""
+    # Split source into chunks at ## headings, merging small sections to ~4KB min
+    $rawChunks = @(); $buf = ""
     foreach ($line in $sourceContent -split "`n") {
         if ($line -match '^## ') {
-            if ($buf) { $chunks += $buf }; $buf = ""
+            if ($buf) { $rawChunks += $buf }; $buf = ""
         }
         if ($buf) { $buf += "`n" + $line } else { $buf = $line }
     }
-    if ($buf) { $chunks += $buf }
+    if ($buf) { $rawChunks += $buf }
+    $chunks = @(); $acc = $rawChunks[0]
+    for ($i = 1; $i -lt $rawChunks.Count; $i++) {
+        if ($acc.Length -ge 4000) { $chunks += $acc; $acc = "" }
+        $acc = if ($acc) { "$acc`n`n$($rawChunks[$i])" } else { $rawChunks[$i] }
+    }
+    if ($acc) { $chunks += $acc }
 
     $translatedChunks = @()
     $chunkOk = $true
@@ -170,7 +176,7 @@ $chunk
         $translated = $translated -replace '(?s)^\s*```[\w]*\s*\n?', ''
         $translated = $translated -replace '(?s)\s*```\s*$', ''
         $translatedChunks += $translated
-        if ($ci -lt $chunks.Count - 1) { Start-Sleep -Seconds 1 }
+        if ($ci -lt $chunks.Count - 1) { Start-Sleep -Seconds 15 }
     }
 
     if (-not $chunkOk) {
