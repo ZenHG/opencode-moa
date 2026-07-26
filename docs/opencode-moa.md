@@ -1470,56 +1470,56 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
     "中级·工程": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "中级·创意": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "中级·码农": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "旗舰·架构": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "旗舰·规划": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "旗舰·工程": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "前端·逻辑": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     },
     "前端·动效": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "工具人": "allow", "视觉翻译官": "allow" },
         "*_*": "deny"
       }
     }

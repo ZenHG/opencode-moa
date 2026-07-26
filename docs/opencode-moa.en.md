@@ -1314,56 +1314,56 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     "mid-eng": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "mid-creative": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "mid-coder": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "flag-arch": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "flag-plan": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "flag-eng": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "fe-logic": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     },
     "fe-motion": {
       "permission": {
         "*": "ask",
-        "task": "allow",
+        "task": { "tool-handler": "allow", "vision-translator": "allow" },
         "*_*": "deny"
       }
     }
