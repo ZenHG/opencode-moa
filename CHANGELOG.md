@@ -45,6 +45,48 @@
 </details>
 ---
 
+## v0.0.14（2026-07-28）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+README CN/EN mixing cleanup, CI auto-sync + auto-translate setup (fix race condition).
+
+### Docs
+
+- **README.zh.md CN/EN mixing cleanup**: `skill` → `技能`, `agent frontmatter` → `agent 文件头部`, `global catch-all` → `全局兜底`. All 3 occurrences fixed.
+- **README.md precondition table**: retained Chinese agent names as mapping reference.
+- **T0 anchor check**: updated to expect `3 个技能` instead of `3 个 skill`.
+
+### CI
+
+- **Auto-sync deployment manual via CI**: `.github/workflows/ci.yml` added `sync-docs` job that runs `scripts/sync-docs.ps1` on every push (skippable via `[skip sync]` in commit message) and auto-commits `docs/*.md` changes.
+- **Auto-translate READMEs via CI**: `translate` job calls `scripts/translate-readmes.ps1` using GitHub Models (free), triggered when commit message contains `README`. Uses separate minimal permissions: `models: read` (`sync-docs` doesn't need it).
+- **Race condition fix**: `translate` job depends on `sync-docs` (`needs: sync-docs`), ensuring sequential execution. Both jobs add `git pull --rebase origin master` before `git push` to handle remote divergence.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+README 中英混杂清理、CI 自动同步 + 自动翻译流水线（含竞态修复）。
+
+### 文档
+
+- **README.zh.md 中英混杂清理**：`skill` → `技能`、`agent frontmatter` → `agent 文件头部`、`全局 catch-all` → `全局兜底`。全部 3 处修复。
+- **README.md 预条件表**：保留中文 agent 名作为映射参考。
+- **T0 锚点检查**：`3 个 skill` → `3 个技能`。
+
+### CI
+
+- **CI 自动同步部署手册**：`.github/workflows/ci.yml` 新增 `sync-docs` job，每次 push 运行 `scripts/sync-docs.ps1`（可通过 commit message 中 `[skip sync]` 跳过），自动提交 `docs/*.md` 变更。
+- **CI 自动翻译 README**：`translate` job 通过 GitHub Models（免费）调用 `scripts/translate-readmes.ps1`，当 commit message 含 `README` 时触发。采用独立最小权限声明：`models: read`（`sync-docs` 不声明此权限）。
+- **竞态修复**：`translate` job 依赖 `sync-docs`（`needs: sync-docs`），确保串行执行。两 job 均在 `git push` 前加 `git pull --rebase origin master` 处理远端偏离。
+
+</details>
+
+---
+
 ## v0.0.13（2026-07-27）
 
 <details open>
