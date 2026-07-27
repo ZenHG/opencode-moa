@@ -156,7 +156,7 @@ if (Test-Path $readmeEn) {
 } else { Check "README.md exists" $false }
 if (Test-Path $readmeZh) {
     $zh = Get-Content $readmeZh -Raw -Encoding utf8
-    Check "README.zh.md asserts 22 个 agent / 5 个命令 / 3 个 skill" ($zh -match "22 个 agent · 5 个命令 · 3 个 skill")
+    Check "README.zh.md asserts 22 个 agent / 5 个命令 / 3 个技能" ($zh -match "22 个 agent · 5 个命令 · 3 个技能")
 } else { Check "README.zh.md exists" $false }
 
 Write-Host "`n==============================" -ForegroundColor Yellow

@@ -16,7 +16,7 @@
 
 OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**同时思考同一个问题**，然后融合出单一模型无法达到的输出质量。你不需要换工具、不需要写代码、不需要 API 额度——只需要把文件放进项目，重启 OpenCode。
 
-**22 个 agent · 5 个命令 · 3 个 skill · 30 秒部署**
+**22 个 agent · 5 个命令 · 3 个技能 · 30 秒部署**
 
 ---
 
@@ -94,7 +94,7 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 1. 下载 [`docs/opencode-moa.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.md)
 2. 在 OpenCode 中上传该文档，发送：
 
-> 请按这份部署手册，帮我把 22 个 agent、5 个命令、3 个 skill 全部部署到当前项目
+> 请按这份部署手册，帮我把 22 个 agent、5 个命令、3 个技能全部部署到当前项目
 
 3. AI 会自动创建所有文件。完成后**重启 OpenCode** 即可。
 
@@ -409,7 +409,7 @@ Agent 的激活由声明式 `前置条件` 元数据驱动，而非硬编码路�
 
 所有非路由 agent 声明 `task: deny`，防止子 agent 再次调用 task() 造成嵌套递归：
 
-- **第一层（agent frontmatter）**：每个 agent 文件头部声明 `task: deny`
+- **第一层（agent 文件头部）**：每个 agent 文件头部声明 `task: deny`
 - **第二层（opencode.json）**：`permission.task` 仅门童可调 agent，非路由 agent 全局禁止调 worker
 - **第三层（prompt 护栏）**：门童 prompt 末尾追加约束，禁止自身调子 agent 进入新流水线
 
@@ -501,7 +501,7 @@ OpenCode Zen 提供免费模型作为最后保底：
 
 | 防护           | 效果                                                                                |
 | ------------ | --------------------------------------------------------------------------------- |
-| 全局 catch-all | 未声明的工具调用 → 弹窗确认                                                                   |
+| 全局兜底 | 未声明的工具调用 → 弹窗确认                                                                   |
 | Agent 权限隔离   | 每个 agent 只能用允许的工具                                                                 |
 | MCP 权限隔离     | 意见层禁止直接读代码/调命令（read: deny + bash: deny），防止绕过工具层（项目未配置 MCP server，此处指 agent 级工具限制） |
 | task 三级防御     | 非路由 agent 拒绝 task → 门童白名单 → prompt 护栏，防嵌套递归 |
