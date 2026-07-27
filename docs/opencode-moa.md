@@ -424,6 +424,7 @@ permission:
 
 示例：
 
+
 ```
 <<材料包>>
 文件名清单: src/main.py, src/config.yaml
@@ -473,6 +474,7 @@ permission:
     ERROR_AUTH: 认证失败
     ERROR_UNKNOWN: 其他错误
     ERROR_QUOTA_FREE: 免费模型调用次数已达上限
+
 
 ```
 
@@ -1472,56 +1474,240 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
     "中级·工程": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "中级·创意": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "中级·码农": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "旗舰·架构": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "旗舰·规划": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "旗舰·工程": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "前端·逻辑": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "前端·动效": {
       "permission": {
         "*": "ask",
-        "task": { "工具人": "allow", "视觉翻译官": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     }
@@ -1830,5 +2016,6 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.13 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
 
 

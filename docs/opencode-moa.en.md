@@ -1316,56 +1316,240 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     "mid-eng": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "mid-creative": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "mid-coder": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "flag-arch": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "flag-plan": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "flag-eng": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "fe-logic": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     },
     "fe-motion": {
       "permission": {
         "*": "ask",
-        "task": { "tool-handler": "allow", "vision-translator": "allow" },
+        "task": {
+      "*": "deny",
+      "残差提取者": "allow",
+      "工具人": "allow",
+      "工具人-mimo": "allow",
+      "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
+      "旗舰·融合": "allow",
+      "旗舰·实现": "allow",
+      "旗舰·质检": "allow",
+      "前端·动效": "allow",
+      "前端·还原": "allow",
+      "前端·逻辑": "allow",
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
+    },
         "*_*": "deny"
       }
     }
@@ -1673,3 +1857,4 @@ model: ollama-local/qwen3-coder
 ---
 
 > **Doc version**: v0.0.13 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+

@@ -60,6 +60,12 @@ Add `task: deny` to tool-handler agents to prevent recursive subagent nesting (f
 
 - `docs/opencode-moa.md` / `docs/opencode-moa.en.md`: synced the `task: deny` change in both tool-handler agent definitions; updated T0 verification script `task:` count from 9→11 (门童 + 2 tool-handlers + 8 opinion layers); bumped doc version v0.0.9→v0.0.13.
 
+### Fix (P2)
+
+- **Data inlining contract**: 门童路由员.md now enforces inline-data passing — upstream outputs are embedded directly in `task()` descriptions instead of relying on child agents to self-fetch via `task(@工具人)`. Affects all pipeline chains: 中级 chain (tool→3 opinions→fusion), 旗舰 chain (→residual→fusion→quality→implementation), 前端 chain (→logic/motion→lead). Added inline marker protocol (`【内联材料包开始】...【内联材料包结束】`) and token budgets (material ≤4K, opinions ≤2K each, fusion ≤3K). 门童 prompt slimmed from 190→~85 lines (removed redundant complexity matrix, VOC, stage-id mapping docs, compressed 闪电侠 parallel channel).
+- **9 opinion agents**: data source logic unified — priority 1: inlined material, priority 2: direct reasoning (no file reads), priority 3: `task(@工具人)` fallback (environment-dependent).
+- **工具人.md**: added token budget note (≤4K tokens, key excerpts only).
+
 </details>
 
 <details>
@@ -74,6 +80,12 @@ Add `task: deny` to tool-handler agents to prevent recursive subagent nesting (f
 ### 文档
 
 - `docs/opencode-moa.md` / `docs/opencode-moa.en.md`：同步两份部署手册的工具人 `task: deny` 变更；更新 T0 验证脚本的 `task:` 检查计数 9→11（门童 + 2 工具人 + 8 意见层）；文档版本 v0.0.9→v0.0.13。
+
+### 修复（P2）
+
+- **数据内联契约**：门童路由员.md 新增数据内联规则，上游产出直接嵌入 task() prompt，不再依赖子 agent 自读文件。覆盖全部流水线：中级链、旗舰链、前端链。新增内联标记协议（`【内联材料包开始】...【内联材料包结束】`）和 Token 预算（材料包 ≤4K、意见 ≤2K/份、融合 ≤3K）。门童 prompt 从 190 行精简至 ~85 行（砍掉复杂度矩阵、VOC、阶段映射文档、压缩闪电侠并行通道）。
+- **9 个意见层 agent**：数据来源逻辑统一为三级优先级——内联材料优先，无材料时纯逻辑推演，task(@工具人) 降级为备选依赖路径。
+- **工具人.md**：新增 Token 预算说明（≤4K tokens，仅关键片段）。
 
 </details>
 
