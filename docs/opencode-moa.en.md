@@ -415,6 +415,7 @@ max_tokens: 2048
 permission:
   edit: deny
   bash: deny
+  task: deny
 ---
 
 Performs read/search only. Returns file paths + original text or summaries. Does not analyze or propose solutions.
@@ -443,6 +444,7 @@ max_tokens: 2048
 permission:
   edit: deny
   bash: deny
+  task: deny
 ---
 
 Performs read/search only. Returns file paths + original text or summaries. Does not analyze or propose solutions.
@@ -1424,7 +1426,7 @@ $re = (Select-String -Path .opencode/agents/*.md -Pattern 'reasoningEffort:' -Er
 Check "reasoningEffort x22 (got $re)" ($re -eq 22)
 
 $task = (Select-String -Path .opencode/agents/*.md -Pattern 'task:' -ErrorAction SilentlyContinue).Count
-Check "task: x9 (got $task)" ($task -eq 9)
+Check "task: x11 (got $task)" ($task -eq 11)
 
 Write-Host "`n== Result: PASS=$pass FAIL=$fail WARN=$warn =="
 if ($fail -gt 0) { exit 1 } else { exit 0 }
@@ -1458,7 +1460,7 @@ grep "task:" .opencode/agents/*.md 2>/dev/null | wc -l
 ls .opencode/commands/moa-*.md 2>/dev/null | wc -l
 ```
 
-Expected: `reasoningEffort` appears 22 times (all agents), `task:` appears 9 times (concierge-router + 8 opinion layers), `moa-` command filenames match 5.
+Expected: `reasoningEffort` appears 22 times (all agents), `task:` appears 11 times (concierge-router + 2 tool-handlers + 8 opinion layers), `moa-` command filenames match 5.
 
 **Windows (PowerShell, native):**
 
@@ -1476,7 +1478,7 @@ Write-Host "=== content check ==="
 (Get-ChildItem .opencode/commands/moa-*.md -ErrorAction SilentlyContinue).Count
 ```
 
-Expected same as above. If `Select-String` count is high, it's because `task:` appears in both the concierge-router and opinion-layer frontmatter — normal, total is 9 (concierge-router 1 + 8 opinion layers each 1).
+Expected same as above. If `Select-String` count is high, it's because `task:` appears in both the concierge-router, tool-handlers and opinion-layer frontmatter — normal, total is 11 (concierge-router 1 + 2 tool-handlers + 8 opinion layers each 1).
 
 > **Deployment complete**: after all the above verifications pass, **restart opencode to apply all config**.
 
@@ -1670,4 +1672,4 @@ model: ollama-local/qwen3-coder
 
 ---
 
-> **Doc version**: v0.0.9 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+> **Doc version**: v0.0.13 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)

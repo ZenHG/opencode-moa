@@ -406,6 +406,7 @@ max_tokens: 4096
 permission:
   edit: deny
   bash: deny
+  task: deny
 ---
 只执行读取/搜索任务。返回文件路径+原文或摘要。不做分析不给方案。
 
@@ -455,6 +456,7 @@ hidden: true
 permission:
   edit: deny
   bash: deny
+  task: deny
 ---
 只执行读取/搜索任务。返回文件路径+原文或摘要。不做分析不给方案。
 
@@ -1580,7 +1582,7 @@ $re = (Select-String -Path .opencode/agents/*.md -Pattern 'reasoningEffort:' -Er
 Check "reasoningEffort x22 (got $re)" ($re -eq 22)
 
 $task = (Select-String -Path .opencode/agents/*.md -Pattern 'task:' -ErrorAction SilentlyContinue).Count
-Check "task: x9 (got $task)" ($task -eq 9)
+Check "task: x11 (got $task)" ($task -eq 11)
 
 Write-Host "`n== 结果：PASS=$pass FAIL=$fail WARN=$warn =="
 if ($fail -gt 0) { exit 1 } else { exit 0 }
@@ -1614,7 +1616,7 @@ grep "task:" .opencode/agents/*.md 2>/dev/null | wc -l
 ls .opencode/commands/moa-*.md 2>/dev/null | wc -l
 ```
 
-预期：reasoningEffort 出现 22 次（全 agent），task: 出现 9 次（门童+8意见层），moa- 命令文件名匹配 5 个。
+预期：reasoningEffort 出现 22 次（全 agent），task: 出现 11 次（门童+2工具人+8意见层），moa- 命令文件名匹配 5 个。
 
 **Windows（PowerShell，原生可用）：**
 
@@ -1632,7 +1634,7 @@ Write-Host "=== 内容检查 ==="
 (Get-ChildItem .opencode/commands/moa-*.md -ErrorAction SilentlyContinue).Count
 ```
 
-预期同上。若 `Select-String` 计数偏高，是因为 `task:` 在门童和意见层 frontmatter 里都出现——正常，总数为 9（门童 1 + 8 个意见层各 1）。
+预期同上。若 `Select-String` 计数偏高，是因为 `task:` 在门童、工具人和意见层 frontmatter 里都出现——正常，总数为 11（门童 1 + 2 工具人 + 8 个意见层各 1）。
 
 > **完成部署**：以上全部验证通过后，**重启 opencode 使所有配置生效**。
 
@@ -1827,6 +1829,6 @@ model: ollama-local/qwen3-coder
 
 ---
 
-> **文档版本**：v0.0.9 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+> **文档版本**：v0.0.13 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
 
 

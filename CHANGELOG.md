@@ -45,6 +45,40 @@
 </details>
 ---
 
+## v0.0.13（2026-07-27）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Add `task: deny` to tool-handler agents to prevent recursive subagent nesting (fix + doc sync).
+
+### Fix (P1)
+
+- **`task: deny` on tool-handler agents**: 工具人.md and 工具人-mimo.md now block the `task` tool permission. Previously, these tool-layer agents could call `task(@工具人)` again while already running as subagents, causing recursive nesting that hit the subagent depth limit. The global `permission.task` allowed `工具人` for all agents, and the agent files only denied `edit`/`bash`. Adding `task: deny` prevents any task call from within a tool-handler subagent session.
+
+### Docs
+
+- `docs/opencode-moa.md` / `docs/opencode-moa.en.md`: synced the `task: deny` change in both tool-handler agent definitions; updated T0 verification script `task:` count from 9→11 (门童 + 2 tool-handlers + 8 opinion layers); bumped doc version v0.0.9→v0.0.13.
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+工具人 agent 补 `task: deny`，阻止递归子 agent 嵌套（修复 + 文档同步）。
+
+### 修复（P1）
+
+- **工具人 agent 加 `task: deny`**：`工具人.md` 和 `工具人-mimo.md` 新增 `task: deny` 权限。此前这些工具层 agent 在被门童以子 agent 调用运行时，仍可通过 `task(@工具人)` 再次调用自身，导致递归嵌套触及子 agent 深度上限。全局 `permission.task` 允许所有 agent 调 `工具人`，且 agent 文件只限制了 `edit`/`bash`。补上 `task: deny` 后，工具人子 agent 会话内不能再发起任何 task 调用。
+
+### 文档
+
+- `docs/opencode-moa.md` / `docs/opencode-moa.en.md`：同步两份部署手册的工具人 `task: deny` 变更；更新 T0 验证脚本的 `task:` 检查计数 9→11（门童 + 2 工具人 + 8 意见层）；文档版本 v0.0.9→v0.0.13。
+
+</details>
+
+---
+
 ## v0.0.12（2026-07-24）
 
 <details open>

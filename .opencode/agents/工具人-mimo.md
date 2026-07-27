@@ -9,6 +9,7 @@ hidden: true
 permission:
   edit: deny
   bash: deny
+  task: deny
 ---
 只执行读取/搜索任务。返回文件路径+原文或摘要。不做分析不给方案。
 
