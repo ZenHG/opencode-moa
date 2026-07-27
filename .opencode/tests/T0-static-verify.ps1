@@ -99,7 +99,7 @@ foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
     $c = Get-Content $f.FullName -Raw -Encoding utf8
     $taskCount += ([regex]::Matches($c, "(?m)^\s+task:")).Count
 }
-Check "task: = 9" ($taskCount -eq 9)
+Check "task: = 11" ($taskCount -eq 11)
 
 Write-Host "`n=== Permission groups ===" -ForegroundColor Yellow
 $toolAgents = @("工具人", "工具人-mimo", "视觉翻译官")
@@ -107,6 +107,12 @@ foreach ($a in $toolAgents) {
     $c = Get-Content (Join-Path $agentDir "$a.md") -Raw -Encoding utf8
     Check "$($a) edit=deny" ($c -match "edit:\s*deny")
     Check "$($a) bash=deny" ($c -match "bash:\s*deny")
+}
+
+$taskDenyAgents = @("工具人", "工具人-mimo")
+foreach ($a in $taskDenyAgents) {
+    $c = Get-Content (Join-Path $agentDir "$a.md") -Raw -Encoding utf8
+    Check "$($a) task=deny" ($c -match "task:\s*deny")
 }
 
 $execAgents = @("闪电侠", "旗舰·实现", "前端·还原")
