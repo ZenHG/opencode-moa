@@ -493,6 +493,7 @@ max_tokens: 2048
 permission:
   edit: allow
   bash: allow
+  task: deny
 ---
 
 专攻简单明确的小任务。直接出结果，不加开场白不改废话。
@@ -501,6 +502,7 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
 
 ```
 
@@ -524,6 +526,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 
 截图转精确文字描述：
@@ -536,6 +539,7 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
 
 ```
 
@@ -677,6 +681,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是中级融合专家。对比工程、创意、码农三份方案，输出一份融合方案。
 
@@ -707,6 +712,7 @@ permission:
 
 ---融合方案---
 （完整融合方案）
+
 
 
 ```
@@ -846,6 +852,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是旗舰融合专家。对比架构、规划、工程三份方案，输出一份融合方案。
 
@@ -882,6 +889,7 @@ permission:
 （完整融合方案，包含共识部分和残差补偿建议）
 
 
+
 ```
 
 #### 旗舰·实现
@@ -900,6 +908,7 @@ hidden: true
 permission:
   edit: allow
   bash: allow
+  task: deny
 ---
 按融合方案编码。不改接口签名。方案歧义时汇报，不自作主张。
 
@@ -910,6 +919,7 @@ permission:
 ---实现说明---
 （范围+关键决策）
 ---代码---
+
 
 ```
 
@@ -931,6 +941,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是 MoA 质检员。你有双重职责：
 
@@ -966,6 +977,7 @@ permission:
 
 通过 / 有条件通过 / 打回
 
+
 ```
 
 #### 前端·还原
@@ -984,9 +996,11 @@ hidden: true
 permission:
   edit: allow
   bash: allow
+  task: deny
 ---
 
 严格按布局、颜色、文字精确还原UI。组件化、响应式。输出完整代码。
+
 
 
 ```
@@ -1084,6 +1098,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是前端总工。对比还原、逻辑、动效三份代码，选最优或融合。不得模棱两可。
 
@@ -1103,6 +1118,7 @@ permission:
 对比结论: 最优方案是 X，理由:...
 ---最终代码---
 （完整代码）
+
 
 
 ```
@@ -1125,6 +1141,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是残差提取专家。你的唯一任务是分析多个输入方案之间的差异，
 找出共识之外的增量信息。
@@ -1163,6 +1180,7 @@ permission:
 【残差补偿建议】
 （共识之外的增量信息，建议补充的内容）
 
+
 ```
 
 #### 置信度评估者
@@ -1183,6 +1201,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是置信度评估者。对 MoA 融合结果进行可信度审查。
 
@@ -1228,6 +1247,7 @@ permission:
 置信度 60-84: 有条件采纳 — [需修正的点]
 置信度 < 60: 打回重做 — [主要原因]
 
+
 ```
 
 #### 融合·保底
@@ -1248,6 +1268,7 @@ permission:
   bash: deny
   read: deny
   webfetch: deny
+  task: deny
 ---
 你是融合层保底 agent。你会收到三份方案/代码/意见，可能来自工程/创意/码农、架构/规划/工程、或还原/逻辑/动效视角。
 
@@ -1270,6 +1291,7 @@ permission:
 
 简述融合决策理由
 ---融合方案---
+
 
 ```
 ### Block 3：5 个 `/moa-*` 命令
@@ -2016,6 +2038,7 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.13 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
 
 
 

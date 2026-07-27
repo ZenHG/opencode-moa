@@ -227,7 +227,7 @@ rm -rf your-project/.opencode/
 门童路由员 / concierge-router (Flash)
  │
  ├── 工具层 ──────────────────────────────────────
- │   工具人 / tool-handler      (Flash)        读代码搜文件 [+ 材料自检]
+ │   工具人 / tool-handler      (Flash)        读代码搜文件
  │   工具人-mimo / tool-handler-mimo (MiMo)        可靠读文件（保底+并行）[hidden]
  │   闪电侠 / swift      (Flash)        简单任务一步到位
  │   视觉翻译官 / vision-translator   (MiMo)        截图/UI→文字；日志/图表/文档→解构
@@ -405,6 +405,16 @@ Agent 的激活由声明式 `前置条件` 元数据驱动，而非硬编码路�
 
 > 注：项目未配置 MCP server，此处"权限隔离"指通过 deny 策略阻止 agent 自行取数，而非 MCP 层面的隔离。
 
+### Task 嵌套防御
+
+所有非路由 agent 声明 `task: deny`，防止子 agent 再次调用 task() 造成嵌套递归：
+
+- **第一层（agent frontmatter）**：每个 agent 文件头部声明 `task: deny`
+- **第二层（opencode.json）**：`permission.task` 仅门童可调 agent，非路由 agent 全局禁止调 worker
+- **第三层（prompt 护栏）**：门童 prompt 末尾追加约束，禁止自身调子 agent 进入新流水线
+
+> 2026-07 发现门童→工具人→工具人三层嵌套后添加的防御。三层的冗余设计保证即使某一层失效仍能阻断递归。
+
 ### 无材料保底
 
 意见层被调用但没有材料时（工具层全部失败），会 ask 用户：
@@ -494,7 +504,7 @@ OpenCode Zen 提供免费模型作为最后保底：
 | 全局 catch-all | 未声明的工具调用 → 弹窗确认                                                                   |
 | Agent 权限隔离   | 每个 agent 只能用允许的工具                                                                 |
 | MCP 权限隔离     | 意见层禁止直接读代码/调命令（read: deny + bash: deny），防止绕过工具层（项目未配置 MCP server，此处指 agent 级工具限制） |
-| task 白名单     | 门童只能调用声明过的 agent                                                                  |
+| task 三级防御     | 非路由 agent 拒绝 task → 门童白名单 → prompt 护栏，防嵌套递归 |
 | 降级链          | 工具层失败 → ask 用户 → 等待/跳过/免费模型                                                       |
 | 一键回滚         | 删掉 `.opencode/` 目录即可还原                                                            |
 

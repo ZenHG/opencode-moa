@@ -229,7 +229,7 @@ rm -rf your-project/.opencode/
 concierge-router (门童路由员, Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
- │   tool-handler      (工具人, Flash    ) read code, search files [+ material self-check]
+ │   tool-handler      (工具人, Flash    ) read code, search files
  │   tool-handler-mimo (工具人-mimo, MiMo) reliable file read (fallback + parallel) [hidden]
  │   swift             (闪电侠, Flash    ) simple tasks in one shot
  │   vision-translator (视觉翻译官, MiMo ) screenshot/UI→text; logs/diagrams/docs→decomposition
@@ -405,6 +405,16 @@ Opinion-layer agents are forbidden from reading code directly (via `read: deny` 
 
 > Note: This project does not configure any MCP servers. The term "MCP permission isolation" refers to the agent-level tool restrictions (`read: deny` / `bash: deny`), not MCP server-level isolation.
 
+### Task nesting defense
+
+All non-routing agents declare `task: deny` to prevent child agents from calling task() again, blocking recursive nesting:
+
+- **Layer 1 (agent frontmatter)**: each agent file declares `task: deny`
+- **Layer 2 (opencode.json)**: `permission.task` only allows concierge to call agents; non-routing agents globally denied from calling workers
+- **Layer 3 (prompt guard)**: concierge prompt ends with constraint forbidding itself from launching a new pipeline via sub-agent
+
+> Added 2026-07 after discovering concierge→tool-handler→tool-handler triple nesting. Three-layer redundancy ensures blocking even if one layer fails.
+
 ### No-material fallback
 
 When the opinion layer is called but has no material (tool layer fully failed), it asks the user:
@@ -496,7 +506,7 @@ OpenCode Zen provides free models as a last resort:
 | Global catch-all           | undeclared tool call → popup confirm                                                                                                                                                          |
 | Agent permission isolation | each agent can only use allowed tools                                                                                                                                                         |
 | MCP permission isolation   | opinion layer forbidden from reading code (read: deny / bash: deny), prevents bypassing tool layer (project has no MCP server configured; "MCP" here refers to agent-level tool restrictions) |
-| Task whitelist             | concierge-router can only call declared agents                                                                                                                                                |
+| Task 3-layer defense        | non-routing agents deny task → concierge whitelist → prompt guard, prevents recursive nesting |
 | Fallback chain             | tool layer fails → ask user → wait/skip/free model                                                                                                                                            |
 | One-click rollback         | delete `.opencode/` to restore                                                                                                                                                                |
 
