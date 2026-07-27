@@ -99,7 +99,7 @@ foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
     $c = Get-Content $f.FullName -Raw -Encoding utf8
     $taskCount += ([regex]::Matches($c, "(?m)^\s+task:")).Count
 }
-Check "task: = 11" ($taskCount -eq 11)
+Check "task: = 22" ($taskCount -eq 22)
 
 Write-Host "`n=== Permission groups ===" -ForegroundColor Yellow
 $toolAgents = @("工具人", "工具人-mimo", "视觉翻译官")

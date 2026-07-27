@@ -66,6 +66,11 @@ Add `task: deny` to tool-handler agents to prevent recursive subagent nesting (f
 - **9 opinion agents**: data source logic unified — priority 1: inlined material, priority 2: direct reasoning (no file reads), priority 3: `task(@工具人)` fallback (environment-dependent).
 - **工具人.md**: added token budget note (≤4K tokens, key excerpts only).
 
+### Fix (P2)
+
+- **Defense-in-depth `task: deny`**: 11 more agents received `task: deny` in YAML to prevent unintended nested `task()` calls. High-risk: 闪电侠 (edit/bash allow), 旗舰·实现 (edit/bash allow), 前端·还原 (edit/bash allow). Low-risk: 视觉翻译官, 残差提取者, 置信度评估者, 旗舰·融合, 中级·融合, 旗舰·质检, 前端·总工, 融合·保底 (all already edit/bash/read denied). T0 task: count updated 11→22.
+- **门童 inline mapping fixes**: split `→旗舰·融合/中级·融合` into separate lines (中级·融合 no residual report); split `→旗舰·质检` into first call (fusion plan) and second call (code + fusion plan).
+
 </details>
 
 <details>
@@ -86,6 +91,11 @@ Add `task: deny` to tool-handler agents to prevent recursive subagent nesting (f
 - **数据内联契约**：门童路由员.md 新增数据内联规则，上游产出直接嵌入 task() prompt，不再依赖子 agent 自读文件。覆盖全部流水线：中级链、旗舰链、前端链。新增内联标记协议（`【内联材料包开始】...【内联材料包结束】`）和 Token 预算（材料包 ≤4K、意见 ≤2K/份、融合 ≤3K）。门童 prompt 从 190 行精简至 ~85 行（砍掉复杂度矩阵、VOC、阶段映射文档、压缩闪电侠并行通道）。
 - **9 个意见层 agent**：数据来源逻辑统一为三级优先级——内联材料优先，无材料时纯逻辑推演，task(@工具人) 降级为备选依赖路径。
 - **工具人.md**：新增 Token 预算说明（≤4K tokens，仅关键片段）。
+
+### 修复（P3）
+
+- **纵深防御 `task: deny`**：再为 11 个 agent 的 YAML 添加 `task: deny` 防止嵌套调用。高风险：闪电侠（edit/bash allow）、旗舰·实现（edit/bash allow）、前端·还原（edit/bash allow）。低风险：视觉翻译官、残差提取者、置信度评估者、旗舰·融合、中级·融合、旗舰·质检、前端·总工、融合·保底（均已 edit/bash/read deny）。T0 task: 计数 11→22。
+- **门童内联映射修复**：`→旗舰·融合/中级·融合` 拆为独立两行（中级·融合无残差报告）；`→旗舰·质检` 拆为首次调用（融合方案）和二次调用（代码+融合方案）。
 
 </details>
 
