@@ -45,6 +45,92 @@
 </details>
 ---
 
+## v0.0.15（2026-07-30）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+MoA long-running task optimization: structured output, frozen acceptance criteria, anti-cheat mechanism, auto-routing, and contradiction/redundancy cleanup.
+
+### New (P1)
+
+- **Structured output format**: Opinion layer (6 agents) now outputs `---section-name---` + `---NOT---` (no metadata section); Fusion layer outputs `---融合方案---` + `---NOT---` + `---验收标准---` (full structure). Saves ~420 tokens/pipeline by removing redundant metadata sections.
+- **Frozen acceptance criteria**: Fusion layer now outputs `---验收标准---` section with machine-verifiable commands and baselines. Once output, this section is frozen — only bonus items can be added later. Implemented across 旗舰·融合, 中级·融合, 融合·保底.
+- **Anti-cheat mechanism**: `acceptance-template.json` v2 with hiddenCriteria (dark verification), antiCheating (baseline non-regression, forbidden actions, implementation diff check), stopLoss, and progressTracking.
+- **Auto-routing in router**: 门童路由员 v4 now auto-detects task type (explore/execute) and routes accordingly. Explore tasks skip fusion/implementation layers.
+
+### Fix (P1)
+
+- **Permission-function contradiction**: 旗舰·质检 had `bash: deny` but described "execute verification commands" — fixed to "核对 ---自验结果--- 中的命令输出" (verify, not execute).
+- **Role overlap clarification**: 置信度评估者 now explicitly states it only does plan-level review; implementation review is handled by 旗舰·质检. Reduces confusion from 5 overlapping review dimensions.
+- **Missing input validation**: 中级·融合 lacked input validation/degradation logic — added N-count detection and degraded fusion rules (matching 旗舰·融合).
+
+### Fix (P2)
+
+- **Terminology unification**: All `NOT列表` references changed to `---NOT---` section. Removed duplicate confidence routing logic in 门童路由员.
+- **Stop-loss deduplication**: 旗舰·质检 stop-loss now references 旗舰·实现's rules instead of duplicating.
+- **Removed 开工回执**: All 6 pipeline agents (旗舰·融合/架构/规划/工程, 中级·融合, 融合·保底) — not needed in MoA (质检 layer handles understanding verification).
+
+### Agent changes (12 files modified)
+
+- Opinion layer (6): 旗舰·架构/规划/工程, 中级·工程/创意/码农 — removed `---元数据---`, added `---NOT---`
+- Fusion layer (3): 旗舰·融合, 中级·融合, 融合·保底 — added `---NOT---` + `---验收标准---`, 旗舰·融合 and 融合·保底 added input validation
+- Implementation layer: 旗舰·实现 — added `---实现进度---` section, NOT/frozen criteria input
+- Quality: 旗舰·质检 — fixed permission-function contradiction, added NOT/frozen criteria verification
+- Router: 门童路由员 v4 — added auto-routing, metadata inline, lockfile logic
+- Frontend: 前端·还原/逻辑/动效 — added `---NOT---`
+- Quick: 闪电侠 — added `---NOT---`
+- Analysis: 置信度评估者 — added frozen criteria verification, clarified role scope
+
+### Configuration
+
+- `acceptance-template.json` v2: added frozen criteria, hiddenCriteria, antiCheating, stopLoss, deliveryRequirements, _relatedFiles
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+MoA 长时任务优化：结构化输出、冻结验收标准、反作弊机制、自动路由、矛盾冗余清理。
+
+### 新增（P1）
+
+- **结构化输出格式**：意见层（6 个 agent）输出 `---section-name---` + `---NOT---`（无元数据节）；融合层输出 `---融合方案---` + `---NOT---` + `---验收标准---`（完整结构）。去掉冗余元数据节，每次流水线节省约 420 tokens。
+- **冻结验收标准**：融合层新增 `---验收标准---` 节，含可机器判定的验收命令和基线值。输出后冻结，后续只能追加 bonus 项。覆盖旗舰·融合、中级·融合、融合·保底。
+- **反作弊机制**：`acceptance-template.json` v2 含 hiddenCriteria（暗卷抽查）、antiCheating（基线不退化、禁止操作、实现 diff 检查）、stopLoss、progressTracking。
+- **门童自动路由**：门童路由员 v4 新增任务类型自动检测（探索型/执行型），探索型跳过融合/实现层。
+
+### 修复（P1）
+
+- **权限-功能矛盾**：旗舰·质检 `bash: deny` 却描述"逐条执行验收命令" → 改为"逐条核对 ---自验结果---"。
+- **角色重叠澄清**：置信度评估者明确声明仅做方案级审查，实现后审查由旗舰·质检负责。
+- **输入验证缺失**：中级·融合补充输入验证/降级逻辑（与旗舰·融合一致）。
+
+### 修复（P2）
+
+- **术语统一**：`NOT列表` → `---NOT---` 节。门童路由员去除重复置信度路由逻辑。
+- **止损去重**：旗舰·质检止损改为引用旗舰·实现的标准，不再重复。
+- **移除开工回执**：6 个流水线 agent 全部删除（质检层替代）。
+
+### Agent 变更（12 个文件）
+
+- 意见层（6）：旗舰·架构/规划/工程、中级·工程/创意/码农 — 去掉 `---元数据---`，新增 `---NOT---`
+- 融合层（3）：旗舰·融合、中级·融合、融合·保底 — 新增 `---NOT---` + `---验收标准---`，旗舰·融合和融合·保底补充输入验证
+- 实现层：旗舰·实现 — 新增 `---实现进度---` 节，输入 NOT/冻结标准
+- 质检：旗舰·质检 — 修复权限-功能矛盾，新增 NOT/冻结标准验证
+- 路由：门童路由员 v4 — 新增自动路由、元数据内联、lockfile 逻辑
+- 前端：前端·还原/逻辑/动效 — 新增 `---NOT---`
+- 快任务：闪电侠 — 新增 `---NOT---`
+- 分析：置信度评估者 — 新增冻结标准验证，澄清角色范围
+
+### 配置
+
+- `acceptance-template.json` v2：新增冻结标准、hiddenCriteria、antiCheating、stopLoss、deliveryRequirements、_relatedFiles
+
+</details>
+
+---
+
 ## v0.0.14（2026-07-28）
 
 <details open>

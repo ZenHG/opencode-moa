@@ -47,7 +47,8 @@
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow"
-    }
+    },
+    "todowrite": "allow"
   },
   "agent": {
     "中级·工程": {
@@ -101,6 +102,28 @@
       }
     },
     "旗舰·工程": {
+      "permission": {
+        "*": "ask",
+        "task": {
+          "工具人": "allow",
+          "视觉翻译官": "allow"
+        },
+        "*_*": "deny"
+      }
+    },
+    "旗舰·实现": {
+      "steps": 15,
+      "permission": {
+        "*": "ask",
+        "task": {
+          "工具人": "allow",
+          "视觉翻译官": "allow"
+        },
+        "*_*": "deny"
+      }
+    },
+    "旗舰·质检": {
+      "steps": 10,
       "permission": {
         "*": "ask",
         "task": {
