@@ -8,6 +8,8 @@
 
 > 🔥 **Hot (2026-07):** flagship fuse upgraded to **Kimi K3** — 2.8T params, 1M context, top-tier frontier model. OpenCode Go quota 2x until 7/24 (140 → 280 / 5h, then back to 140). MoA quality ceiling now at the front of the pack.
 
+> **v0.0.15 (2026-07-30):** MoA long-running task optimization — structured output format, frozen acceptance criteria, anti-cheat mechanism, auto-routing, and contradiction/redundancy cleanup across 12 agent files.
+
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
 <!-- ARCH-IMG -->
@@ -197,6 +199,14 @@ rm -rf your-project/.opencode/
 | `/moa-frontend` | UI restore, CSS, screenshot fix                |
 | `/moa-describe` | screenshot/image to text                       |
 
+### Auto-routing (v0.0.15)
+
+The concierge-router now auto-detects task type based on keyword analysis:
+
+- **Exploration tasks**: "analyze", "compare", "understand", "investigate" → 启用探索型 prompt + 冻结验收标准
+- **Execution tasks**: "fix", "add", "implement", "deploy" → 启用执行型 prompt + 止损规则
+- **Task type appears in pipeline output**: `[Type: Execute]` or `[Type: Explore]`
+
 ---
 
 ## Architecture
@@ -263,6 +273,51 @@ Fallback agent (not in the router chain above, called only when fusion fails):
 ```
 fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, used when flag-fuse / mid-fuse / fe-lead fail
 ```
+
+### Structured output format (v0.0.15)
+
+All agents output in a standardized format using `---section-name---` markers, enabling downstream agents to parse and process results efficiently:
+
+**Opinion layer** (lightweight format):
+```
+---记忆层---
+[context from tool layer]
+---方案---
+[plan/proposal]
+---NOT---
+[exclusions: what not to do]
+```
+
+**Fusion layer** (full structure):
+```
+---元数据---
+{pipeline, taskType, stage, confidence, inputCount, degraded}
+---共识率---
+[percentage of agreement across inputs]
+---残差提取---
+[divergence analysis between inputs]
+---方案---
+[fused plan]
+---NOT列表---
+[merged exclusions from all inputs]
+---验收标准---
+[machine-verifiable acceptance criteria]
+```
+
+This format enables:
+- Downstream agents to extract specific sections via parsing
+- Consistent machine-readable output for automated processing
+- Frozen acceptance criteria that implementation agents must verify
+
+### Anti-cheat mechanism (v0.0.15)
+
+To prevent implementation agents from cutting corners to meet acceptance criteria:
+
+- **Baseline non-regression**: test count, coverage, and skipped tests must not be worse than baseline
+- **Forbidden actions**: skip/todo, relax assertions, mock tested objects, delete tests, `|| true`, modify thresholds
+- **Implementation diff check**: for test-writing tasks, ensure implementation directory is unchanged
+- **Hidden spot-checks**: manager-injected verification items that the executor cannot see
+- **Stop-loss**: retry up to 3 times per item, rollback on regression, report honestly if stuck
 
 ---
 

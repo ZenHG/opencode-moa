@@ -86,6 +86,10 @@ MoA long-running task optimization: structured output, frozen acceptance criteri
 
 - `acceptance-template.json` v2: added frozen criteria, hiddenCriteria, antiCheating, stopLoss, deliveryRequirements, _relatedFiles
 
+### Docs
+
+- **README.md/README.zh.md**: Added v0.0.15 hot note, auto-routing section, structured output format section, anti-cheat mechanism section
+
 </details>
 
 <details>
@@ -126,6 +130,10 @@ MoA 长时任务优化：结构化输出、冻结验收标准、反作弊机制�
 ### 配置
 
 - `acceptance-template.json` v2：新增冻结标准、hiddenCriteria、antiCheating、stopLoss、deliveryRequirements、_relatedFiles
+
+### 文档
+
+- **README.md/README.zh.md**：新增 v0.0.15 热点说明、自动路由、结构化输出格式、反作弊机制章节
 
 </details>
 
