@@ -427,19 +427,19 @@ Status indicators:
 - `degraded` — running with partial inputs, lower confidence
 - `stuck` — all recovery paths exhausted, user intervention needed
 
-### 闪电侠 Parallel Shortcut
+### Swift Parallel Shortcut
 
-When the main pipeline is executing, 闪电侠 can be dispatched in parallel for independent simple subtasks:
+When the main pipeline is executing, swift can be dispatched in parallel for independent simple subtasks:
 
 ```
 Main pipeline: Tool Layer → Opinion Layer → Fusion Layer → Implementation Layer
-Parallel lane: 闪电侠 (always ready, runs alongside main pipeline)
+Parallel lane: swift (always ready, runs alongside main pipeline)
 ```
 
 Trigger conditions (any one):
 - User instruction explicitly requests parallel work ("do X simultaneously", "also quickly check Y")
 - A simple subtask emerges during main pipeline execution (e.g., searching TODOs while architecture plans are being designed)
-- User directly calls @闪电侠
+- User directly calls @swift
 
 Scope limitations:
 - ✅ Independent tasks with no dependency on main pipeline output
@@ -448,7 +448,7 @@ Scope limitations:
 - ❌ Opinion fusion tasks (must remain serial)
 - ❌ Implementation and QA tasks (must remain serial)
 
-If 闪电侠 finishes before the main pipeline, results are held and returned together at the end. If the main pipeline finishes first, 闪电侠 results are returned immediately. 闪电侠 failure does not affect main pipeline execution.
+If swift finishes before the main pipeline, results are held and returned together at the end. If the main pipeline finishes first, swift results are returned immediately. swift failure does not affect main pipeline execution.
 
 ### MCP permission isolation
 
