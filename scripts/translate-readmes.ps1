@@ -3,7 +3,7 @@
 #
 # Detects which source README changed (README.md or README.zh.md),
 # translates to all other language READMEs using GitHub Models (free),
-# validates output with existing CI checks, and commits the result.
+# validates output with existing CI checks.
 
 param(
     [string]$Target = "all",
@@ -29,7 +29,6 @@ $targetLangs = @{
 $protectedPatterns = @(
     '<!--\s*ARCH-IMG\s*-->', '<!--\s*/ARCH-IMG\s*-->',
     '<!--\s*COST-IMG\s*-->', '<!--\s*/COST-IMG\s*-->',
-    '```\s*\w*', '^```', '^```\s*$',
     'opencode-go/', '^!\['
 )
 
@@ -37,14 +36,14 @@ $protectedPatterns = @(
 function Call-Model {
     param(
         [string]$Messages,
-        [int]$MaxRetries = 3
+        [int]$MaxRetries = 2
     )
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         try {
             $body = @{
                 model    = $model
                 messages = @( @{ role = "user"; content = $Messages } )
-                max_tokens = 4096
+                max_tokens = 8192
                 temperature = 0.3
             } | ConvertTo-Json -Depth 10
 
@@ -58,7 +57,7 @@ function Call-Model {
                     "X-GitHub-Api-Version" = "2022-11-28"
                 } `
                 -Body $body `
-                -TimeoutSec 120
+                -TimeoutSec 180
 
             return $response.choices[0].message.content
         }
@@ -77,6 +76,83 @@ function Call-Model {
         }
     }
     return $null
+}
+
+# ── Helper: build prompt for a section ──
+function Build-Prompt {
+    param([string]$Chunk, [string]$Lang, [string]$Context)
+    return @"
+Translate the following markdown into $Lang. Maintain EXACTLY the same structure, headings, tables, ASCII diagrams, anchors, and code blocks.
+
+RULES:
+- DO NOT translate: model IDs, command names, file paths, anchor comments (<!-- ARCH-IMG -->), markdown code blocks, or ASCII diagram characters.
+- DO translate: all prose text, table cells with natural language descriptions, headings text, and UI-facing strings.
+- PRESERVE the exact same heading level, table alignment, blank lines, and anchor placement.
+- Output ONLY the translated markdown with NO extra commentary.
+- DO NOT wrap the output in code fences.
+
+Content to translate ($Context):
+$Chunk
+"@
+}
+
+# ── Helper: split content into ~8KB chunks at ## headings ──
+function Split-Chunks {
+    param([string]$Content, [int]$MinSize = 6000)
+    $lines = $Content -split "`n"
+    $sections = @(); $buf = ""
+    foreach ($line in $lines) {
+        if ($line -match '^## ') {
+            if ($buf) { $sections += $buf }; $buf = ""
+        }
+        $buf = if ($buf) { "$buf`n$line" } else { $line }
+    }
+    if ($buf) { $sections += $buf }
+
+    if ($sections.Count -eq 0) { return @() }
+
+    $chunks = @(); $acc = $sections[0]
+    for ($i = 1; $i -lt $sections.Count; $i++) {
+        if ($acc.Length -ge $MinSize) { $chunks += $acc; $acc = "" }
+        $acc = if ($acc) { "$acc`n`n$($sections[$i])" } else { $sections[$i] }
+    }
+    if ($acc) { $chunks += $acc }
+    return $chunks
+}
+
+# ── Helper: validate translated output quality ──
+function Test-Translation {
+    param([string]$Source, [string]$Translated)
+    $errors = @()
+
+    # Headings preserved
+    $srcH = $sourceContent | Select-String -Pattern '^#{2,3}\s' | ForEach-Object { $_.Line }
+    $tgtH = $Translated | Select-String -Pattern '^#{2,3}\s' | ForEach-Object { $_.Line }
+    if ($srcH.Count -ne $tgtH.Count) {
+        $errors += "Heading count mismatch: source=$($srcH.Count), translated=$($tgtH.Count)"
+    }
+
+    # ARCH-IMG anchors present
+    if ($Translated -notmatch '<!--\s*ARCH-IMG\s*-->') {
+        $errors += "ARCH-IMG anchor missing"
+    }
+    if ($Translated -notmatch '<!--\s*/ARCH-IMG\s*-->') {
+        $errors += "Closing ARCH-IMG anchor missing"
+    }
+
+    # Cost allocation: translated && cost source found
+    $srcHasCost = $Source -match '\$\d+\.\d+/1M'
+    $tgtHasCost = $Translated -match '\$\d+\.\d+/1M'
+    if ($srcHasCost -and -not $tgtHasCost) {
+        $errors += "Cost indicators lost in translation"
+    }
+
+    # Empty output guard
+    if ([string]::IsNullOrWhiteSpace($Translated)) {
+        $errors += "Translated output is empty"
+    }
+
+    return $errors
 }
 
 # ── Step 1: Detect source README changes ──
@@ -108,78 +184,52 @@ if (-not (Test-Path $sourcePath)) {
     exit 0
 }
 $sourceContent = Get-Content $sourcePath -Raw -Encoding utf8
+$chunks = Split-Chunks -Content $sourceContent
 
-# ── Step 3: Extract unchanged preamble (header, table of contents, anchors) and changed sections ──
-# Strategy: send entire source README + a diff prompt to the model with the target language README
-# so the model preserves structure and only translates prose sections.
-# This avoids fragile section-by-section diff parsing.
-
-$sourceHeading = $sourceContent -split '\n' | Select-Object -First 1
-
-$translationSuccess = $true
+# ── Step 3: Translate each language ──
+$overallSuccess = $true
+$failedLangs = @()
+$successfulLangs = @()
 
 foreach ($lang in $targetLangsToTranslate) {
     Write-Host "`n--- Translating to ${lang} ($($targetLangs[$lang])) ---" -ForegroundColor Yellow
 
     $targetFile = "README.$lang.md"
     $targetPath = Join-Path $base $targetFile
-    $targetExists = Test-Path $targetPath
-
-    if (-not $targetExists) {
+    if (-not (Test-Path $targetPath)) {
         Write-Host "  [WARN] $targetFile does not exist, skipping" -ForegroundColor Yellow
         continue
     }
 
-    # Split source into chunks at ## headings, merging small sections to ~4KB min
-    $rawChunks = @(); $buf = ""
-    foreach ($line in $sourceContent -split "`n") {
-        if ($line -match '^## ') {
-            if ($buf) { $rawChunks += $buf }; $buf = ""
-        }
-        if ($buf) { $buf += "`n" + $line } else { $buf = $line }
-    }
-    if ($buf) { $rawChunks += $buf }
-    $chunks = @(); $acc = $rawChunks[0]
-    for ($i = 1; $i -lt $rawChunks.Count; $i++) {
-        if ($acc.Length -ge 4000) { $chunks += $acc; $acc = "" }
-        $acc = if ($acc) { "$acc`n`n$($rawChunks[$i])" } else { $rawChunks[$i] }
-    }
-    if ($acc) { $chunks += $acc }
-
     $translatedChunks = @()
-    $chunkOk = $true
+    $langOk = $true
+
     for ($ci = 0; $ci -lt $chunks.Count; $ci++) {
         $chunk = $chunks[$ci]
         $context = if ($ci -eq 0) { "preamble" } else { "section" }
-        $prompt = @"
-Translate the following markdown into $( $targetLangs[$lang] ). Maintain EXACTLY the same structure, headings, tables, ASCII diagrams, anchors, and code blocks.
+        $prompt = Build-Prompt -Chunk $chunk -Lang $targetLangs[$lang] -Context $context
 
-RULES:
-- DO NOT translate: model IDs, command names, file paths, anchor comments (<!-- ARCH-IMG -->), markdown code blocks, or ASCII diagram characters.
-- DO translate: all prose text, table cells with natural language descriptions, headings text, and UI-facing strings.
-- PRESERVE the exact same heading level, table alignment, blank lines, and anchor placement.
-- Output ONLY the translated markdown with NO extra commentary.
-- DO NOT wrap the output in ``` code fences.
-
-Content to translate ($context):
-$chunk
-"@
         Write-Host "  Chunk $($ci+1)/$($chunks.Count) ($($chunk.Length)B)..." -ForegroundColor Gray
         $translated = Call-Model -Messages $prompt
+
         if (-not $translated) {
             Write-Host "  [FAIL] Chunk $($ci+1) failed for $lang" -ForegroundColor Red
-            $chunkOk = $false
-            $translationSuccess = $false
+            $langOk = $false
+            $overallSuccess = $false
             break
         }
-        # Strip leading/trailing ``` fences the model may wrap
+
+        # Strip accidental code fences
         $translated = $translated -replace '(?s)^\s*```[\w]*\s*\n?', ''
         $translated = $translated -replace '(?s)\s*```\s*$', ''
         $translatedChunks += $translated
-        if ($ci -lt $chunks.Count - 1) { Start-Sleep -Seconds 15 }
+
+        # Adaptive delay: only if more chunks remain
+        if ($ci -lt $chunks.Count - 1) { Start-Sleep -Seconds 5 }
     }
 
-    if (-not $chunkOk) {
+    if (-not $langOk) {
+        $failedLangs += $lang
         Write-Host "  [FAIL] Translation failed for $lang, keeping existing content" -ForegroundColor Red
         continue
     }
@@ -187,75 +237,78 @@ $chunk
     $translated = $translatedChunks -join "`n`n"
 
     # ── Step 4: Validate output ──
-    # Check anchors preserved
-    $anchorsOk = $true
-    foreach ($pat in $protectedPatterns) {
-        # Check that key anchors exist in both source and translated
-        # We verify structure was preserved by ensuring the translated output has the same number of headings
-    }
-
-    # Count headings in both
-    $sourceHeadings = ($sourceContent | Select-String -Pattern '^#{2,3}\s').Count
-    $translatedHeadings = ($translated | Select-String -Pattern '^#{2,3}\s').Count
-
-    if ($sourceHeadings -ne 0 -and $translatedHeadings -ne 0) {
-        $headingRatio = [math]::Min($sourceHeadings, $translatedHeadings) / [math]::Max($sourceHeadings, $translatedHeadings)
-        if ($headingRatio -lt 0.8) {
-            Write-Host "  [WARN] Heading count mismatch: source=$sourceHeadings, translated=$translatedHeadings (ratio=$headingRatio)" -ForegroundColor Yellow
+    $validationErrors = Test-Translation -Source $sourceContent -Translated $translated
+    if ($validationErrors.Count -gt 0) {
+        Write-Host "  [WARN] Validation issues for $lang:" -ForegroundColor Yellow
+        foreach ($e in $validationErrors) {
+            Write-Host "    - $e" -ForegroundColor Yellow
         }
     }
 
-    # Check key anchors preserved
-    $archAnchor = $translated -match '<!--\s*ARCH-IMG\s*-->'
-    if (-not $archAnchor) {
-        Write-Host "  [WARN] ARCH-IMG anchor missing in $lang translation" -ForegroundColor Yellow
-    }
-
-    # Check model IDs preserved (don't translate model references)
-    # This is handled by the prompt rules but we double-check key ones
-
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would write to $targetFile" -ForegroundColor Gray
-        # Write preview to temp for review
         $previewPath = Join-Path $base ".trans-preview.$lang.md"
         Set-Content -Path $previewPath -Value $translated -Encoding utf8
         Write-Host "  Preview saved to $previewPath" -ForegroundColor Cyan
+        $successfulLangs += $lang
         continue
     }
 
-    # ── Step 5: Write translated file ──
+    # ── Step 5: Save only once per language ──
     Set-Content -Path $targetPath -Value $translated -Encoding utf8
     Write-Host "  [OK] $targetFile updated" -ForegroundColor Green
+    $successfulLangs += $lang
 }
 
 # ── Step 6: Run post-translation validation ──
-if (-not $DryRun -and $translationSuccess) {
-    Write-Host "`n--- Running post-translation checks ---" -ForegroundColor Cyan
-    $envL0 = pwsh .opencode/tests/T0-static-verify.ps1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  [WARN] T0 static verify issues (non-fatal for translation)" -ForegroundColor Yellow
-    }
-
-    pwsh scripts/verify-images.ps1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  [FAIL] Image anchor check failed — reverting translation" -ForegroundColor Red
-        git checkout HEAD -- README.*.md
-        exit 1
-    }
-
-    $env:LASTEXITCODE = 0
-    pwsh .opencode/tests/T1-readme-consistency.ps1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  [WARN] T1 consistency check issues — review recommended" -ForegroundColor Yellow
-    }
-}
-
 if ($DryRun) {
-    Write-Host "`n  [DRY RUN] No changes made. Use the preview files to review." -ForegroundColor Cyan
+    Write-Host "`n  [DRY RUN] No changes made. Use preview files to review." -ForegroundColor Cyan
+    Write-Host "  Languages done: $($successfulLangs -join ', ')" -ForegroundColor Gray
     exit 0
 }
 
-Write-Host "" -ForegroundColor Cyan
-Write-Host "  Translation complete." -ForegroundColor Green
-Write-Host "  Run 'git diff --stat' to review changes, then commit." -ForegroundColor Gray
+$headersChanged = @()
+foreach ($f in @("README.ja.md", "README.ko.md", "README.es.md", "README.fr.md", "README.de.md")) {
+    $path = Join-Path $base $f
+    if (Test-Path $path) {
+        $diff = git diff -- "$f"
+        if ($diff) { $headersChanged += $f }
+    }
+}
+
+if ($headersChanged.Count -eq 0) {
+    Write-Host "`n  [SKIP] No translation changes detected" -ForegroundColor Gray
+    exit 0
+}
+
+if (-not $overallSuccess) {
+    Write-Host "`n  [WARN] Some translations failed, but successful ones are saved:" -ForegroundColor Yellow
+    Write-Host "  Failed: $($failedLangs -join ', ')" -ForegroundColor Red
+    Write-Host "  Success: $($successfulLangs -join ', ')" -ForegroundColor Green
+    Write-Host "  Run 'git diff --stat' to review, then manually revert failed ones if needed." -ForegroundColor Gray
+    exit 1
+}
+
+Write-Host "`n--- Running post-translation checks ---" -ForegroundColor Cyan
+pwsh .opencode/tests/T0-static-verify.ps1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  [WARN] T0 static verify issues (non-fatal for translation)" -ForegroundColor Yellow
+}
+
+pwsh scripts/verify-images.ps1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  [FAIL] Image anchor check failed in translated files, reverting" -ForegroundColor Red
+    git checkout HEAD -- $($headersChanged -join ' ')
+    exit 1
+}
+
+$env:LASTEXITCODE = 0
+pwsh .opencode/tests/T1-readme-consistency.ps1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  [WARN] T1 consistency check issues — review recommended" -ForegroundColor Yellow
+}
+
+Write-Host "`n  Translation complete."
+Write-Host "  Changed: $($headersChanged -join ', ')" -ForegroundColor Green
+Write-Host "  Run 'git diff --stat' to review, then commit." -ForegroundColor Gray
 exit 0

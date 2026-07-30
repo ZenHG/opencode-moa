@@ -1,4 +1,4 @@
-name: Layer 0 Static Verify
+# Layer 0 Static Verify
 on:
   push:
     branches: [master]
@@ -27,56 +27,3 @@ jobs:
       - name: Run T1 consistency check
         shell: pwsh
         run: pwsh .opencode/tests/T1-readme-consistency.ps1
-  sync-docs:
-    runs-on: ubuntu-latest
-    needs: verify
-    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip sync]')
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Sync deployment manual from agent YAML
-        shell: pwsh
-        run: pwsh scripts/sync-docs.ps1
-      - name: Commit doc sync
-        if: success()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet docs/ && echo "No doc changes" && exit 0
-          git add docs/*.md
-          git commit -m "docs: auto-sync deployment manual from agents [skip ci]"
-          git pull --rebase origin master
-          git push
-
-  translate:
-    runs-on: ubuntu-latest
-    needs: sync-docs
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'README') && !contains(github.event.head_commit.message, '[skip sync]')
-    permissions:
-      models: read
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Auto-translate READMEs
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $env:GITHUB_TOKEN = "${{ secrets.GITHUB_TOKEN }}"
-          pwsh scripts/translate-readmes.ps1
-      - name: Commit translations
-        if: success()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet README.*.md && echo "No translation changes" && exit 0
-          git add README.*.md
-          git commit -m "i18n: auto-translate READMEs [skip ci]"
-          git pull --rebase origin master
-          git push
