@@ -1280,279 +1280,65 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
       "rm *": "deny",
       "del *": "deny"
     },
+<!-- SYNC:TASK_WHITELIST start -->
     "task": {
       "*": "deny",
+      "residual-extractor": "allow",
       "tool-handler": "allow",
       "tool-handler-mimo": "allow",
-      "swift": "allow",
-      "vision-translator": "allow",
-      "mid-eng": "allow",
-      "mid-creative": "allow",
-      "mid-coder": "allow",
-      "mid-fuse": "allow",
-      "flag-arch": "allow",
-      "flag-plan": "allow",
       "flag-eng": "allow",
+      "flag-plan": "allow",
+      "flag-arch": "allow",
       "flag-fuse": "allow",
       "flag-impl": "allow",
       "flag-qa": "allow",
+      "fe-motion": "allow",
       "fe-restore": "allow",
       "fe-logic": "allow",
-      "fe-motion": "allow",
       "fe-lead": "allow",
       "fusion-fallback": "allow",
-      "residual-extractor": "allow",
-      "confidence-assessor": "allow"
+      "swift": "allow",
+      "vision-translator": "allow",
+      "confidence-assessor": "allow",
+      "mid-creative": "allow",
+      "mid-eng": "allow",
+      "mid-coder": "allow",
+      "mid-fuse": "allow"
     },
+<!-- SYNC:TASK_WHITELIST end -->
     "webfetch": "allow",
     "read": {
       "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow"
-    }
+    },
+    "todowrite": "allow"
   },
-  "agent": {
-    "mid-eng": {
+  "agent": {<!-- SYNC:PER_AGENT_CONFIG start -->
+    "旗舰·质检": {
+      "steps": 10,
       "permission": {
         "*": "ask",
         "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
+          "工具人": "allow",
+          "视觉翻译官": "allow"
+        },
         "*_*": "deny"
       }
     },
-    "mid-creative": {
+    "旗舰·实现": {
+      "steps": 15,
       "permission": {
         "*": "ask",
         "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "mid-coder": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "flag-arch": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "flag-plan": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "flag-eng": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "fe-logic": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "fe-motion": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
+          "工具人": "allow",
+          "视觉翻译官": "allow"
+        },
         "*_*": "deny"
       }
     }
+<!-- SYNC:PER_AGENT_CONFIG end -->
   },
   // "instructions": ["AGENTS.md"],   // optional: enable only when AGENTS.md already exists at project root, otherwise keep commented to avoid startup warning
   "compaction": {
@@ -1664,6 +1450,30 @@ Write-Host "=== content check ==="
 
 Expected same as above. If `Select-String` count is high, it's because `task:` appears in both the concierge-router, tool-handlers and opinion-layer frontmatter — normal, total is 11 (concierge-router 1 + 2 tool-handlers + 8 opinion layers each 1).
 
+### Block 7: .moa/acceptance-template.json
+
+> When auto-deploying with AI, skip if the file already exists.
+
+`.moa/acceptance-template.json`:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/ZenHG/opencode-moa/master/.moa/acceptance-template.json",
+  "version": "2",
+  "frozenCriteria": { "onceOutput": true, "bonusOnly": true },
+  "hiddenCriteria": [{ "type": "spot_check", "description": "manager-injected verification items, invisible to executor" }],
+  "antiCheating": {
+    "baselineNonRegression": { "tests": true, "coverage": true, "skipped": true },
+    "forbiddenActions": ["skip", "todo", "relax_assert", "mock_tested", "delete_test", "pipe_true", "modify_threshold"],
+    "implementationDiffCheck": true
+  },
+  "stopLoss": { "maxRetries": 3, "rollbackOnRegression": true, "reportStuck": true },
+  "progressTracking": { "enabled": true },
+  "deliveryRequirements": { "outputOnly": true },
+  "_relatedFiles": { "extends": ".opencode/agents/*.md" }
+}
+```
+
 > **Deployment complete**: after all the above verifications pass, **restart opencode to apply all config**.
 
 ### How to tell deployment succeeded
@@ -1676,6 +1486,7 @@ Expected same as above. If `Select-String` count is high, it's because `task:` a
 
 ```bash
 rm -rf your-project/.opencode/
+rm -rf your-project/.moa/
 # manually restore your opencode.json (the install script auto-backups a .bak file)
 ```
 
@@ -1857,5 +1668,10 @@ model: ollama-local/qwen3-coder
 ---
 
 > **Doc version**: v0.0.13 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+
+
+
+
+
 
 

@@ -6,9 +6,9 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **Hot (2026-07):** flagship fuse upgraded to **Kimi K3** — 2.8T params, 1M context, top-tier frontier model. OpenCode Go quota 2x until 7/24 (140 → 280 / 5h, then back to 140). MoA quality ceiling now at the front of the pack.
+> 🔥 **Hot (2026-07):** flagship fuse upgraded to **Kimi K3** — 2.8T params, 1M context, top-tier frontier model. MoA quality ceiling now at the front of the pack.
 
-> **v0.0.15 (2026-07-30):** MoA long-running task optimization — structured output format, frozen acceptance criteria, anti-cheat mechanism, auto-routing, and contradiction/redundancy cleanup across 12 agent files.
+> **v0.0.15:** structured output, frozen acceptance criteria, anti-cheat, auto-routing. See [CHANGELOG](CHANGELOG.md).
 
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
@@ -77,7 +77,7 @@ Three independent plans from three different models naturally form a "consensus 
 - **CLI**: all methods supported
 - **Desktop**: Method 1 (AI auto-deploy) is most convenient; Methods 2/3 require terminal operation first
 
-> ⚠️ **System-level key path is easy to place wrong** — correct spelling in "Read before deploy" below. Wrong path leads to "deployment succeeds but all agents can't connect".
+> ⚠️ **System-level key path is easy to place wrong** — correct spelling in "Read before deploy" below. Wrong path leads to deployment appearing to succeed but all agents fail to connect.
 
 > ⚠️ **Read before deploy: don't misplace the key path**
 > Put the provider + key in either the **project-level `opencode.json`** (default, self-contained) or the **system-level** shared path — pick **one**.
@@ -111,8 +111,9 @@ git clone https://github.com/ZenHG/opencode-moa.git
 # enter your project directory
 cd your-project
 
-# copy the .opencode directory from the repo
+# copy the .opencode directory and .moa config from the repo
 cp -r ../opencode-moa/.opencode/ .
+cp -r ../opencode-moa/.moa/ .
 
 # run the install script (auto-merge config, keeps your API key)
 # Windows:
@@ -141,15 +142,16 @@ To swap a model, edit that one line in `.opencode/agents/<agent>.md` to any `pro
 # 1. clone the repo
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# 2. copy the .opencode directory
+# 2. copy the .opencode directory and .moa config
 cp -r opencode-moa/.opencode/ your-project/
+cp -r opencode-moa/.moa/ your-project/
 
 # 3. manually merge opencode.json (do NOT replace directly!)
 # open opencode.json, merge MoA's permission.task and agent sections in
 # keep your existing provider and model config
 ```
 
-> ⚠️ **Do not** use `cat >>` to append — it corrupts JSON format. **Do not** replace directly — you'll lose your API key.
+> ⚠️ **Do not** use `cat >>` to append — it corrupts JSON format. **Do not** replace directly either — you'll lose your API key.
 > 
 > Note: this method copies the repo's bundled `.opencode/` as-is — its agents have **Chinese display names**. If you want English-named agents (so you can `@english-name`), use Method 1 instead.
 
@@ -163,6 +165,7 @@ cp -r opencode-moa/.opencode/ your-project/
 
 ```bash
 rm -rf your-project/.opencode/
+rm -rf your-project/.moa/
 # manually restore your opencode.json (the install script auto-backs up a .bak file)
 ```
 
@@ -203,8 +206,8 @@ rm -rf your-project/.opencode/
 
 The concierge-router now auto-detects task type based on keyword analysis:
 
-- **Exploration tasks**: "analyze", "compare", "understand", "investigate" → 启用探索型 prompt + 冻结验收标准
-- **Execution tasks**: "fix", "add", "implement", "deploy" → 启用执行型 prompt + 止损规则
+- **Exploration tasks**: "analyze", "compare", "understand", "investigate" → exploration prompt + frozen acceptance criteria
+- **Execution tasks**: "fix", "add", "implement", "deploy" → execution prompt + stop-loss rules
 - **Task type appears in pipeline output**: `[Type: Execute]` or `[Type: Explore]`
 
 ---
@@ -229,7 +232,13 @@ The concierge-router now auto-detects task type based on keyword analysis:
 
 > ⚠️ The call-volume ratios below (~80% / ~18% / ~2%) are **design targets**, not measured statistics. Actual ratios vary by task complexity.
 
----
+### Structured output
+
+Opinion and fusion agents use `---section-name---` markers. Opinion layer: `---memory---` + `---plan---` + `---NOT---`. Fusion layer: full structure with metadata, consensus, plan, NOT-list and acceptance criteria. Enables downstream parsing and frozen acceptance verification.
+
+### Anti-cheat (v0.0.15)
+
+Prevents implementation agents from cutting corners: baseline non-regression, forbidden actions (skip/mock/delete tests), hidden spot-checks, implementation diff check, stop-loss (3 retries per item, rollback on regression). Acceptance criteria template at `.moa/acceptance-template.json`.
 
 ## 22 Agents
 
@@ -240,7 +249,7 @@ concierge-router (门童路由员, Flash)
  │
  ├── Tool layer ─────────────────────────────────────────────
  │   tool-handler      (工具人, Flash    ) read code, search files
- │   tool-handler-mimo (工具人-mimo, MiMo) reliable file read (fallback + parallel) [hidden]
+ │   tool-handler-mimo (工具人-mimo, MiMo) [hidden]  reliable file read (fallback + parallel)
  │   swift             (闪电侠, Flash    ) simple tasks in one shot
  │   vision-translator (视觉翻译官, MiMo ) screenshot/UI→text; logs/diagrams/docs→decomposition
  │
@@ -258,7 +267,7 @@ concierge-router (门童路由员, Flash)
  │   flag-plan (旗舰·规划, GLM 5.2     ) structured planning
  │   flag-eng  (旗舰·工程, MiniMax M3  ) large-scale implementation
  │   flag-fuse (旗舰·融合, Kimi K3     ) fuse three architecture plans [max_tokens: 16384]
- │   flag-impl (旗舰·实现, Flash       ) implement per fused plan [hidden]
+ │   flag-impl (旗舰·实现, Flash) [hidden]  implement per fused plan
  │   flag-qa   (旗舰·质检, DeepSeek Pro) plan review + code acceptance [max_tokens: 16384]
  │
  └── Frontend opinion layer ─────────────────────────────────────────────
@@ -274,50 +283,10 @@ Fallback agent (not in the router chain above, called only when fusion fails):
 fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, used when flag-fuse / mid-fuse / fe-lead fail
 ```
 
-### Structured output format (v0.0.15)
 
-All agents output in a standardized format using `---section-name---` markers, enabling downstream agents to parse and process results efficiently:
 
-**Opinion layer** (lightweight format):
-```
----记忆层---
-[context from tool layer]
----方案---
-[plan/proposal]
----NOT---
-[exclusions: what not to do]
-```
 
-**Fusion layer** (full structure):
-```
----元数据---
-{pipeline, taskType, stage, confidence, inputCount, degraded}
----共识率---
-[percentage of agreement across inputs]
----残差提取---
-[divergence analysis between inputs]
----方案---
-[fused plan]
----NOT列表---
-[merged exclusions from all inputs]
----验收标准---
-[machine-verifiable acceptance criteria]
-```
 
-This format enables:
-- Downstream agents to extract specific sections via parsing
-- Consistent machine-readable output for automated processing
-- Frozen acceptance criteria that implementation agents must verify
-
-### Anti-cheat mechanism (v0.0.15)
-
-To prevent implementation agents from cutting corners to meet acceptance criteria:
-
-- **Baseline non-regression**: test count, coverage, and skipped tests must not be worse than baseline
-- **Forbidden actions**: skip/todo, relax assertions, mock tested objects, delete tests, `|| true`, modify thresholds
-- **Implementation diff check**: for test-writing tasks, ensure implementation directory is unchanged
-- **Hidden spot-checks**: manager-injected verification items that the executor cannot see
-- **Stop-loss**: retry up to 3 times per item, rollback on regression, report honestly if stuck
 
 ---
 

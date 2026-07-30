@@ -6,9 +6,9 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **热点（2026-07）：** 旗舰融合已升级至 **Kimi K3** —— 2.8T 参数、1M 上下文、顶级前沿模型。OpenCode Go 额度截至 7/24 翻倍（140 → 280 / 5h，之后回 140）。MoA 质量天花板现已站在第一梯队最前。
+> 🔥 **热点（2026-07）：** 旗舰融合已升级至 **Kimi K3** —— 2.8T 参数、1M 上下文、顶级前沿模型。MoA 质量天花板现已站在第一梯队最前。
 
-> **v0.0.15 (2026-07-30)：** MoA 长任务执行优化 — 结构化输出格式、冻结验收标准、反作弊机制、自动路由、矛盾/冗余清理，涉及 12 个 agent 文件。
+> **v0.0.15：** 结构化输出、冻结验收标准、反作弊、自动路由。详见 [CHANGELOG](CHANGELOG.md)。
 
 > **一个对话入口，22 个专业模型自动协作。简单任务用 Flash（便宜），复杂任务才调旗舰（贵）。当简单任务占主导、旗舰调用被显著减少时，成本最高降低约 90%（对比全程旗舰）；实际节省取决于任务结构，代码质量显著提升。**
 
@@ -111,8 +111,9 @@ git clone https://github.com/ZenHG/opencode-moa.git
 # 进入你的项目目录
 cd your-project
 
-# 从仓库复制 .opencode 目录
+# 从仓库复制 .opencode 目录和 .moa 配置
 cp -r ../opencode-moa/.opencode/ .
+cp -r ../opencode-moa/.moa/ .
 
 # 运行安装脚本（自动合并配置，保留你的 API key）
 # Windows:
@@ -141,8 +142,9 @@ model: opencode-go/<model-id>
 # 1. 克隆仓库
 git clone https://github.com/ZenHG/opencode-moa.git
 
-# 2. 复制 .opencode 目录
+# 2. 复制 .opencode 目录和 .moa 配置
 cp -r opencode-moa/.opencode/ your-project/
+cp -r opencode-moa/.moa/ your-project/
 
 # 3. 手动合并 opencode.json（不要直接替换！）
 # 打开 opencode.json，将 MoA 的 permission.task 和 agent 部分合并进去
@@ -163,6 +165,7 @@ cp -r opencode-moa/.opencode/ your-project/
 
 ```bash
 rm -rf your-project/.opencode/
+rm -rf your-project/.moa/
 # 手动恢复你的 opencode.json（安装脚本会自动备份 .bak 文件）
 ```
 
@@ -231,6 +234,16 @@ rm -rf your-project/.opencode/
 
 ---
 
+### 结构化输出
+
+所有 agent 使用 `---section-name---` 标记。意见层：`---记忆层---` + `---方案---` + `---NOT---`。融合层：`---元数据---` + `---共识率---` + `---方案---` + `---NOT列表---` + `---验收标准---`。实现下游解析和冻结验收。
+
+### 反作弊 (v0.0.15)
+
+防止实现 agent 走捷径：基线不退化、禁止操作（skip/mock/删测试）、暗卷抽查、实现差异检查、止损（每项重试3次，基线退化回滚）。验收标准模板位于 `.moa/acceptance-template.json`。
+
+---
+
 ## 22 个 Agent
 
 ```
@@ -238,7 +251,7 @@ rm -rf your-project/.opencode/
  │
  ├── 工具层 ──────────────────────────────────────
  │   工具人 / tool-handler      (Flash)        读代码搜文件
- │   工具人-mimo / tool-handler-mimo (MiMo)        可靠读文件（保底+并行）[hidden]
+ │   工具人-mimo / tool-handler-mimo (MiMo) [hidden] 可靠读文件（保底+并行）
  │   闪电侠 / swift      (Flash)        简单任务一步到位
  │   视觉翻译官 / vision-translator   (MiMo)        截图/UI→文字；日志/图表/文档→解构
  │
@@ -256,7 +269,7 @@ rm -rf your-project/.opencode/
  │   旗舰·规划 / flag-plan    (GLM-5.2)        结构化方案设计
  │   旗舰·工程 / flag-eng    (MiniMax M3)   大规模实现方案
  │   旗舰·融合 / flag-fuse    (Kimi K3)       三份架构方案融合 [max_tokens: 16384]
- │   旗舰·实现 / flag-impl    (Flash)        按融合方案编码 [hidden]
+ │   旗舰·实现 / flag-impl (Flash) [hidden] 按融合方案编码
  │   旗舰·质检 / flag-qa    (DeepSeek V4 Pro) 方案审查 + 代码验收 [max_tokens: 16384]
  │
  └── 前端意见层 ──────────────────────────────────
@@ -271,50 +284,7 @@ rm -rf your-project/.opencode/
 融合·保底 (fallback, DeepSeek V4 Pro) — 同样的残差增强融合，用于 旗舰·融合 / 中级·融合 / 前端·总工 失败时兜底
  ```
 
-### 结构化输出格式 (v0.0.15)
 
-所有 agent 使用 `---section-name---` 标记的标准化格式输出，使下游 agent 能高效解析和处理结果：
-
-**意见层**（轻量格式）：
-```
----记忆层---
-[来自工具层的上下文]
----方案---
-[计划/提案]
----NOT---
-[排除项：不要做的事情]
-```
-
-**融合层**（完整结构）：
-```
----元数据---
-{pipeline, taskType, stage, confidence, inputCount, degraded}
----共识率---
-[输入间的一致性百分比]
----残差提取---
-[输入间的分歧分析]
----方案---
-[融合后的计划]
----NOT列表---
-[合并后的排除项]
----验收标准---
-[机器可判定的验收条件]
-```
-
-此格式使下游 agent 能：
-- 通过解析提取特定章节
-- 为自动处理提供一致的机器可读输出
-- 冻结验收标准，实现 agent 必须逐条验证
-
-### 反作弊机制 (v0.0.15)
-
-防止实现 agent 为达到验收标准而走捷径：
-
-- **基线非退化**：测试数量、覆盖率、跳过数不得差于基线
-- **禁止行为**：skip/todo 跳过测试、放松断言、mock 被测对象、删除测试、`|| true` 吞失败、改阈值
-- **实现差异检查**：补测试类任务确保实现目录未被修改
-- **暗卷抽查**：管理者注入的验证项，执行者不可见
-- **止损**：每项重试最多 3 次，基线退化回滚，卡住如实报告
 
 ---
 

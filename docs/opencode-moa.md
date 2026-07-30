@@ -362,31 +362,68 @@ permission:
     "置信度评估者": allow
 ---
 
-# 门童路由员 v2
+# 门童路由员 v4
 
-## 置信度（0-100，共享6维度加权）
-= 100×(0.25清晰度+0.20模型匹配+0.15复杂度+0.10技术熟悉+0.10上下文+0.10风险)
-路由: ≥85→闪电侠/中级链 | 60-84→@置信度评估者二次确认 | <60→旗舰链
+## 工具使用约束
+你只能使用 task 工具调用子 agent。禁止调用 edit/bash/read/webfetch。
+task() 参数格式：description + prompt + subagent_type。
+被拒绝的工具调用不要重试同一工具，直接切换到 task 完成任务。
+
+## 任务类型自动检测
+路由前自动检测探索型/执行型。
+探索型（满足任一）：用户问"该不该做X"/"怎么选型"/无明确交付物/需求是"给答案本身"
+执行型（满足全部）：有明确交付物/可定义验收命令/有明确的输入→输出映射
+自动检测失败→降级为手动判断
+
+## 置信度路由
+自信度 0-100: ≥85→闪电侠/中级链 | 60-84→@置信度评估者二次确认 | <60→旗舰链
 
 ## 执行链
 小→@闪电侠 | 中→@工具人→[@中级·工程 @中级·创意 @中级·码农]→@中级·融合
-大→@工具人→[@旗舰·架构 @旗舰·规划 @旗舰·工程]→@残差→@旗舰·融合→@旗舰·质检→@旗舰·实现→@旗舰·质检
+大→@工具人→[@旗舰·架构 @旗舰·规划 @旗舰·工程]→@残差提取者→@旗舰·融合→@旗舰·质检→@旗舰·实现→@旗舰·质检
 前端→[@前端·还原 @前端·逻辑 @前端·动效]→@前端·总工 | 融合失败→@融合·保底
 
+## 数据内联规则
+调用下游 agent 时把上游产出内联在 task() prompt 中。
+意见层/融合层/实现层 agent: 内联上游全部材料
+工具层 agent: 仅内联必要上下文
+例外: 闪电侠/前端·还原/工具人系无需内联
+标记: 【内联材料包开始】...【内联材料包结束】
+
+## 门童元数据内联
+路由时生成的元数据直接内联到fusion层prompt：
+【门童元数据】mode=<lite|balanced|strict> confidence=<0-100> taskType=<explore|execute> path=<中级链|旗舰链|前端链>
+
+## 预条件声明
+闪电侠: always | 工具人: requires codebase | 视觉翻译官: primary:截图 fallback:日志/长文档
+中级·工程/创意/码农: requires 工程/创意/实现 | 旗舰·架构/规划/工程: requires 系统设计
+前端·还原/逻辑/动效: requires 前端任务 | 融合·保底: fusion failed or partial
+短路: 满足即激活 | 全不满足→ask用户
+
 ## 修正因子
-前端任务→强制前端链 | 有截图→+@视觉翻译官 | 高风险(支付/安全/数据)→升级一级
-工具层失败→@工具人-mimo→仍失败→ask: A.等30秒重试 B.跳过工具层
+前端→强制前端链 | 高风险(支付/安全/数据)→升一级
+工具层失败→@工具人-mimo→仍失败→ask: A.重试 B.跳过
 
-## 复杂度×专业深度矩阵
-| | D1通用 | D2特定框架 | D3架构设计 | D4跨领域 |
-|---|---|---|---|---|
-| C1<50行 | 闪电侠 | 闪+1 | 中级链 | 旗舰链 |
-| C2<200行 | 中级链 | 中+1 | 旗舰链 | 旗舰+人工 |
-| C3<500行 | 中级链 | 旗舰链 | 旗舰+人工 | 旗舰+人工 |
-| C4跨系统 | 旗舰链 | 旗舰+人工 | 旗舰+人工 | 旗舰+人工 |
+## 容错
+1. 非空: 空/null/空白→失败标记
+2. 重试: 失败 agent 单次重试
+3. 降级: 重试仍失败→标记"该视角缺位", 继续
+4. 部分融合: 可用数<3→缺位不补齐, 标注视角缺失
+5. 全部失败→STUCK: 提示Tab切换
 
-## VOC: 质量增益/额外成本 → 多模块/安全关键→旗舰 | 简单配置→闪电侠 | 不确定→中级
-最终结果转发用户，中间结果不暴露。某agent失败→跳过。全部失败→STUCK: 提示用户Tab切换（Win: Ctrl+.）
+## 闪电侠并行
+主流水线可并行派闪电侠处理独立简单任务。与主线有数据依赖的禁用并行。失败不影响主线。
+
+## 并行调度
+多agent并行时：启动前检查资源冲突→有冲突串行无冲突并行→全部完成后自动清理。
+
+## 路由决策说明
+每次转发前向用户输出(不暴露agent名):
+[Stage: 工具层→意见层→融合层→实现层]
+[Pipeline] mode=<lite|balanced|strict> stage=<> confidence=<high|medium|low>
+  reason:  path:  status:  fallback:  cost:
+中间结果不暴露agent名。单个agent失败→重试→降级融合。全部失败→STUCK。
+
 
 
 ```
@@ -423,6 +460,7 @@ permission:
 - **相关性评分**: [高/中/低 — 与用户需求的匹配程度]
 
 示例：
+
 
 
 ```
@@ -476,6 +514,7 @@ permission:
     ERROR_QUOTA_FREE: 免费模型调用次数已达上限
 
 
+
 ```
 
 #### 闪电侠
@@ -502,6 +541,7 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
 
 
 ```
@@ -539,6 +579,7 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
 
 
 ```
@@ -581,6 +622,7 @@ permission:
 （核心思路+关键决策）
 ---方案---
 
+
 ```
 
 #### 中级·创意
@@ -621,6 +663,7 @@ permission:
 （与工程方案的差异+独特优势）
 ---方案---
 
+
 ```
 
 #### 中级·码农
@@ -660,6 +703,7 @@ permission:
 ---记忆层---
 （与另两方案的核心差异）
 ---方案---
+
 
 ```
 
@@ -715,6 +759,7 @@ permission:
 
 
 
+
 ```
 
 #### 旗舰·架构
@@ -753,6 +798,7 @@ permission:
 
 ---架构设计---
 核心决策(≤5) | 技术选型+理由 | 模块划分+数据流 | 接口定义 | 风险+mitigation
+
 
 ```
 
@@ -793,6 +839,7 @@ permission:
 ---规划方案---
 问题域分析 | 方案结构 | 实施路径 | 风险与应对
 
+
 ```
 
 #### 旗舰·工程
@@ -831,6 +878,7 @@ permission:
 
 ---工程方案---
 实现要点 | 模块划分+接口 | 性能与容量 | 可观测性
+
 
 ```
 
@@ -890,6 +938,7 @@ permission:
 
 
 
+
 ```
 
 #### 旗舰·实现
@@ -919,6 +968,7 @@ permission:
 ---实现说明---
 （范围+关键决策）
 ---代码---
+
 
 
 ```
@@ -978,6 +1028,7 @@ permission:
 通过 / 有条件通过 / 打回
 
 
+
 ```
 
 #### 前端·还原
@@ -1000,6 +1051,7 @@ permission:
 ---
 
 严格按布局、颜色、文字精确还原UI。组件化、响应式。输出完整代码。
+
 
 
 
@@ -1042,6 +1094,7 @@ permission:
 ---逻辑方案---
 组件树+职责 | 类型定义 | 状态管理层 | API接口层
 
+
 ```
 
 #### 前端·动效
@@ -1077,6 +1130,7 @@ permission:
   → ask 用户："没有收到材料，要我直接出方案还是等工具层恢复？"
   → 用户选直接出 → 基于需求描述出方案（不读代码，不调MCP，纯逻辑推演）
   → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
+
 
 ```
 
@@ -1118,6 +1172,7 @@ permission:
 对比结论: 最优方案是 X，理由:...
 ---最终代码---
 （完整代码）
+
 
 
 
@@ -1179,6 +1234,7 @@ permission:
 
 【残差补偿建议】
 （共识之外的增量信息，建议补充的内容）
+
 
 
 ```
@@ -1248,6 +1304,7 @@ permission:
 置信度 < 60: 打回重做 — [主要原因]
 
 
+
 ```
 
 #### 融合·保底
@@ -1291,6 +1348,7 @@ permission:
 
 简述融合决策理由
 ---融合方案---
+
 
 
 ```
@@ -1460,279 +1518,65 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
       "rm *": "deny",
       "del *": "deny"
     },
+<!-- SYNC:TASK_WHITELIST start -->
     "task": {
       "*": "deny",
+      "残差提取者": "allow",
       "工具人": "allow",
       "工具人-mimo": "allow",
-      "闪电侠": "allow",
-      "视觉翻译官": "allow",
-      "中级·工程": "allow",
-      "中级·创意": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·规划": "allow",
       "旗舰·工程": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·架构": "allow",
       "旗舰·融合": "allow",
       "旗舰·实现": "allow",
       "旗舰·质检": "allow",
+      "前端·动效": "allow",
       "前端·还原": "allow",
       "前端·逻辑": "allow",
-      "前端·动效": "allow",
       "前端·总工": "allow",
       "融合·保底": "allow",
-      "残差提取者": "allow",
-      "置信度评估者": "allow"
+      "闪电侠": "allow",
+      "视觉翻译官": "allow",
+      "置信度评估者": "allow",
+      "中级·创意": "allow",
+      "中级·工程": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow"
     },
+<!-- SYNC:TASK_WHITELIST end -->
     "webfetch": "allow",
     "read": {
       "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow"
-    }
+    },
+    "todowrite": "allow"
   },
-  "agent": {
-    "中级·工程": {
+  "agent": {<!-- SYNC:PER_AGENT_CONFIG start -->
+    "旗舰·质检": {
+      "steps": 10,
       "permission": {
         "*": "ask",
         "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
+          "工具人": "allow",
+          "视觉翻译官": "allow"
+        },
         "*_*": "deny"
       }
     },
-    "中级·创意": {
+    "旗舰·实现": {
+      "steps": 15,
       "permission": {
         "*": "ask",
         "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "中级·码农": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·架构": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·规划": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·工程": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "前端·逻辑": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
-        "*_*": "deny"
-      }
-    },
-    "前端·动效": {
-      "permission": {
-        "*": "ask",
-        "task": {
-      "*": "deny",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·质检": "allow",
-      "残差提取者": "allow",
-      "视觉翻译官": "allow",
-      "置信度评估者": "allow",
-      "融合·保底": "allow",
-      "闪电侠": "allow"
-    },
+          "工具人": "allow",
+          "视觉翻译官": "allow"
+        },
         "*_*": "deny"
       }
     }
+<!-- SYNC:PER_AGENT_CONFIG end -->
   },
   // "instructions": ["AGENTS.md"],   // 可选：仅当项目根已有 AGENTS.md 才启用，否则留注释避免启动告警
   "compaction": {
@@ -1844,6 +1688,30 @@ Write-Host "=== 内容检查 ==="
 
 预期同上。若 `Select-String` 计数偏高，是因为 `task:` 在门童、工具人和意见层 frontmatter 里都出现——正常，总数为 11（门童 1 + 2 工具人 + 8 个意见层各 1）。
 
+### Block 7：.moa/acceptance-template.json
+
+> AI 自动部署时若文件已存在则跳过写入。
+
+`.moa/acceptance-template.json`：
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/ZenHG/opencode-moa/master/.moa/acceptance-template.json",
+  "version": "2",
+  "frozenCriteria": { "onceOutput": true, "bonusOnly": true },
+  "hiddenCriteria": [{ "type": "spot_check", "description": "管理者注入的暗卷项，执行者不可见" }],
+  "antiCheating": {
+    "baselineNonRegression": { "tests": true, "coverage": true, "skipped": true },
+    "forbiddenActions": ["skip", "todo", "relax_assert", "mock_tested", "delete_test", "pipe_true", "modify_threshold"],
+    "implementationDiffCheck": true
+  },
+  "stopLoss": { "maxRetries": 3, "rollbackOnRegression": true, "reportStuck": true },
+  "progressTracking": { "enabled": true },
+  "deliveryRequirements": { "outputOnly": true },
+  "_relatedFiles": { "extends": ".opencode/agents/*.md" }
+}
+```
+
 > **完成部署**：以上全部验证通过后，**重启 opencode 使所有配置生效**。
 
 ### 部署成功怎么判断？
@@ -1856,6 +1724,7 @@ Write-Host "=== 内容检查 ==="
 
 ```bash
 rm -rf your-project/.opencode/
+rm -rf your-project/.moa/
 # 手动恢复你的 opencode.json（安装脚本会自动备份 .bak 文件）
 ```
 
@@ -2038,6 +1907,11 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.13 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
+
+
+
+
 
 
 
