@@ -1,164 +1,164 @@
 {
-  "$schema": "https://opencode.ai/config.json",
-  "default_agent": "门童路由员",
-  "permission": {
-    "*": "ask",
-    "bash": {
-      "*": "ask",
-      "git *": "allow",
-      "git status *": "allow",
-      "git diff *": "allow",
-      "git log *": "allow",
-      "grep *": "allow",
-      "ls *": "allow",
-      "cat *": "allow",
-      "cd *": "allow",
-      "npm run *": "allow",
-      "rm *": "deny",
-      "del *": "deny"
-    },
-    "task": {
-      "*": "deny",
-      "工具人": "allow",
-      "工具人-mimo": "allow",
-      "闪电侠": "allow",
-      "视觉翻译官": "allow",
-      "中级·工程": "allow",
-      "中级·创意": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow",
-      "旗舰·架构": "allow",
-      "旗舰·规划": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·融合": "allow",
-      "旗舰·实现": "allow",
-      "旗舰·质检": "allow",
-      "前端·还原": "allow",
-      "前端·逻辑": "allow",
-      "前端·动效": "allow",
-      "前端·总工": "allow",
-      "融合·保底": "allow",
-      "残差提取者": "allow",
-      "置信度评估者": "allow"
-    },
-    "webfetch": "allow",
-    "read": {
-      "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
-      "*.env.example": "allow"
-    },
-    "todowrite": "allow"
-  },
-  "agent": {
-    "中级·工程": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "中级·创意": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "中级·码农": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·架构": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·规划": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·工程": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·实现": {
-      "steps": 15,
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·质检": {
-      "steps": 10,
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "前端·逻辑": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "前端·动效": {
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    }
-  },
-  "instructions": ["AGENTS.md"],
-  "compaction": {
-    "auto": true,
-    "reserved": 15000
-  },
-  "share": "manual",
-  "snapshot": true
+    "$schema":  "https://opencode.ai/config.json",
+    "default_agent":  "门童路由员",
+    "permission":  {
+                       "*":  "ask",
+                       "bash":  {
+                                    "*":  "ask",
+                                    "git *":  "allow",
+                                    "git status *":  "allow",
+                                    "git diff *":  "allow",
+                                    "git log *":  "allow",
+                                    "grep *":  "allow",
+                                    "ls *":  "allow",
+                                    "cat *":  "allow",
+                                    "cd *":  "allow",
+                                    "npm run *":  "allow",
+                                    "rm *":  "deny",
+                                    "del *":  "deny"
+                                },
+                       "task":  {
+                                    "*":  "deny",
+                                    "工具人":  "allow",
+                                    "工具人-mimo":  "allow",
+                                    "闪电侠":  "allow",
+                                    "视觉翻译官":  "allow",
+                                    "中级·工程":  "allow",
+                                    "中级·创意":  "allow",
+                                    "中级·码农":  "allow",
+                                    "中级·融合":  "allow",
+                                    "旗舰·架构":  "allow",
+                                    "旗舰·规划":  "allow",
+                                    "旗舰·工程":  "allow",
+                                    "旗舰·融合":  "allow",
+                                    "旗舰·实现":  "allow",
+                                    "旗舰·质检":  "allow",
+                                    "前端·还原":  "allow",
+                                    "前端·逻辑":  "allow",
+                                    "前端·动效":  "allow",
+                                    "前端·总工":  "allow",
+                                    "融合·保底":  "allow",
+                                    "残差提取者":  "allow",
+                                    "置信度评估者":  "allow"
+                                },
+                       "webfetch":  "allow",
+                       "read":  {
+                                    "*":  "allow",
+                                    "*.env":  "deny",
+                                    "*.env.*":  "deny",
+                                    "*.env.example":  "allow"
+                                },
+                       "todowrite":  "allow"
+                   },
+    "agent":  {
+                  "中级·工程":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "中级·创意":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "中级·码农":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "旗舰·架构":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "旗舰·规划":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "旗舰·工程":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "旗舰·实现":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "旗舰·质检":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "前端·逻辑":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            },
+                  "前端·动效":  {
+                                "permission":  {
+                                                   "*":  "ask",
+                                                   "task":  {
+                                                                "工具人":  "allow",
+                                                                "视觉翻译官":  "allow"
+                                                            },
+                                                   "*_*":  "deny"
+                                               }
+                            }
+              },
+    "instructions":  [
+                         "AGENTS.md"
+                     ],
+    "compaction":  {
+                       "auto":  true,
+                       "reserved":  15000
+                   },
+    "share":  "manual",
+    "snapshot":  true
 }

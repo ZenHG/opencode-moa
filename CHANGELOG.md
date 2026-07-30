@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 <details open>
 <summary>🇬🇧 English</summary>
@@ -43,6 +43,65 @@
 - 版本之间用 `---` 分隔；`</details>` 与 `---` 之间、`---` 与下一个 `##` 标题之间各留一个空行（缺空行会导致标题被渲染成代码块）。
 
 </details>
+---
+
+
+## v0.0.16（2026-07-30）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Follow-up fixes after v0.0.15: tool constraint hardening, CI efficiency, documentation sync.
+
+### Fix (P1)
+
+- **Tool constraint hardening**: 门童路由员 simplified tool usage constraints from 7 lines to 1 line, added explicit ban on packaging parameters into a single value JSON, and added correct `task()` usage example. Fixes DeepSeek V4 Flash DSML parameter format compatibility.
+
+### CI
+
+- **CI efficiency**: Removed sync-docs + translate jobs, merged into single translate-readmes job. Fixes race condition between sync and translate.
+
+### Config
+
+- **opencode.json format**: Normalized indentation (2→4 spaces), removed `steps` field from 旗舰·实现 and 旗舰·质检
+
+
+### Docs
+
+- **README update**: Synced README with v0.0.15 features (auto-routing, structured output, anti-cheat)
+- **Terminology fix**: Replaced 闪电侠 with swift in README.md Parallel Shortcut section for English consistency
+- **English fixes**: Fixed minor English issues in README
+- **i18n sync**: Auto-translated READMEs for v0.0.15 restructure
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+v0.0.15 后的跟进修复：工具约束强化、CI 效率优化、文档同步。
+
+### 修复（P1）
+
+- **工具约束强化**：门童路由员工具使用约束从 7 行精简为 1 行，新增禁止将参数打包成单个 value JSON，要求每个参数单独传递，并补充 `task()` 正确调用示例。解决 DeepSeek V4 Flash DSML 参数格式兼容问题。
+
+### CI
+
+- **CI 效率优化**：移除 sync-docs + translate 独立任务，合并为单一 translate-readmes 任务。修复同步与翻译之间的竞态条件。
+
+### 配置
+
+- **opencode.json 格式化**：缩进归一化（2→4空格），移除 旗舰·实现 和 旗舰·质检 的 `steps` 字段
+
+
+### 文档
+
+- **README 同步**：更新 README 匹配 v0.0.15 特性（自动路由、结构化输出、反作弊）
+- **术语修复**：README.md 英文版 Parallel Shortcut 章节中 闪电侠 → swift
+- **英文修复**：修正 README 英文小问题
+- **i18n 同步**：自动翻译多语言 README 适配 v0.0.15 重构
+
+</details>
+
 ---
 
 ## v0.0.15（2026-07-30）

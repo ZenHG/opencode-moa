@@ -158,7 +158,7 @@ function Test-Translation {
 # ── Step 1: Detect source README changes ──
 Write-Host "`n=== README Auto-Translation ===" -ForegroundColor Cyan
 
-$changedFiles = git diff --name-only HEAD~1..HEAD 2>/dev/null
+$changedFiles = git diff --name-only HEAD~1..HEAD 2>$null
 $sourceReadme = $null
 
 foreach ($f in $changedFiles) {
@@ -239,7 +239,7 @@ foreach ($lang in $targetLangsToTranslate) {
     # ── Step 4: Validate output ──
     $validationErrors = Test-Translation -Source $sourceContent -Translated $translated
     if ($validationErrors.Count -gt 0) {
-        Write-Host "  [WARN] Validation issues for $lang:" -ForegroundColor Yellow
+        Write-Host "  [WARN] Validation issues for ${lang}:" -ForegroundColor Yellow
         foreach ($e in $validationErrors) {
             Write-Host "    - $e" -ForegroundColor Yellow
         }
