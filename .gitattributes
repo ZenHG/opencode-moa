@@ -3,3 +3,8 @@
 *.jpg filter=lfs diff=lfs merge=lfs -text
 *.jpeg filter=lfs diff=lfs merge=lfs -text
 *.gif filter=lfs diff=lfs merge=lfs -text
+
+# 历史遗留：以下文件以普通 blob 提交（非 LFS 指针），保持现状不迁移
+.github/moa-arch*.png !filter !diff !merge -text
+.github/moa-cost*.png !filter !diff !merge -text
+.github/moa-social-zh.png !filter !diff !merge -text
