@@ -1,0 +1,33 @@
+#!/bin/sh
+# 本地提醒：改动 CHANGELOG.md 会在 push 到 master 时自动发版
+# 安装（换机后）：git config core.hooksPath .githooks
+# 仅作提示，不阻断提交。
+if git diff --cached --name-only | grep -qx 'CHANGELOG.md'; then
+  VER=$(grep -m1 -E '^## +v[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+  if [ -n "$VER" ] && ! git rev-parse "$VER" >/dev/null 2>&1; then
+    echo "📝 提示：你改了 CHANGELOG.md，头部版本为 $VER。"
+    echo "   push 到 master 后会自动打 tag + 建 Release。别忘了 push！"
+  fi
+fi
+
+# ── 自动同步：catalog 是唯一真值，commit 前派生 9 个文档 ──
+# 仅当本次提交涉及 catalog / README / 部署手册时才跑，避免每次 commit 都生成
+STAGED=$(git diff --cached --name-only)
+if echo "$STAGED" | grep -Eq 'scripts/agent-catalog\.json|README.*\.md|docs/opencode-moa(\.en)?\.md'; then
+  ROOT=$(git rev-parse --show-toplevel)
+  GEN="$ROOT/.opencode/tests"
+  PWSH=$(command -v pwsh || command -v powershell)
+  if [ -n "$PWSH" ]; then
+    "$PWSH" -NoProfile -File "$GEN/gen-readme.ps1" >/dev/null 2>&1
+    "$PWSH" -NoProfile -File "$GEN/gen-deploy.ps1" >/dev/null 2>&1
+    # 若生成器改动了文档，自动补 stage，使本次提交即带最新值
+    for f in $(git diff --name-only); do
+      case "$f" in
+        README*.md|docs/opencode-moa.md|docs/opencode-moa.en.md)
+          git add "$f"
+          echo "🔄 已从 catalog 同步: $f"
+          ;;
+      esac
+    done
+  fi
+fi
