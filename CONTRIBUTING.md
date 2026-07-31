@@ -44,10 +44,10 @@ pwsh .opencode/tests/T0-static-verify.ps1
 
 ### 本地发版提醒（防忘，可选）
 
-仓库带 `hooks/pre-commit` 与 `hooks/pre-push`：改了 `CHANGELOG.md` 会在提交时提示、在 push `master` 时交互确认（Enter 发版 / Ctrl+C 取消）。启用（一次性）：
+仓库带 `.githooks/pre-commit` 与 `.githooks/pre-push`：改了 `CHANGELOG.md` 会在提交时提示、在 push `master` 时交互确认（Enter 发版 / Ctrl+C 取消）。启用（一次性）：
 
 ```bash
-git config core.hooksPath hooks
+git config core.hooksPath .githooks
 ```
 
 > 仅本机生效，不影响 CI；非交互环境（如自动化推送）自动放行。

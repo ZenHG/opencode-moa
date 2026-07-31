@@ -139,7 +139,7 @@ description: 22-agent Cost-Optimal MoA 配置。性价比模型充当工具人�
     C. 切免费模型处理（/models 选 Free 模型）
 ```
 
-该降级链已在门童路由员 prompt 中实现。用户选择后才会继续执行，不会跳过 ask 自动路由。
+该降级链已在门童 prompt 中实现。用户选择后才会继续执行，不会跳过 ask 自动路由。
 
 ---
 
@@ -162,7 +162,7 @@ description: 22-agent Cost-Optimal MoA 配置。性价比模型充当工具人�
   ──── 以上是中端意见模型，占比 ~18%（设计值，非实测） ────
   Kimi K2.7 Code        9,250 次
   Kimi K3               280 次（截至 7/24 翻倍，之后回 140）
-  GLM-5.2               4,300 次
+  DeepSeek V4 Flash     4,300 次
   ──── 以上是旗舰融合模型，占比 ~2%（设计值，非实测） ────
 ```
 
@@ -186,11 +186,11 @@ description: 22-agent Cost-Optimal MoA 配置。性价比模型充当工具人�
 
 **方式三：`@` 唤出（独立可用）**
 
-输入 `@` 选 agent 直接对话。每个 agent 都可独立使用：
+输入 `@` 选 agent 直接对话。可直接 @ 的（未 hidden）：`门童`、`工具人`、`闪电侠`、`视觉翻译官`：
 
+- `@门童` → 所有任务入口，自动路由（执行链 / 探索链 / 前端链）
 - `@工具人` / `@视觉翻译官` → 直接读取文件/截图
-- `@中级·工程` → 会 ask 是否先搜集材料，你选「是」它自动调工具人
-- `@中级·融合` → 你直接给它三份方案，它融合输出（没有三份方案时提示走门童）
+- 其余 18 个 agent 已 `hidden`，由门童经 Task 自动调度，不直接 @（要指定某条链时在任务里说明，门童会选择对应 agent）
 
 ### 降级链
 
@@ -262,11 +262,11 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 
 | 模型                | low | medium | high | max  | xhigh | none | minimal | 备注                        |
 | ----------------- | --- | ------ | ---- | ---- | ----- | ---- | ------- | ------------------------- |
-| deepseek-v4-flash | OK  | OK     | OK   | OK   | OK    | 400  | 400     | 全档支持                      |
+| deepseek-v4-flash | 400 | 400    | OK   | OK   | 400   | 400  | 400     | 仅 high/max 支持，其余 400（0731 起） |
 | mimo-v2.5         | OK  | OK     | OK   | 500* | 500*  | 500* | 500*    | max/xhigh 偶发 500，建议用 high |
 | mimo-v2.5-pro     | OK  | OK     | OK   | OK   | OK    | OK   | OK      | 全档支持                      |
 | minimax-m3        | OK  | OK     | OK   | OK   | OK    | OK   | OK      | 全档支持                      |
-| glm-5.2           | OK  | OK     | OK   | OK   | OK    | OK   | 400     | 全档支持                      |
+| glm-5.2           | OK  | OK     | OK   | OK   | OK    | OK   | 400     | 已退役，被 deepseek-v4-flash 替代 |
 | qwen3.7-max       | OK  | OK     | OK   | 400  | OK    | OK   | OK      | `max` 反而 400，最高用 `xhigh`  |
 | qwen3.7-plus      | OK  | OK     | OK   | 400  | OK    | OK   | OK      | `max` 反而 400，最高用 `xhigh`  |
 | kimi-k2.7-code    | OK  | OK     | OK   | 400  | 400   | 400  | OK      | 最高只到 `high`               |
@@ -277,7 +277,7 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 1. 取值必须小写：`low` / `medium` / `high` / `max` / `xhigh` / `none` / `minimal`。大写 `Medium`/`High` 一律 400。
 2. `extreme` / `extended` / `xmedium` / `adaptive` / `auto` 在所有模型上均 400，不可用。
 3. 某模型不支持的取值 → 该 agent 直接 400（`Upstream request failed`），**不会回退默认强度**。默认值仅在完全不写 `reasoningEffort` 时生效。
-4. 本方案参数：工具/快任务层用 `medium`（高调用量、控成本）；意见层/融合层按模型最高支持档提档（minimax/glm/pro/mimo-pro→`max`，qwen-max→`xhigh`，kimi→`high`），最大化推理质量。
+4. 本方案参数：工具/快任务层用 `high`（flash 体系仅 high/max，高调用量、控成本）；保底/特殊工具位可保留 `medium`；意见层/融合层按模型最高支持档提档（minimax/pro/mimo-pro→`max`，qwen-max→`xhigh`，kimi→`high`），最大化推理质量。
 
 > ⚠️ **不要在 TUI 里手动切「变体 / 推理档」**：OpenCode 的变体选择（桌面端 `Ctrl+t`、或模型列表里手选）会**覆盖** agent 在 `opencode.json` / agent `.md` 里配的 `reasoningEffort`，并写入 model 选择缓存——Linux / macOS / **WSL** `~/.local/state/opencode/model.json`（WSL 虽跑在 Windows 上，但走 Linux 路径，不是 Windows 路径）、Windows `%USERPROFILE%\.local\state\opencode\model.json`——**重启仍生效（两种路径形态已覆盖全部平台，跨平台一致）**。注：Unix 下该路径受 `XDG_STATE_HOME` 影响可重定向。一旦手切过，本矩阵的 low→xhigh 档位会被静默顶掉且难察觉。要改推理强度，请改 agent 的 `reasoningEffort` 字段并重启，而不是在 TUI 手切变体。
 
@@ -292,17 +292,17 @@ OpenCode 的 `@` 自动补全菜单有**显示行数上限**（约 10 行），a
 - 残差提取者 / 置信度评估者 / 融合·保底（分析 / 保底层，门童驱动）
 - 工具人-mimo（工具人保底，门童重试链驱动）
 - 中级·工程 / 中级·创意 / 中级·码农 / 中级·融合（中级意见 + 融合链）
-- 旗舰·架构 / 旗舰·规划 / 旗舰·工程 / 旗舰·融合 / 旗舰·实现 / 旗舰·质检（旗舰融合链）
+- 旗舰·架构 / 旗舰·规划 / 旗舰·工程 / 旗舰·融合 / 旗舰·执行 / 旗舰·质检（旗舰融合链）
 - 前端·还原 / 前端·逻辑 / 前端·动效 / 前端·总工（前端融合链）
 
 **保持可见（用户常手 @）：** 工具人、视觉翻译官、闪电侠，加内置 explore / general。
 
-> `hidden` 仅对 `mode: subagent` 生效；primary agent（门童路由员）不在 @ 菜单中，无需设置。
+> `hidden` 仅对 `mode: subagent` 生效；primary agent（门童）不在 @ 菜单中，无需设置。
 
 > 🔧 **自定义 —— 一切都不捆绑死。** agent 名称与各自的 `model` 都是「起始建议」，不是契约：
 > - **模型**：把任意 agent 的 `model:` 改成你有权限的任何模型/provider 即可。provider 块里那 9 个 `opencode-go` 模型 ID 仅是声明，随便换（比如不用 Go，改用你自己的 Anthropic/OpenAI key）。
-> - **agent 名称**：可以改名，但改名是「全局替换」——必须同步更新**每一处**引用，否则部署会坏：门童路由员的 `task:` 白名单、`opencode.json` 的 `permission.task` 白名单，以及所有跨 agent 的 `@`/task 调用。漏改一处，该 agent 就失联（task 调用被拒）。
-> - **路由员本身**：`门童路由员` 要在它自己的 frontmatter、上面的 `task:` 白名单、`opencode.json` 的 `default_agent` 三处保持一致。
+> - **agent 名称**：可以改名，但改名是「全局替换」——必须同步更新**每一处**引用，否则部署会坏：门童的 `task:` 白名单、`opencode.json` 的 `permission.task` 白名单，以及所有跨 agent 的 `@`/task 调用。漏改一处，该 agent 就失联（task 调用被拒）。
+> - **路由员本身**：`门童` 要在它自己的 frontmatter、上面的 `task:` 白名单、`opencode.json` 的 `default_agent` 三处保持一致。
 
 ### Block 2：22 个 Agent 文件
 
@@ -310,18 +310,18 @@ OpenCode 的 `@` 自动补全菜单有**显示行数上限**（约 10 行），a
 
 写文件顺序：
 
-1. 门童路由员（primary）
+1. 门童（primary）
 2. 工具人 → 工具人-mimo → 闪电侠 → 视觉翻译官
 3. 中级·工程 → 中级·创意 → 中级·码农 → 中级·融合
-4. 旗舰·架构 → 旗舰·规划 → 旗舰·工程 → 旗舰·融合 → 旗舰·实现 → 旗舰·质检
+4. 旗舰·架构 → 旗舰·规划 → 旗舰·工程 → 旗舰·融合 → 旗舰·执行 → 旗舰·质检
 5. 前端·还原 → 前端·逻辑 → 前端·动效 → 前端·总工
 6. 残差提取者 → 置信度评估者 → 融合·保底（hidden，门童驱动）
 
 **自检**：`Get-ChildItem .opencode/agents/*.md` 计数应为 22。
 
-#### 门童路由员
+#### 门童
 
-.opencode/agents/门童路由员.md：
+.opencode/agents/门童.md：
 
 ```markdown
 ---
@@ -329,14 +329,14 @@ description: 智能路由引擎，负责任务理解、条件激活与流水线�
 mode: primary
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
-reasoningEffort: medium
-max_tokens: 2048
+reasoningEffort: high
 permission:
   edit: deny
   bash: deny
   read: deny
   webfetch: deny
   "*": deny
+  todowrite: allow
   task:
     "*": deny
     "工具人": allow
@@ -351,7 +351,7 @@ permission:
     "旗舰·规划": allow
     "旗舰·工程": allow
     "旗舰·融合": allow
-    "旗舰·实现": allow
+    "旗舰·执行": allow
     "旗舰·质检": allow
     "前端·还原": allow
     "前端·逻辑": allow
@@ -362,13 +362,15 @@ permission:
     "置信度评估者": allow
 ---
 
-# 门童路由员 v4
+# 门童
 
 ## 工具使用约束
-你只能使用 task 工具。task() 有三个参数：description、prompt、subagent_type，每个参数单独传递，禁止打包成 value JSON。
+你只能使用 task 工具。唯一合法格式（三个独立顶层键，禁止 value 打包）：
+{"description": "3-5 字", "prompt": "任务详情", "subagent_type": "工具人"}
+发出前核对顶层键为上述三键；报错 "unavailable tool 'invalid'" = 打包错误，立即按此格式重试，不询问。
 
-正确示例：
-task(@闪电侠) description="分析依赖" prompt="列出所有 npm 依赖" subagent_type="工具人"
+## 并行规则
+并行=同一消息发多个 task。仅独立任务可并行（意见层/闪电侠杂活）；有数据依赖或同文件写入→串行；子任务失败不影响主线。
 
 ## 任务类型自动检测
 在路由前，自动检测任务类型（探索型/执行型）：
@@ -390,7 +392,7 @@ task(@闪电侠) description="分析依赖" prompt="列出所有 npm 依赖" sub
 
 ## 执行链
 小→@闪电侠 | 中→@工具人→[@中级·工程 @中级·创意 @中级·码农]→@中级·融合
-大→@工具人→[@旗舰·架构 @旗舰·规划 @旗舰·工程]→@残差提取者→@旗舰·融合→@旗舰·质检→@旗舰·实现→@旗舰·质检
+大→@工具人→[@旗舰·架构 @旗舰·规划 @旗舰·工程]→@残差提取者→@旗舰·融合→@旗舰·质检→@旗舰·执行→@旗舰·质检
 前端→[@前端·还原 @前端·逻辑 @前端·动效]→@前端·总工 | 融合失败→@融合·保底
 
 ## 数据内联规则
@@ -405,6 +407,9 @@ task(@闪电侠) description="分析依赖" prompt="列出所有 npm 依赖" sub
 
 ## 门童元数据内联
 路由时生成的元数据（mode/confidence/taskType）直接内联到fusion层prompt，下游无需重复生成：
+
+
+
 ```
 【门童元数据】
 mode=<lite|balanced|strict>
@@ -437,71 +442,6 @@ path=<中级链|旗舰链|前端链>
 3. 降级: 重试仍失败→标记"该视角缺位", 继续
 4. 部分融合: 可用数<3→缺位不补齐, 标注视角缺失
 5. 全部失败→STUCK: 提示Tab切换(Win: Ctrl+.)
-
-## 闪电侠并行
-主流水线可并行派闪电侠处理独立简单任务(搜索/grep/格式化)。
-与主线有数据依赖的、融合/实现层任务禁用并行。失败不影响主线。
-
-## 并行调度（内部逻辑）
-多agent并行时：
-1. 启动前检查资源冲突（同文件编辑）
-2. 有冲突→串行执行，无冲突→并行执行
-3. 全部完成后自动清理状态
-
-## 路由决策说明
-每次转发前向用户输出(不暴露agent名):
-```
-[Stage: 工具层→意见层→融合层→实现层]
-[Pipeline] mode=<lite|balanced|strict> stage=<工具层|意见层|融合层|实现层> confidence=<high|medium|low>(<0-100>)
-  reason: <为何该层级>
-  path: <中级链|旗舰链|前端链>
-  status: <idle|in_progress|complete|degraded|stuck>
-  fallback: <重试/降级/ask>
-  cost: ⚠️旗舰链使用Kimi K3
-```
-中间结果不暴露agent名。单个agent失败→重试→降级融合。全部失败→STUCK。
-```
-【门童元数据】
-mode=<lite|balanced|strict>
-confidence=<0-100>
-taskType=<explore|execute>
-path=<中级链|旗舰链|前端链>
-```
-
-## 预条件声明
-| Agent | 激活条件 |
-|-------|---------|
-| 闪电侠 | always |
-| 工具人 | requires: codebase context |
-| 视觉翻译官 | primary:截图 / fallback:错误日志/长文档/歧义输入 |
-| 中级·工程/创意/码农 | requires: engineering/creative/implementation |
-| 旗舰·架构/规划/工程 | requires: system design complexity |
-| 前端·还原/逻辑/动效 | requires: frontend task |
-| 融合·保底 | fusion failed or partial results |
-
-短路: 满足即激活 | 全不满足→ask用户
-
-## 修正因子
-- 预条件满足即激活, 无需硬编码
-- 前端→强制前端链 | 高风险(支付/安全/数据)→升一级
-- 工具层失败→@工具人-mimo→仍失败→ask: A.重试 B.跳过
-
-## 容错
-1. 非空: 空/null/空白→失败标记
-2. 重试: 失败 agent 单次重试(同prompt/model/temp)
-3. 降级: 重试仍失败→标记"该视角缺位", 继续
-4. 部分融合: 可用数<3→缺位不补齐, 标注视角缺失
-5. 全部失败→STUCK: 提示Tab切换(Win: Ctrl+.)
-
-## 闪电侠并行
-主流水线可并行派闪电侠处理独立简单任务(搜索/grep/格式化)。
-与主线有数据依赖的、融合/实现层任务禁用并行。失败不影响主线。
-
-## 并行调度（内部逻辑）
-多agent并行时：
-1. 启动前检查资源冲突（同文件编辑）
-2. 有冲突→串行执行，无冲突→并行执行
-3. 全部完成后自动清理状态
 
 ## 路由决策说明
 每次转发前向用户输出(不暴露agent名):
@@ -527,8 +467,7 @@ description: 读代码搜文件调MCP，不给意见
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
-reasoningEffort: medium
-max_tokens: 4096
+reasoningEffort: high
 permission:
   edit: deny
   bash: deny
@@ -549,6 +488,8 @@ permission:
 - **相关性评分**: [高/中/低 — 与用户需求的匹配程度]
 
 示例：
+
+
 
 
 
@@ -579,7 +520,6 @@ mode: subagent
 model: opencode-go/mimo-v2.5
 temperature: 0.1
 reasoningEffort: medium
-max_tokens: 4096
 hidden: true
 permission:
   edit: deny
@@ -604,6 +544,8 @@ permission:
 
 
 
+
+
 ```
 
 #### 闪电侠
@@ -616,11 +558,10 @@ description: 快速处理简单零碎任务
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.2
-reasoningEffort: medium
-max_tokens: 2048
+reasoningEffort: high
 permission:
   edit: allow
-  bash: allow
+  lsp: allow
   task: deny
 ---
 
@@ -630,6 +571,8 @@ permission:
 失败 → 立即重试1次
   → 重试成功 → 正常返回
   → 重试失败 → 卡住 → STUCK: 说明原因
+
+
 
 
 
@@ -643,10 +586,9 @@ permission:
 ---
 description: 截图/UI图/报错图转文字描述；无截图时降级为复杂内容解构
 mode: subagent
-model: opencode-go/mimo-v2.5
+model: opencode-go/qwen3.7-plus
 temperature: 0.2
 reasoningEffort: medium
-max_tokens: 4096
 precondition:
   primary: screenshot
   fallback: error_log OR diagram OR long_document OR ambiguous_intent
@@ -671,6 +613,8 @@ permission:
 
 
 
+
+
 ```
 
 #### 中级·工程
@@ -684,7 +628,6 @@ mode: subagent
 model: opencode-go/kimi-k2.6
 temperature: 0.4
 reasoningEffort: high
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -712,6 +655,8 @@ permission:
 ---方案---
 
 
+
+
 ```
 
 #### 中级·创意
@@ -724,8 +669,7 @@ description: 创意视角方案
 mode: subagent
 model: opencode-go/qwen3.7-plus
 temperature: 0.5
-reasoningEffort: medium
-max_tokens: 16384
+reasoningEffort: high
 hidden: true
 permission:
   edit: deny
@@ -753,6 +697,8 @@ permission:
 ---方案---
 
 
+
+
 ```
 
 #### 中级·码农
@@ -765,8 +711,7 @@ description: 实战视角方案
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.3
-reasoningEffort: medium
-max_tokens: 16384
+reasoningEffort: high
 hidden: true
 permission:
   edit: deny
@@ -794,6 +739,8 @@ permission:
 ---方案---
 
 
+
+
 ```
 
 #### 中级·融合
@@ -807,7 +754,6 @@ mode: subagent
 model: opencode-go/kimi-k2.7-code
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -849,6 +795,8 @@ permission:
 
 
 
+
+
 ```
 
 #### 旗舰·架构
@@ -862,7 +810,6 @@ mode: subagent
 model: opencode-go/qwen3.7-max
 temperature: 0.4
 reasoningEffort: xhigh
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -889,6 +836,8 @@ permission:
 核心决策(≤5) | 技术选型+理由 | 模块划分+数据流 | 接口定义 | 风险+mitigation
 
 
+
+
 ```
 
 #### 旗舰·规划
@@ -899,10 +848,9 @@ permission:
 ---
 description: 结构化方案设计
 mode: subagent
-model: opencode-go/glm-5.2
+model: opencode-go/deepseek-v4-flash
 temperature: 0.4
 reasoningEffort: max
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -929,6 +877,8 @@ permission:
 问题域分析 | 方案结构 | 实施路径 | 风险与应对
 
 
+
+
 ```
 
 #### 旗舰·工程
@@ -939,10 +889,9 @@ permission:
 ---
 description: 大规模实现视角方案
 mode: subagent
-model: opencode-go/minimax-m3
+model: opencode-go/deepseek-v4-flash
 temperature: 0.5
 reasoningEffort: max
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -969,6 +918,8 @@ permission:
 实现要点 | 模块划分+接口 | 性能与容量 | 可观测性
 
 
+
+
 ```
 
 #### 旗舰·融合
@@ -982,7 +933,6 @@ mode: subagent
 model: opencode-go/kimi-k3
 temperature: 0.3
 reasoningEffort: high
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -1028,11 +978,14 @@ permission:
 
 
 
+
+
+
 ```
 
-#### 旗舰·实现
+#### 旗舰·执行
 
-.opencode/agents/旗舰·实现.md：
+.opencode/agents/旗舰·执行.md：
 
 ```markdown
 ---
@@ -1040,12 +993,11 @@ description: 按融合方案编码落地
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.2
-reasoningEffort: medium
-max_tokens: 16384
+reasoningEffort: max
 hidden: true
 permission:
   edit: allow
-  bash: allow
+  lsp: allow
   task: deny
 ---
 按融合方案编码。不改接口签名。方案歧义时汇报，不自作主张。
@@ -1057,6 +1009,8 @@ permission:
 ---实现说明---
 （范围+关键决策）
 ---代码---
+
+
 
 
 
@@ -1073,14 +1027,14 @@ mode: subagent
 model: opencode-go/deepseek-v4-pro
 temperature: 0.2
 reasoningEffort: max
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
   bash: deny
   read: deny
   webfetch: deny
-  task: deny
+  task:
+    "工具人": allow
 ---
 你是 MoA 质检员。你有双重职责：
 
@@ -1118,6 +1072,9 @@ permission:
 
 
 
+
+
+
 ```
 
 #### 前端·还原
@@ -1128,18 +1085,19 @@ permission:
 ---
 description: 像素级还原UI设计稿
 mode: subagent
-model: opencode-go/mimo-v2.5
+model: opencode-go/qwen3.7-plus
 temperature: 0.3
 reasoningEffort: medium
-max_tokens: 16384
 hidden: true
 permission:
   edit: allow
-  bash: allow
+  lsp: allow
   task: deny
 ---
 
 严格按布局、颜色、文字精确还原UI。组件化、响应式。输出完整代码。
+
+
 
 
 
@@ -1156,8 +1114,7 @@ description: 前端组件架构与状态管理方案
 mode: subagent
 model: opencode-go/qwen3.7-plus
 temperature: 0.4
-reasoningEffort: medium
-max_tokens: 16384
+reasoningEffort: high
 hidden: true
 permission:
   edit: deny
@@ -1184,6 +1141,8 @@ permission:
 组件树+职责 | 类型定义 | 状态管理层 | API接口层
 
 
+
+
 ```
 
 #### 前端·动效
@@ -1197,7 +1156,6 @@ mode: subagent
 model: opencode-go/mimo-v2.5-pro
 temperature: 0.5
 reasoningEffort: max
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -1221,6 +1179,8 @@ permission:
   → 用户选等待 → 输出 "WAITING: 等待工具层恢复"
 
 
+
+
 ```
 
 #### 前端·总工
@@ -1231,10 +1191,9 @@ permission:
 ---
 description: 三份前端方案择优融合（含置信度评分）
 mode: subagent
-model: opencode-go/glm-5.2
+model: opencode-go/deepseek-v4-flash
 temperature: 0.3
-reasoningEffort: high
-max_tokens: 16384
+reasoningEffort: max
 hidden: true
 permission:
   edit: deny
@@ -1265,6 +1224,8 @@ permission:
 
 
 
+
+
 ```
 
 #### 残差提取者
@@ -1277,8 +1238,7 @@ description: 提取多方案间的残差信息，识别共识与分歧
 mode: subagent
 model: opencode-go/deepseek-v4-flash
 temperature: 0.3
-reasoningEffort: medium
-max_tokens: 4096
+reasoningEffort: high
 hidden: true
 permission:
   edit: deny
@@ -1326,6 +1286,8 @@ permission:
 
 
 
+
+
 ```
 
 #### 置信度评估者
@@ -1336,10 +1298,9 @@ permission:
 ---
 description: 评估 MoA 融合结果的置信度和合规性
 mode: subagent
-model: opencode-go/deepseek-v4-pro
+model: opencode-go/gpt-5.6-luna
 temperature: 0.2
 reasoningEffort: max
-max_tokens: 8192
 hidden: true
 permission:
   edit: deny
@@ -1350,7 +1311,7 @@ permission:
 ---
 你是置信度评估者。对 MoA 融合结果进行可信度审查。
 
-## 评分标准（0-100，与门童路由员/旗舰·质检共享维度）
+## 评分标准（0-100，与门童/旗舰·质检共享维度）
 
 | 维度 | 权重 | 评分要点 |
 |------|------|---------|
@@ -1394,6 +1355,8 @@ permission:
 
 
 
+
+
 ```
 
 #### 融合·保底
@@ -1407,7 +1370,6 @@ mode: subagent
 model: opencode-go/deepseek-v4-pro
 temperature: 0.3
 reasoningEffort: max
-max_tokens: 16384
 hidden: true
 permission:
   edit: deny
@@ -1437,6 +1399,8 @@ permission:
 
 简述融合决策理由
 ---融合方案---
+
+
 
 
 
@@ -1499,7 +1463,7 @@ $ARGUMENTS
 3. @残差提取者 分析三份方案的差异（共识覆盖率 < 95% 时执行）
 4. @旗舰·融合 三阶段融合（共识→残差→整合，幻觉过滤）
 5. @旗舰·质检 方案审查（置信度评估，< 60 打回重做）
-6. （按需求）@旗舰·实现 编码
+6. （按需求）@旗舰·执行 编码
 7. @旗舰·质检 代码验收
 8. @旗舰·质检 学习记录（记录典型问题标签）
 ```
@@ -1548,7 +1512,7 @@ description: 旗舰 MoA——三重架构意见 → 残差分析 → 融合 → 
 3. task(@残差提取者) 分析差异（共识 < 95% 时）
 4. task(@旗舰·融合) 三阶段融合
 5. task(@旗舰·质检) 方案审查（置信度评估）
-6. task(@旗舰·实现) 编码
+6. task(@旗舰·执行) 编码
 7. task(@旗舰·质检) 代码验收 + 学习记录
 </flow>
 <rules>
@@ -1590,22 +1554,28 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "门童路由员",
+  "default_agent": "门童",
   "permission": {
     "*": "ask",
     "bash": {
       "*": "ask",
-      "git *": "allow",
       "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "grep *": "allow",
+      "rg *": "allow",
+      "Select-String *": "allow",
       "ls *": "allow",
-      "cat *": "allow",
+      "Get-ChildItem *": "allow",
+      "Get-Content *": "allow",
       "cd *": "allow",
       "npm run *": "allow",
+      "pwsh .opencode/tests/*": "allow",
       "rm *": "deny",
-      "del *": "deny"
+      "del *": "deny",
+      "Remove-Item *": "deny",
+      "rd *": "deny",
+      "rmdir *": "deny"
     },
 <!-- SYNC:TASK_WHITELIST start -->
     "task": {
@@ -1617,7 +1587,7 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
       "旗舰·规划": "allow",
       "旗舰·架构": "allow",
       "旗舰·融合": "allow",
-      "旗舰·实现": "allow",
+      "旗舰·执行": "allow",
       "旗舰·质检": "allow",
       "前端·动效": "allow",
       "前端·还原": "allow",
@@ -1643,28 +1613,7 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
     "todowrite": "allow"
   },
   "agent": {<!-- SYNC:PER_AGENT_CONFIG start -->
-    "旗舰·质检": {
-      "steps": 10,
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·实现": {
-      "steps": 15,
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    }
+    // (no agent-level overrides)
 <!-- SYNC:PER_AGENT_CONFIG end -->
   },
   // "instructions": ["AGENTS.md"],   // 可选：仅当项目根已有 AGENTS.md 才启用，否则留注释避免启动告警
@@ -1777,35 +1726,191 @@ Write-Host "=== 内容检查 ==="
 
 预期同上。若 `Select-String` 计数偏高，是因为 `task:` 在门童、工具人和意见层 frontmatter 里都出现——正常，总数为 11（门童 1 + 2 工具人 + 8 个意见层各 1）。
 
-### Block 7：.moa/acceptance-template.json
+### Block 7：.moa/界线.json
 
-> AI 自动部署时若文件已存在则跳过写入。
+> AI 自动部署时若文件已存在则跳过写入。下方内容由 `scripts/sync-docs.ps1` 从 `.moa/界线.json` 同步，勿手改。
 
-`.moa/acceptance-template.json`：
+`.moa/界线.json`：
 
 ```json
+<!-- SYNC:MOA_BOUNDARIES start -->
 {
-  "$schema": "https://raw.githubusercontent.com/ZenHG/opencode-moa/master/.moa/acceptance-template.json",
-  "version": "2",
-  "frozenCriteria": { "onceOutput": true, "bonusOnly": true },
-  "hiddenCriteria": [{ "type": "spot_check", "description": "管理者注入的暗卷项，执行者不可见" }],
-  "antiCheating": {
-    "baselineNonRegression": { "tests": true, "coverage": true, "skipped": true },
-    "forbiddenActions": ["skip", "todo", "relax_assert", "mock_tested", "delete_test", "pipe_true", "modify_threshold"],
-    "implementationDiffCheck": true
+  "$schema": "acceptance-criteria",
+  "_description": "界线：融合层输出后写入此文件，后续只能追加 bonus 项。",
+  "_usage": "旗舰·融合/中级·融合/融合·保底 输出时，将 ---验收标准--- 节内容写入此文件；实现层将进度写入 .moa/足迹.md，未决事项写入 .moa/拦路虎.md",
+  "_rules": [
+    "输出后冻结，不可修改基础条件",
+    "只能追加bonus项",
+    "旗舰·质检经 task(工具人) 独立复跑验证——执行者贴的输出不算数",
+    "基线值必须标注",
+    "暗卷项执行者不可见",
+    "完成条件必须含至少 1 条 result 型（度量结果）+ 1 条 constraint 型（守约束）",
+    "探索型任务的结论每条须带来源与日期，或可复跑的步骤"
+  ],
+  "taskId": "",
+  "frozenAt": "",
+  "pipeline": "旗舰链|中级链|前端链",
+  "taskType": "执行型|探索型",
+
+  "priorityOrder": "要求冲突时的让步顺序，如「算得对 > 做得全 > 做得快」",
+
+  "whitelist": [
+    "只允许修改的路径（白名单为主，红线兜底）"
+  ],
+
+  "decisionLog": [
+    {
+      "_description": "分歧裁决记录：残差报告的未决分歧",
+      "issue": "分歧点",
+      "default": "默认值（猜的）",
+      "costIfWrong": "猜错的代价",
+      "askUser": false
+    }
+  ],
+
+  "criteria": [
+    {
+      "name": "验收项名称",
+      "command": "可机器判定的验收命令",
+      "baseline": "基线值（如 all pass / ≥80% / =3）",
+      "type": "test|lint|build|custom",
+      "metricType": "result|constraint"
+    }
+  ],
+
+  "bonuses": [],
+
+  "hiddenCriteria": [
+    {
+      "_description": "暗卷：执行者不可见的抽查项，管理者自留",
+      "name": "抽查项名称",
+      "command": "抽查命令",
+      "baseline": "基线值",
+      "visible": false
+    }
+  ],
+
+  "notList": [
+    "明确排除的范围（不改X、不碰Y、不加Z）"
+  ],
+
+  "exploreMode": {
+    "_description": "探索型任务专属规格：taskType=探索型 时启用，执行型忽略",
+    "conclusionLimit": "结论条数上限，宁收2条实的，不收10条凑的",
+    "budget": "可承受损失（时间/来源数上限），烧完即交卷",
+    "sourceRequired": "每条结论附来源+日期，或可复跑步骤",
+    "deadEndIsPass": "此路不通=合格交付（带死因证据+原始输出）"
   },
-  "stopLoss": { "maxRetries": 3, "rollbackOnRegression": true, "reportStuck": true },
-  "progressTracking": { "enabled": true },
-  "deliveryRequirements": { "outputOnly": true },
-  "_relatedFiles": { "extends": ".opencode/agents/*.md" }
+
+  "antiCheating": {
+    "_description": "反作弊机制，防止执行者作弊达标",
+    "baselineNonRegression": {
+      "testCount": "≥基线",
+      "coverage": "≥基线",
+      "skipped": 0
+    },
+    "forbiddenActions": [
+      "skip/todo 跳过测试",
+      "放松断言条件",
+      "mock 被测对象",
+      "删除测试",
+      "|| true 吞失败",
+      "改阈值或验收脚本"
+    ],
+    "implementationDiffCheck": {
+      "_description": "补测试类任务专用：实现目录 git diff 为空",
+      "enabled": false,
+      "path": "实现目录"
+    }
+  },
+
+  "stopLoss": {
+    "_description": "止损机制：连败换项，基线退化回滚",
+    "maxRetriesPerItem": 3,
+    "rollbackOnRegression": true,
+    "maxTotalRounds": 10,
+    "reportOnStop": "如实汇报卡在哪、还差什么"
+  },
+
+  "progressTracking": {
+    "_description": "足迹机制：实现层开工前写 ≤10 行开工回执（理解的目标/顺序/最大风险），每完成一项立即更新 .moa/足迹.md；拿不准/受阻写 .moa/拦路虎.md 后跳过继续；收不回的操作停下写 .moa/拦路虎.md 做别的；交付时待裁决随交付提交（空则写「无」）"
+  },
+
+  "deliveryRequirements": {
+    "_description": "交付要求：必须贴实际输出，只说做完了不算",
+    "mustPasteCommandOutput": true,
+    "mustIncludeReverseVerification": true
+  },
+
+  "status": "frozen|passed|failed",
+  "verificationLog": []
 }
+<!-- SYNC:MOA_BOUNDARIES end -->
+```
+
+### Block 7.1：.moa/足迹模板.md（运行时文件模板）
+
+> AI 自动部署时若文件已存在则跳过写入。下方内容由 `scripts/sync-docs.ps1` 从 `.moa/足迹模板.md` 同步，勿手改。
+
+`.moa/足迹模板.md`：
+
+```markdown
+<!-- SYNC:MOA_FOOTPRINT start -->
+# 足迹
+
+> 运行时文件：旗舰·执行 开工前写开工回执，每完成一项立即更新。
+> 格式参考本模板，直接改内容即可。交付时随 .moa/拦路虎.md 一起提交。
+
+## 开工回执（≤10 行）
+
+- 理解的目标：
+- 执行顺序：
+- 最大风险：
+
+## 进度
+
+| 步骤 | 状态 | 说明 |
+|------|------|------|
+| 任务0 核验 | 待开始 | 关键命令实测结果： |
+| 步骤1 | 待开始 |  |
+| 步骤2 | 待开始 |  |
+
+## 记录
+
+（每一步完成后在这里写一句：做了什么 / 结果 / 偏差原因）
+<!-- SYNC:MOA_FOOTPRINT end -->
+```
+
+### Block 7.2：.moa/拦路虎模板.md（运行时文件模板）
+
+> AI 自动部署时若文件已存在则跳过写入。下方内容由 `scripts/sync-docs.ps1` 从 `.moa/拦路虎模板.md` 同步，勿手改。
+
+`.moa/拦路虎模板.md`：
+
+```markdown
+<!-- SYNC:MOA_BLOCKER start -->
+# 拦路虎
+
+> 运行时文件：旗舰·执行 拿不准/受阻/收不回的操作时写入，写完跳过继续做别的。
+> 交付时随足迹一起提交；空文件也提交，写「无」。
+
+## 拦路虎清单
+
+- [ ] 问题：默认值（猜的）｜猜错代价
+  背景：
+  证据：
+
+## 已裁决记录
+
+（质检/用户裁决后移到这里：问题 → 裁决 → 依据）
+<!-- SYNC:MOA_BLOCKER end -->
 ```
 
 > **完成部署**：以上全部验证通过后，**重启 opencode 使所有配置生效**。
 
 ### 部署成功怎么判断？
 
-1. 重启 OpenCode 后，按 `Tab` 循环切换 agent（Win 桌面端亦可用 `Ctrl+.`），看到「门童路由员」
+1. 重启 OpenCode 后，按 `Tab` 循环切换 agent（Win 桌面端亦可用 `Ctrl+.`），看到「门童」
 2. 输入 `@工具人` 能正常响应（如果无响应，检查 `.opencode/local/opencode-go.key` 的 key 是否正确）
 3. 运行验证脚本：`pwsh .opencode/tests/T0-static-verify.ps1`，预期全部 PASS（FAIL=0）
 
@@ -1842,7 +1947,7 @@ A: 方式一最方便——把本文件拖进对话框，让 AI 自动部署。�
 
 ### 使用相关
 
-**Q: 看不到「门童路由员」？**
+**Q: 看不到「门童」？**
 A: 检查三点：
 
 1. `opencode.json` 是否在项目根目录（不是子目录）
@@ -1904,7 +2009,7 @@ A: 用 `/models` 打开模型列表选免费模型（Win 桌面端亦可用 `Ctr
 | 启动报 `JSON parse error`       | `opencode.json` 多了逗号 / 注释写在 `.json` 而非 `.jsonc`   | 改名为 `.jsonc`，或去 [jsonlint](https://jsonlint.com) 校验                                   |
 | 22 个 agent 文件数不对             | Block 2 写漏或被覆盖                                    | 按 Block 6 计数：agents=22                                                                |
 | 版本 < 1.1.1                   | `hidden` / `task` / agent 级 `reasoningEffort` 不支持 | 升级 opencode 到 ≥ 1.3.4（`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`） |
-| `Tab` 循环切不到「门童路由员」（Win 桌面端: `Ctrl+.`）| `opencode.json` 不在项目根、或没重启                        | 见上方 Q「看不到门童」三点                                                                        |
+| `Tab` 循环切不到「门童」（Win 桌面端: `Ctrl+.`）| `opencode.json` 不在项目根、或没重启                        | 见上方 Q「看不到门童」三点                                                                        |
 
 ### B. 运行时失败（文件齐全，但 agent 报错）
 
@@ -1995,7 +2100,13 @@ model: ollama-local/qwen3-coder
 
 ---
 
-> **文档版本**：v0.0.13 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+> **文档版本**：v0.0.17 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
+
+
+
+
+
 
 
 

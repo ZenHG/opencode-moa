@@ -4,7 +4,7 @@ input: >
   用户指出 README 中「Cost」段某句与当前计费比例不一致，要求修正表述。
 expected_path: lite
 agents_used:
-  - 门童路由员（路由，confidence ≥85 → lite）
+  - 门童（路由，confidence ≥85 → lite）
   - 闪电侠（直接改文案）
 success: true
 qa_findings:

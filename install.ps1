@@ -1,4 +1,4 @@
-﻿# install.ps1 — MoA 安装脚本（增量合并 opencode.json）
+# install.ps1 — MoA 安装脚本（增量合并 opencode.json）
 # 用法: pwsh ./install.ps1
 # 兼容: Windows PowerShell 5.1+ / PowerShell Core 7+ (Linux/macOS)
 # 需要: 先将 .opencode/ 复制到当前目录
@@ -48,22 +48,28 @@ if (Test-Path $moaDir) {
 Write-Step "2/3" "合并 opencode.json..."
 
 $moaConfig = @{
-    default_agent = "门童路由员"
+    default_agent = "门童"
     permission = @{
         "*" = "ask"
         bash = @{
             "*" = "ask"
-            "git *" = "allow"
             "git status *" = "allow"
             "git diff *" = "allow"
             "git log *" = "allow"
             "grep *" = "allow"
+            "rg *" = "allow"
+            "Select-String *" = "allow"
             "ls *" = "allow"
-            "cat *" = "allow"
+            "Get-ChildItem *" = "allow"
+            "Get-Content *" = "allow"
             "cd *" = "allow"
             "npm run *" = "allow"
+            "pwsh .opencode/tests/*" = "allow"
             "rm *" = "deny"
             "del *" = "deny"
+            "Remove-Item *" = "deny"
+            "rd *" = "deny"
+            "rmdir *" = "deny"
         }
         task = @{
             "*" = "deny"
@@ -79,12 +85,15 @@ $moaConfig = @{
             "旗舰·规划" = "allow"
             "旗舰·工程" = "allow"
             "旗舰·融合" = "allow"
-            "旗舰·实现" = "allow"
+            "旗舰·执行" = "allow"
             "旗舰·质检" = "allow"
             "前端·还原" = "allow"
             "前端·逻辑" = "allow"
             "前端·动效" = "allow"
             "前端·总工" = "allow"
+            "融合·保底" = "allow"
+            "残差提取者" = "allow"
+            "置信度评估者" = "allow"
         }
         webfetch = "allow"
         read = @{
@@ -93,21 +102,30 @@ $moaConfig = @{
             "*.env.*" = "deny"
             "*.env.example" = "allow"
         }
+        todowrite = "allow"
     }
     agent = @{
-        "中级·工程" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "中级·创意" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "中级·码农" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "旗舰·架构" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "旗舰·规划" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "旗舰·工程" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "前端·逻辑" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
-        "前端·动效" = @{ permission = @{ "*" = "ask"; "task" = "allow"; "*_*" = "deny" } }
+        "中级·工程" = @{ permission = @{ "*_*" = "deny" } }
+        "中级·创意" = @{ permission = @{ "*_*" = "deny" } }
+        "中级·码农" = @{ permission = @{ "*_*" = "deny" } }
+        "旗舰·架构" = @{ permission = @{ "*_*" = "deny" } }
+        "旗舰·规划" = @{ permission = @{ "*_*" = "deny" } }
+        "旗舰·工程" = @{ permission = @{ "*_*" = "deny" } }
+        "旗舰·执行" = @{ permission = @{ "*_*" = "deny" } }
+        "旗舰·质检" = @{ permission = @{ "*_*" = "deny" } }
+        "前端·逻辑" = @{ permission = @{ "*_*" = "deny" } }
+        "前端·动效" = @{ permission = @{ "*_*" = "deny" } }
     }
-    instructions = @("AGENTS.md")
-    compaction = @{ auto = $true; reserved = 10000 }
+    compaction = @{ auto = $true; reserved = 15000 }
     share = "manual"
     snapshot = $true
+}
+
+# 平台化：Unix 部署移除 Windows 专有删除禁令，保持生成的 opencode.json 平台纯净
+if (-not ($IsWindows -or $env:OS -eq "Windows_NT")) {
+    @("del *", "Remove-Item *", "rd *", "rmdir *") | ForEach-Object {
+        $moaConfig.permission.bash.Remove($_)
+    }
 }
 
 if (Test-Path $opencodeJson) {
@@ -170,6 +188,8 @@ if ($needKey) {
                 "qwen3.7-plus"     = @{ name = "qwen3.7-plus" }
                 "kimi-k2.7-code"   = @{ name = "kimi-k2.7-code" }
                 "deepseek-v4-pro"  = @{ name = "deepseek-v4-pro" }
+                "kimi-k2.6"        = @{ name = "kimi-k2.6" }
+                "kimi-k3"          = @{ name = "kimi-k3" }
             }
         }
         $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -199,6 +219,8 @@ if ($needKey) {
             "qwen3.7-plus"     = @{ name = "qwen3.7-plus" }
             "kimi-k2.7-code"   = @{ name = "kimi-k2.7-code" }
             "deepseek-v4-pro"  = @{ name = "deepseek-v4-pro" }
+            "kimi-k2.6"        = @{ name = "kimi-k2.6" }
+            "kimi-k3"          = @{ name = "kimi-k3" }
         }
     }
     $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -228,4 +250,4 @@ Write-Ok "Config: ok"
 
 Write-Host "`n=== 安装完成 ===" -ForegroundColor Cyan
 Write-Host "重启 OpenCode 使配置生效。" -ForegroundColor Yellow
-Write-Host "按 Tab 循环切换 agent（Win 桌面端亦可用 Ctrl+.）切换到「门童路由员」开始使用。" -ForegroundColor Yellow
+Write-Host "按 Tab 循环切换 agent（Win 桌面端亦可用 Ctrl+.）切换到「门童」开始使用。" -ForegroundColor Yellow

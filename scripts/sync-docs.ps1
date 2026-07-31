@@ -1,4 +1,4 @@
-﻿# sync-docs.ps1 — 从 .opencode/agents/ 和 opencode.json 同步到部署手册
+# sync-docs.ps1 — 从 .opencode/agents/ 和 opencode.json 同步到部署手册
 #
 # 用法: pwsh ./scripts/sync-docs.ps1
 # 选项: -DryRun  只报告不修改
@@ -66,6 +66,11 @@ if ($ocObj.ContainsKey('agent')) {
     }
 }
 
+# ── 2c. 读取 .moa 目录（界线/足迹/拦路虎） ──
+$moaBoundaries = if (Test-Path "$base\.moa\界线.json") { (Get-Content "$base\.moa\界线.json" -Raw -Encoding utf8).TrimEnd("`r","`n") } else { '' }
+$moaFootprint  = if (Test-Path "$base\.moa\足迹模板.md")  { (Get-Content "$base\.moa\足迹模板.md" -Raw -Encoding utf8).TrimEnd("`r","`n") } else { '' }
+$moaBlocker    = if (Test-Path "$base\.moa\拦路虎模板.md") { (Get-Content "$base\.moa\拦路虎模板.md" -Raw -Encoding utf8).TrimEnd("`r","`n") } else { '' }
+
 # ── 生成 task 白名单块 ──
 function Gen-TaskWhitelist {
     param([string[]]$names, [string]$lang)
@@ -110,7 +115,7 @@ function Gen-AgentConfig {
 # ── 根据 lang 映射 agent 名称 ──
 # en doc uses English aliases; zh doc uses Chinese file names
 $enNameMap = @{
-    "门童路由员"   = "concierge-router"
+    "门童"   = "concierge-router"
     "工具人"       = "tool-handler"
     "工具人-mimo"  = "tool-handler-mimo"
     "闪电侠"       = "swift"
@@ -123,7 +128,7 @@ $enNameMap = @{
     "旗舰·规划"   = "flag-plan"
     "旗舰·工程"   = "flag-eng"
     "旗舰·融合"   = "flag-fuse"
-    "旗舰·实现"   = "flag-impl"
+    "旗舰·执行"   = "flag-impl"
     "旗舰·质检"   = "flag-qa"
     "前端·还原"   = "fe-restore"
     "前端·逻辑"   = "fe-logic"
@@ -244,6 +249,14 @@ function Sync-Doc {
             Info "${shortName}: todowrite 权限已存在"
         }
     }
+
+    # ── 3f. .moa 目录（界线/足迹/拦路虎） ──
+    $content, $moaBChanged = Replace-BetweenMarkers $content "<!-- SYNC:MOA_BOUNDARIES start -->" "<!-- SYNC:MOA_BOUNDARIES end -->" $moaBoundaries
+    if ($moaBChanged) { $changes++; Ok "${shortName}: 更新 .moa/界线.json" }
+    $content, $moaFChanged = Replace-BetweenMarkers $content "<!-- SYNC:MOA_FOOTPRINT start -->" "<!-- SYNC:MOA_FOOTPRINT end -->" $moaFootprint
+    if ($moaFChanged) { $changes++; Ok "${shortName}: 更新 .moa/足迹模板.md" }
+    $content, $moaKChanged = Replace-BetweenMarkers $content "<!-- SYNC:MOA_BLOCKER start -->" "<!-- SYNC:MOA_BLOCKER end -->" $moaBlocker
+    if ($moaKChanged) { $changes++; Ok "${shortName}: 更新 .moa/拦路虎模板.md" }
 
     if ($changes -eq 0) { Info "${shortName}: 已是最新" }
     elseif ($DryRun)     { Warn "${shortName}: $changes 处需修改 (DryRun)" }

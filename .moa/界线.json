@@ -1,18 +1,36 @@
 {
-  "$schema": "acceptance-criteria-v2",
-  "_description": "冻结验收标准模板 v2。融合层输出后写入此文件，后续只能追加 bonus 项。",
-  "_usage": "旗舰·融合/中级·融合/融合·保底 输出时，将 ---验收标准--- 节内容写入此文件",
+  "$schema": "acceptance-criteria",
+  "_description": "界线：融合层输出后写入此文件，后续只能追加 bonus 项。",
+  "_usage": "旗舰·融合/中级·融合/融合·保底 输出时，将 ---验收标准--- 节内容写入此文件；实现层将进度写入 .moa/足迹.md，未决事项写入 .moa/拦路虎.md",
   "_rules": [
     "输出后冻结，不可修改基础条件",
     "只能追加bonus项",
-    "旗舰·质检逐条执行验证",
+    "旗舰·质检经 task(工具人) 独立复跑验证——执行者贴的输出不算数",
     "基线值必须标注",
-    "暗卷项执行者不可见"
+    "暗卷项执行者不可见",
+    "完成条件必须含至少 1 条 result 型（度量结果）+ 1 条 constraint 型（守约束）",
+    "探索型任务的结论每条须带来源与日期，或可复跑的步骤"
   ],
   "taskId": "",
   "frozenAt": "",
   "pipeline": "旗舰链|中级链|前端链",
   "taskType": "执行型|探索型",
+
+  "priorityOrder": "要求冲突时的让步顺序，如「算得对 > 做得全 > 做得快」",
+
+  "whitelist": [
+    "只允许修改的路径（白名单为主，红线兜底）"
+  ],
+
+  "decisionLog": [
+    {
+      "_description": "分歧裁决记录：残差报告的未决分歧",
+      "issue": "分歧点",
+      "default": "默认值（猜的）",
+      "costIfWrong": "猜错的代价",
+      "askUser": false
+    }
+  ],
 
   "criteria": [
     {
@@ -39,6 +57,14 @@
   "notList": [
     "明确排除的范围（不改X、不碰Y、不加Z）"
   ],
+
+  "exploreMode": {
+    "_description": "探索型任务专属规格：taskType=探索型 时启用，执行型忽略",
+    "conclusionLimit": "结论条数上限，宁收2条实的，不收10条凑的",
+    "budget": "可承受损失（时间/来源数上限），烧完即交卷",
+    "sourceRequired": "每条结论附来源+日期，或可复跑步骤",
+    "deadEndIsPass": "此路不通=合格交付（带死因证据+原始输出）"
+  },
 
   "antiCheating": {
     "_description": "反作弊机制，防止执行者作弊达标",
@@ -71,7 +97,7 @@
   },
 
   "progressTracking": {
-    "_description": "进度追踪：旗舰·实现输出 ---实现进度--- 节"
+    "_description": "足迹机制：实现层开工前写 ≤10 行开工回执（理解的目标/顺序/最大风险），每完成一项立即更新 .moa/足迹.md；拿不准/受阻写 .moa/拦路虎.md 后跳过继续；收不回的操作停下写 .moa/拦路虎.md 做别的；交付时待裁决随交付提交（空则写「无」）"
   },
 
   "deliveryRequirements": {

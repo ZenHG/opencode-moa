@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # install.sh — MoA 安装脚本（增量合并 opencode.json）
 # 用法: bash ./install.sh
 # 兼容: Linux / macOS / Windows (Git Bash / WSL / MSYS2)
@@ -38,7 +38,9 @@ gen_placeholder() {
                 "qwen3.7-max": {"name": "qwen3.7-max"},
                 "qwen3.7-plus": {"name": "qwen3.7-plus"},
                 "kimi-k2.7-code": {"name": "kimi-k2.7-code"},
-                "deepseek-v4-pro": {"name": "deepseek-v4-pro"}
+                "deepseek-v4-pro": {"name": "deepseek-v4-pro"},
+                "kimi-k2.6": {"name": "kimi-k2.6"},
+                "kimi-k3": {"name": "kimi-k3"}
             }
         } | .model = "opencode-go/deepseek-v4-flash"' "$OPENCODE_JSON" > "${OPENCODE_JSON}.tmp" && mv "${OPENCODE_JSON}.tmp" "$OPENCODE_JSON"
     ok "opencode-go provider 已写入（占位符 key），请替换 <YOUR_GO_API_KEY>"
@@ -72,22 +74,24 @@ echo ""
 echo -e "${YELLOW}[2/3] 合并 opencode.json...${NC}"
 
 MOA_JSON='{
-  "default_agent": "门童路由员",
+  "default_agent": "门童",
   "permission": {
     "*": "ask",
     "bash": {
       "*": "ask",
-      "git *": "allow",
       "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "grep *": "allow",
+      "rg *": "allow",
+      "Select-String *": "allow",
       "ls *": "allow",
-      "cat *": "allow",
+      "Get-ChildItem *": "allow",
+      "Get-Content *": "allow",
       "cd *": "allow",
       "npm run *": "allow",
-      "rm *": "deny",
-      "del *": "deny"
+      "pwsh .opencode/tests/*": "allow",
+      "rm *": "deny"
     },
     "task": {
       "*": "deny",
@@ -103,12 +107,15 @@ MOA_JSON='{
       "旗舰·规划": "allow",
       "旗舰·工程": "allow",
       "旗舰·融合": "allow",
-      "旗舰·实现": "allow",
+      "旗舰·执行": "allow",
       "旗舰·质检": "allow",
       "前端·还原": "allow",
       "前端·逻辑": "allow",
       "前端·动效": "allow",
-      "前端·总工": "allow"
+      "前端·总工": "allow",
+      "融合·保底": "allow",
+      "残差提取者": "allow",
+      "置信度评估者": "allow"
     },
     "webfetch": "allow",
     "read": {
@@ -116,20 +123,22 @@ MOA_JSON='{
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow"
-    }
+    },
+    "todowrite": "allow"
   },
   "agent": {
-    "中级·工程": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "中级·创意": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "中级·码农": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "旗舰·架构": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "旗舰·规划": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "旗舰·工程": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "前端·逻辑": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } },
-    "前端·动效": { "permission": { "*": "ask", "task": "allow", "*_*": "deny" } }
+    "中级·工程": { "permission": { "*_*": "deny" } },
+    "中级·创意": { "permission": { "*_*": "deny" } },
+    "中级·码农": { "permission": { "*_*": "deny" } },
+    "旗舰·架构": { "permission": { "*_*": "deny" } },
+    "旗舰·规划": { "permission": { "*_*": "deny" } },
+    "旗舰·工程": { "permission": { "*_*": "deny" } },
+    "旗舰·执行": { "permission": { "*_*": "deny" } },
+    "旗舰·质检": { "permission": { "*_*": "deny" } },
+    "前端·逻辑": { "permission": { "*_*": "deny" } },
+    "前端·动效": { "permission": { "*_*": "deny" } }
   },
-  "instructions": ["AGENTS.md"],
-  "compaction": { "auto": true, "reserved": 10000 },
+  "compaction": { "auto": true, "reserved": 15000 },
   "share": "manual",
   "snapshot": true
 }'
@@ -141,17 +150,25 @@ if [ -f "$OPENCODE_JSON" ]; then
     ok "已备份到 $(basename "$BACKUP")"
     
     if command -v jq &> /dev/null; then
+        # 平台化：Windows 套（Git Bash/MSYS/CYGWIN 中 opencode bash 工具为 PowerShell）补 Windows 专有删除禁令
+        if uname -s | grep -qiE 'mingw|msys|cygwin'; then
+            DENY_EXTRA='["del *","Remove-Item *","rd *","rmdir *"]'
+        else
+            DENY_EXTRA='[]'
+        fi
         # 提取用户配置（provider, model, small_model）
         USER_PROVIDER=$(jq '.provider // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
         USER_MODEL=$(jq '.model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
         USER_SMALL=$(jq '.small_model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
         
-        # 合并：MoA 配置 + 用户配置
+        # 合并：MoA 配置 + 用户配置 + 平台删除禁令
         echo "$MOA_JSON" | jq \
+            --argjson extra "$DENY_EXTRA" \
             --argjson provider "${USER_PROVIDER:-null}" \
             --argjson model "${USER_MODEL:-null}" \
             --argjson small "${USER_SMALL:-null}" \
-            '. + (if $provider != null then {provider: $provider} else {} end) +
+            '.permission.bash = (reduce $extra[] as $k (.permission.bash; .[$k] = "deny")) |
+             . + (if $provider != null then {provider: $provider} else {} end) +
              (if $model != null then {model: $model} else {} end) +
              (if $small != null then {small_model: $small} else {} end)' \
             > "$OPENCODE_JSON"
@@ -195,7 +212,9 @@ if [ -z "$HAS_GO" ]; then
                     "qwen3.7-max": {"name": "qwen3.7-max"},
                     "qwen3.7-plus": {"name": "qwen3.7-plus"},
                     "kimi-k2.7-code": {"name": "kimi-k2.7-code"},
-                    "deepseek-v4-pro": {"name": "deepseek-v4-pro"}
+                    "deepseek-v4-pro": {"name": "deepseek-v4-pro"},
+                    "kimi-k2.6": {"name": "kimi-k2.6"},
+                    "kimi-k3": {"name": "kimi-k3"}
                 }
             } | .model = "opencode-go/deepseek-v4-flash"' "$OPENCODE_JSON" > "${OPENCODE_JSON}.tmp" && mv "${OPENCODE_JSON}.tmp" "$OPENCODE_JSON"
             ok "opencode-go provider 已配置"
@@ -225,4 +244,4 @@ ok "Config: ok"
 echo ""
 echo -e "${CYAN}=== 安装完成 ===${NC}"
 echo -e "${YELLOW}重启 OpenCode 使配置生效。${NC}"
-echo -e "${YELLOW}按 Tab 循环切换 agent（Win 桌面端亦可用 Ctrl+.）切换到「门童路由员」开始使用。${NC}"
+echo -e "${YELLOW}按 Tab 循环切换 agent（Win 桌面端亦可用 Ctrl+.）切换到「门童」开始使用。${NC}"

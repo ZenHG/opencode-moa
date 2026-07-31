@@ -162,7 +162,7 @@ Monthly quota comparison (OpenCode Go plan $10/month):
   ─── above are mid-tier opinion models, ~18% (design target, not measured) ───
   Kimi K2.7 Code        9,250 calls
   Kimi K3               280 calls (2x until 7/24, then back to 140)
-  GLM-5.2               4,300 calls
+  DeepSeek V4 Flash     4,300 calls
   ─── above are flagship fusion models, ~2% (design target, not measured) ───
 ```
 
@@ -186,11 +186,11 @@ The concierge-router automatically: judges complexity → dispatches the tool ag
 
 **Method 3: `@` invoke (usable independently)**
 
-Type `@` and pick an agent to talk directly. Each agent can be used independently:
+Type `@` and pick an agent to talk directly. Directly @-callable (not hidden): 门童, 工具人, 闪电侠, 视觉翻译官:
 
-- `@tool-handler` / `@vision-translator` → read files / screenshots directly
-- `@mid-eng` → asks whether to gather material first; if you say "yes" it auto-calls the tool agent
-- `@mid-fuse` → you give it the three solutions directly, it fuses and outputs (if you don't have three, it prompts you to use the concierge-router)
+- `@门童` → entry for all tasks, auto-routing (execution / exploration / frontend chains)
+- `@工具人` / `@视觉翻译官` → read files / screenshots directly
+- The other 18 agents are `hidden` and orchestrated by 门童 via the Task tool, not directly @-callable (to force a specific chain, say so in the task and 门童 picks the matching agent)
 
 ### Fallback chain
 
@@ -262,11 +262,11 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 
 | Model              | low | medium | high | max  | xhigh | none | minimal | Notes                                  |
 | ------------------ | --- | ------ | ---- | ---- | ----- | ---- | ------- | -------------------------------------- |
-| deepseek-v4-flash  | OK  | OK     | OK   | OK   | OK    | 400  | 400     | all tiers supported                    |
+| deepseek-v4-flash  | 400 | 400    | OK   | OK   | 400   | 400  | 400     | only high/max supported, others 400 (since 0731) |
 | mimo-v2.5          | OK  | OK     | OK   | 500* | 500*  | 500* | 500*    | max/xhigh occasionally 500, use high   |
 | mimo-v2.5-pro      | OK  | OK     | OK   | OK   | OK    | OK   | OK      | all tiers supported                    |
 | minimax-m3         | OK  | OK     | OK   | OK   | OK    | OK   | OK      | all tiers supported                    |
-| glm-5.2            | OK  | OK     | OK   | OK   | OK    | OK   | 400     | all tiers supported                    |
+| glm-5.2            | OK  | OK     | OK   | OK   | OK    | OK   | 400     | retired, replaced by deepseek-v4-flash |
 | qwen3.7-max        | OK  | OK     | OK   | 400  | OK    | OK   | OK      | `max` is 400, use `xhigh` for max      |
 | qwen3.7-plus       | OK  | OK     | OK   | 400  | OK    | OK   | OK      | `max` is 400, use `xhigh` for max      |
 | kimi-k2.7-code     | OK  | OK     | OK   | 400  | 400   | 400  | OK      | max only up to `high`                  |
@@ -277,7 +277,7 @@ mkdir -p .opencode/agents .opencode/commands .opencode/skills .opencode/tests
 1. Values must be lowercase: `low` / `medium` / `high` / `max` / `xhigh` / `none` / `minimal`. Uppercase `Medium`/`High` always 400.
 2. `extreme` / `extended` / `xmedium` / `adaptive` / `auto` are 400 on all models, unusable.
 3. An unsupported value for a model → that agent gets 400 (`Upstream request failed`) directly, **no fallback to default strength**. The default only applies when `reasoningEffort` is entirely omitted.
-4. This package's parameters: tool/quick-task layer uses `medium` (high call volume, cost control); opinion/fusion layer bumps to the model's highest supported tier (minimax/glm/pro/mimo-pro→`max`, qwen-max→`xhigh`, kimi→`high`) to maximize reasoning quality.
+4. This package's parameters: tool/quick-task layer uses `high` (flash family only supports high/max, high call volume, cost control); fallback/special tool slots may keep `medium`; opinion/fusion layer bumps to the model's highest supported tier (minimax/pro/mimo-pro→`max`, qwen-max→`xhigh`, kimi→`high`) to maximize reasoning quality.
 
 > ⚠️ **Do not manually switch "variant / reasoning tier" in the TUI**: OpenCode's variant selection (desktop `Ctrl+t`, or picking in the model list) **overrides** the `reasoningEffort` configured for the agent in `opencode.json` / agent `.md`, and writes it to the model selection cache — `~/.local/state/opencode/model.json` on Linux / macOS / **WSL** (WSL runs on a Windows host but uses the Linux path, not the Windows path), `%USERPROFILE%\.local\state\opencode\model.json` on Windows — which **persists across restarts (the two path forms already cover every platform, consistent across all)**. Note: on Unix the path is governed by `XDG_STATE_HOME` and can be redirected. Once you switch manually, this package's low→xhigh tiers get silently overridden and are hard to notice. To change reasoning strength, edit the agent's `reasoningEffort` field and restart, instead of switching variants in the TUI.
 
@@ -329,14 +329,14 @@ description: Entry-point router; dispatches by task complexity, produces no code
 mode: primary
 model: opencode-go/deepseek-v4-flash
 temperature: 0.1
-reasoningEffort: medium
-max_tokens: 2048
+reasoningEffort: high
 permission:
   edit: deny
   bash: deny
   read: deny
   webfetch: deny
   "*": deny
+  todowrite: allow
   task:
     "*": deny
     "tool-handler": allow
@@ -362,13 +362,15 @@ permission:
     "confidence-assessor": allow
 ---
 
-# Concierge Router v4
+# Concierge Router
 
 ## Tool Usage Constraint
-You can only use the task tool. task() has three parameters: description, prompt, subagent_type; each parameter must be passed separately. Packaging parameters into a single value JSON is prohibited.
+You can only use the task tool. The only valid format (three independent top-level keys, no value packaging):
+{"description": "3-5 chars", "prompt": "task details", "subagent_type": "工具人"}
+Before sending, verify the top-level keys are exactly these three; error "unavailable tool 'invalid'" = packaging error, retry immediately with this format, don't ask.
 
-Correct example:
-task(@swift) description="analyze deps" prompt="list all npm dependencies" subagent_type="tool-handler"
+## Parallel Rules
+Parallel = send multiple task calls in one message. Only independent tasks can be parallel (opinion layer / swift chores); data-dependent or same-file-write → serial; subtask failure doesn't affect the mainline.
 
 ## Task Type Auto-Detection
 Before routing, auto-detect task type (explore/execute):
@@ -438,16 +440,6 @@ Short-circuit: condition met → activate | none met → ask user
 4. Partial fusion: available <3→don't fill, mark perspective missing
 5. All failed→STUCK: prompt Tab switch (Win: Ctrl+.)
 
-## Swift Parallel
-The main pipeline can dispatch @swift in parallel for independent simple tasks (search/grep/formatting).
-Tasks with data dependency on the mainline, or fusion/implementation layer tasks, disable parallelism. Failure doesn't affect mainline.
-
-## Parallel Scheduling (Internal Logic)
-When running multiple agents in parallel:
-1. Check resource conflicts before starting (same file editing)
-2. Conflict→serial execution, no conflict→parallel execution
-3. Auto-cleanup after all complete
-
 ## Routing Decision Display
 Before each forward, display to user (without exposing agent names):
 ```
@@ -459,62 +451,6 @@ Before each forward, display to user (without exposing agent names):
   cost: ⚠️Flagship chain uses Kimi K3
 ```
 Intermediate results do not expose agent names. Single agent fails→retry→degrade fusion. All fail→STUCK.
-```
-【Concierge Metadata】
-mode=<lite|balanced|strict>
-confidence=<0-100>
-taskType=<explore|execute>
-path=<mid chain|flagship chain|frontend chain>
-```
-
-## Precondition Declaration
-| Agent | Activation Condition |
-|-------|---------------------|
-| @swift | always |
-| @tool-handler | requires: codebase context |
-| @vision-translator | primary: screenshot / fallback: error log/long doc/ambiguous input |
-| @mid-eng/mid-creative/mid-coder | requires: engineering/creative/implementation |
-| @flag-arch/flag-plan/flag-eng | requires: system design complexity |
-| @fe-restore/fe-logic/fe-motion | requires: frontend task |
-| @fusion-fallback | fusion failed or partial results |
-
-Short-circuit: condition met → activate | none met → ask user
-
-## Correction Factors
-- Precondition met → activate, no hard-coding needed
-- Frontend → force frontend chain | High risk (payment/security/data)→upgrade one level
-- Tool layer fails→@tool-handler-mimo→still fails→ask: A. Retry B. Skip
-
-## Fault Tolerance
-1. Non-empty: empty/null/blank→failure marker
-2. Retry: failed agent retry once (same prompt/model/temp)
-3. Degrade: retry still fails→mark "perspective absent", continue
-4. Partial fusion: available <3→don't fill, mark perspective missing
-5. All failed→STUCK: prompt Tab switch (Win: Ctrl+.)
-
-## Swift Parallel
-The main pipeline can dispatch @swift in parallel for independent simple tasks (search/grep/formatting).
-Tasks with data dependency on the mainline, or fusion/implementation layer tasks, disable parallelism. Failure doesn't affect mainline.
-
-## Parallel Scheduling (Internal Logic)
-When running multiple agents in parallel:
-1. Check resource conflicts before starting (same file editing)
-2. Conflict→serial execution, no conflict→parallel execution
-3. Auto-cleanup after all complete
-
-## Routing Decision Display
-Before each forward, display to user (without exposing agent names):
-```
-[Pipeline] mode=<lite|balanced|strict> stage=<tool layer|opinion layer|fusion layer|implementation layer> confidence=<high|medium|low>(<0-100>)
-  reason: <why this layer>
-  path: <mid chain|flagship chain|frontend chain>
-  status: <idle|in_progress|complete|degraded|stuck>
-  fallback: <retry/degrade/ask>
-  cost: ⚠️Flagship chain uses Kimi K3
-```
-Intermediate results do not expose agent names. Single agent fails→retry→degrade fusion. All fail→STUCK.
-```
-
 #### tool-handler
 
 `.opencode/agents/tool-handler.md`:
@@ -605,7 +541,7 @@ On failure → retry once immediately
 ---
 description: Converts screenshots / UI images / error images to text descriptions
 mode: subagent
-model: opencode-go/mimo-v2.5
+model: opencode-go/qwen3.7-plus
 temperature: 0.2
 reasoningEffort: medium
 max_tokens: 2048
@@ -814,7 +750,7 @@ Core decisions (≤5) | Tech choices + reasons | Module split + data flow | Inte
 description: Structured plan design
 mode: subagent
 hidden: true
-model: opencode-go/glm-5.2
+model: opencode-go/deepseek-v4-flash
 temperature: 0.4
 reasoningEffort: max
 max_tokens: 16384
@@ -852,7 +788,7 @@ Problem-domain analysis | Plan structure | Execution path | Risks & responses
 description: Large-scale implementation plan
 mode: subagent
 hidden: true
-model: opencode-go/minimax-m3
+model: opencode-go/deepseek-v4-flash
 temperature: 0.5
 reasoningEffort: max
 max_tokens: 16384
@@ -973,7 +909,7 @@ Pass / Conditional pass / Reject
 ---
 description: Pixel-perfect UI mockup reproduction
 mode: subagent
-model: opencode-go/mimo-v2.5
+model: opencode-go/qwen3.7-plus
 temperature: 0.3
 reasoningEffort: medium
 max_tokens: 16384
@@ -1068,9 +1004,9 @@ When called without material (tool layer failed):
 description: Picks / fuses the best of three frontend plans
 mode: subagent
 hidden: true
-model: opencode-go/glm-5.2
+model: opencode-go/deepseek-v4-flash
 temperature: 0.3
-reasoningEffort: high
+reasoningEffort: max
 max_tokens: 16384
 permission:
   edit: deny
@@ -1152,7 +1088,7 @@ divergence 1:
 ---
 description: Assess the confidence and compliance of MoA fusion results
 mode: subagent
-model: opencode-go/deepseek-v4-pro
+model: opencode-go/gpt-5.6-luna
 temperature: 0.2
 reasoningEffort: max
 max_tokens: 4096
@@ -1383,17 +1319,23 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     "*": "ask",
     "bash": {
       "*": "ask",
-      "git *": "allow",
       "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "grep *": "allow",
+      "rg *": "allow",
+      "Select-String *": "allow",
       "ls *": "allow",
-      "cat *": "allow",
+      "Get-ChildItem *": "allow",
+      "Get-Content *": "allow",
       "cd *": "allow",
       "npm run *": "allow",
+      "pwsh .opencode/tests/*": "allow",
       "rm *": "deny",
-      "del *": "deny"
+      "del *": "deny",
+      "Remove-Item *": "deny",
+      "rd *": "deny",
+      "rmdir *": "deny"
     },
 <!-- SYNC:TASK_WHITELIST start -->
     "task": {
@@ -1431,28 +1373,7 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     "todowrite": "allow"
   },
   "agent": {<!-- SYNC:PER_AGENT_CONFIG start -->
-    "旗舰·质检": {
-      "steps": 10,
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    },
-    "旗舰·实现": {
-      "steps": 15,
-      "permission": {
-        "*": "ask",
-        "task": {
-          "工具人": "allow",
-          "视觉翻译官": "allow"
-        },
-        "*_*": "deny"
-      }
-    }
+    // (no agent-level overrides)
 <!-- SYNC:PER_AGENT_CONFIG end -->
   },
   // "instructions": ["AGENTS.md"],   // optional: enable only when AGENTS.md already exists at project root, otherwise keep commented to avoid startup warning
@@ -1565,28 +1486,184 @@ Write-Host "=== content check ==="
 
 Expected same as above. If `Select-String` count is high, it's because `task:` appears in both the concierge-router, tool-handlers and opinion-layer frontmatter — normal, total is 11 (concierge-router 1 + 2 tool-handlers + 8 opinion layers each 1).
 
-### Block 7: .moa/acceptance-template.json
+### Block 7: .moa/界线.json
 
-> When auto-deploying with AI, skip if the file already exists.
+> When auto-deploying with AI, skip if the file already exists. Content below is synced by `scripts/sync-docs.ps1` from `.moa/界线.json` — do not edit by hand.
 
-`.moa/acceptance-template.json`:
+`.moa/界线.json`:
 
 ```json
+<!-- SYNC:MOA_BOUNDARIES start -->
 {
-  "$schema": "https://raw.githubusercontent.com/ZenHG/opencode-moa/master/.moa/acceptance-template.json",
-  "version": "2",
-  "frozenCriteria": { "onceOutput": true, "bonusOnly": true },
-  "hiddenCriteria": [{ "type": "spot_check", "description": "manager-injected verification items, invisible to executor" }],
-  "antiCheating": {
-    "baselineNonRegression": { "tests": true, "coverage": true, "skipped": true },
-    "forbiddenActions": ["skip", "todo", "relax_assert", "mock_tested", "delete_test", "pipe_true", "modify_threshold"],
-    "implementationDiffCheck": true
+  "$schema": "acceptance-criteria",
+  "_description": "界线：融合层输出后写入此文件，后续只能追加 bonus 项。",
+  "_usage": "旗舰·融合/中级·融合/融合·保底 输出时，将 ---验收标准--- 节内容写入此文件；实现层将进度写入 .moa/足迹.md，未决事项写入 .moa/拦路虎.md",
+  "_rules": [
+    "输出后冻结，不可修改基础条件",
+    "只能追加bonus项",
+    "旗舰·质检经 task(工具人) 独立复跑验证——执行者贴的输出不算数",
+    "基线值必须标注",
+    "暗卷项执行者不可见",
+    "完成条件必须含至少 1 条 result 型（度量结果）+ 1 条 constraint 型（守约束）",
+    "探索型任务的结论每条须带来源与日期，或可复跑的步骤"
+  ],
+  "taskId": "",
+  "frozenAt": "",
+  "pipeline": "旗舰链|中级链|前端链",
+  "taskType": "执行型|探索型",
+
+  "priorityOrder": "要求冲突时的让步顺序，如「算得对 > 做得全 > 做得快」",
+
+  "whitelist": [
+    "只允许修改的路径（白名单为主，红线兜底）"
+  ],
+
+  "decisionLog": [
+    {
+      "_description": "分歧裁决记录：残差报告的未决分歧",
+      "issue": "分歧点",
+      "default": "默认值（猜的）",
+      "costIfWrong": "猜错的代价",
+      "askUser": false
+    }
+  ],
+
+  "criteria": [
+    {
+      "name": "验收项名称",
+      "command": "可机器判定的验收命令",
+      "baseline": "基线值（如 all pass / ≥80% / =3）",
+      "type": "test|lint|build|custom",
+      "metricType": "result|constraint"
+    }
+  ],
+
+  "bonuses": [],
+
+  "hiddenCriteria": [
+    {
+      "_description": "暗卷：执行者不可见的抽查项，管理者自留",
+      "name": "抽查项名称",
+      "command": "抽查命令",
+      "baseline": "基线值",
+      "visible": false
+    }
+  ],
+
+  "notList": [
+    "明确排除的范围（不改X、不碰Y、不加Z）"
+  ],
+
+  "exploreMode": {
+    "_description": "探索型任务专属规格：taskType=探索型 时启用，执行型忽略",
+    "conclusionLimit": "结论条数上限，宁收2条实的，不收10条凑的",
+    "budget": "可承受损失（时间/来源数上限），烧完即交卷",
+    "sourceRequired": "每条结论附来源+日期，或可复跑步骤",
+    "deadEndIsPass": "此路不通=合格交付（带死因证据+原始输出）"
   },
-  "stopLoss": { "maxRetries": 3, "rollbackOnRegression": true, "reportStuck": true },
-  "progressTracking": { "enabled": true },
-  "deliveryRequirements": { "outputOnly": true },
-  "_relatedFiles": { "extends": ".opencode/agents/*.md" }
+
+  "antiCheating": {
+    "_description": "反作弊机制，防止执行者作弊达标",
+    "baselineNonRegression": {
+      "testCount": "≥基线",
+      "coverage": "≥基线",
+      "skipped": 0
+    },
+    "forbiddenActions": [
+      "skip/todo 跳过测试",
+      "放松断言条件",
+      "mock 被测对象",
+      "删除测试",
+      "|| true 吞失败",
+      "改阈值或验收脚本"
+    ],
+    "implementationDiffCheck": {
+      "_description": "补测试类任务专用：实现目录 git diff 为空",
+      "enabled": false,
+      "path": "实现目录"
+    }
+  },
+
+  "stopLoss": {
+    "_description": "止损机制：连败换项，基线退化回滚",
+    "maxRetriesPerItem": 3,
+    "rollbackOnRegression": true,
+    "maxTotalRounds": 10,
+    "reportOnStop": "如实汇报卡在哪、还差什么"
+  },
+
+  "progressTracking": {
+    "_description": "足迹机制：实现层开工前写 ≤10 行开工回执（理解的目标/顺序/最大风险），每完成一项立即更新 .moa/足迹.md；拿不准/受阻写 .moa/拦路虎.md 后跳过继续；收不回的操作停下写 .moa/拦路虎.md 做别的；交付时待裁决随交付提交（空则写「无」）"
+  },
+
+  "deliveryRequirements": {
+    "_description": "交付要求：必须贴实际输出，只说做完了不算",
+    "mustPasteCommandOutput": true,
+    "mustIncludeReverseVerification": true
+  },
+
+  "status": "frozen|passed|failed",
+  "verificationLog": []
 }
+<!-- SYNC:MOA_BOUNDARIES end -->
+```
+
+### Block 7.1: .moa/足迹模板.md (runtime file template)
+
+> When auto-deploying with AI, skip if the file already exists. Content below is synced by `scripts/sync-docs.ps1` from `.moa/足迹模板.md` — do not edit by hand.
+
+`.moa/足迹模板.md`:
+
+```markdown
+<!-- SYNC:MOA_FOOTPRINT start -->
+# 足迹
+
+> 运行时文件：旗舰·执行 开工前写开工回执，每完成一项立即更新。
+> 格式参考本模板，直接改内容即可。交付时随 .moa/拦路虎.md 一起提交。
+
+## 开工回执（≤10 行）
+
+- 理解的目标：
+- 执行顺序：
+- 最大风险：
+
+## 进度
+
+| 步骤 | 状态 | 说明 |
+|------|------|------|
+| 任务0 核验 | 待开始 | 关键命令实测结果： |
+| 步骤1 | 待开始 |  |
+| 步骤2 | 待开始 |  |
+
+## 记录
+
+（每一步完成后在这里写一句：做了什么 / 结果 / 偏差原因）
+<!-- SYNC:MOA_FOOTPRINT end -->
+```
+
+### Block 7.2: .moa/拦路虎模板.md (runtime file template)
+
+> When auto-deploying with AI, skip if the file already exists. Content below is synced by `scripts/sync-docs.ps1` from `.moa/拦路虎模板.md` — do not edit by hand.
+
+`.moa/拦路虎模板.md`:
+
+```markdown
+<!-- SYNC:MOA_BLOCKER start -->
+# 拦路虎
+
+> 运行时文件：旗舰·执行 拿不准/受阻/收不回的操作时写入，写完跳过继续做别的。
+> 交付时随足迹一起提交；空文件也提交，写「无」。
+
+## 拦路虎清单
+
+- [ ] 问题：默认值（猜的）｜猜错代价
+  背景：
+  证据：
+
+## 已裁决记录
+
+（质检/用户裁决后移到这里：问题 → 裁决 → 依据）
+<!-- SYNC:MOA_BLOCKER end -->
 ```
 
 > **Deployment complete**: after all the above verifications pass, **restart opencode to apply all config**.
@@ -1782,7 +1859,12 @@ model: ollama-local/qwen3-coder
 
 ---
 
-> **Doc version**: v0.0.13 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+> **Doc version**: v0.0.17 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+
+
+
+
+
 
 
 

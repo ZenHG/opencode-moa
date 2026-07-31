@@ -75,7 +75,7 @@ Chinese display names may be localized in Chinese docs, but English aliases shou
 | agent | Keep `agent` in technical contexts; localized prose may use equivalent words |
 | command | Keep command names unchanged |
 | skill | Keep `skill` in OpenCode-specific contexts |
-| concierge-router / 门童路由员 | Default routing agent; preserve alias where useful |
+| concierge-router / 门童 | Default routing agent; preserve alias where useful |
 | Doorman / Gatekeeper | Routing/governance concept; avoid inventing new names per language |
 | Flagship QA / 旗舰·质检 | Quality gate; preserve QA meaning |
 | confidence threshold | Use one shared definition across router, QA, and confidence assessor |

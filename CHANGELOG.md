@@ -46,6 +46,60 @@
 ---
 
 
+## v0.0.17（Unreleased）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Model gradient rework: GLM-5.2 retired, replaced by DeepSeek V4 Flash.
+
+### Model gradient
+
+- **GLM-5.2 retired**: 旗舰·规划 (flag-plan) and 前端·总工 (fe-lead) switched to `deepseek-v4-flash` with `reasoningEffort: max`
+- **Effort bump**: 旗舰·实现 (flag-impl) `high`→`max`; 中级·创意 (mid-creative) and 前端·逻辑 (fe-logic) `medium`→`high`
+- **Matrix update**: `deepseek-v4-flash` now supports only `high`/`max` (everything else 400, since 0731)
+
+### Config
+
+- **Whitelist**: Added `kimi-k2.6` and `kimi-k3` to the opencode-go provider model whitelist (system opencode.json, install.sh, install.ps1)
+
+### Agents
+
+- **门童路由员 renamed to 门童** (concierge-router): `reasoningEffort` `medium`→`high`, dropped `max_tokens`, added `todowrite: allow`
+- **Task whitelist**: 旗舰·实现 (flag-impl) → 旗舰·执行 (flag-exec)
+- **Tool constraints**: Simplified to JSON three-key format (`description`/`prompt`/`subagent_type`), added `## Parallel Rules` (independent tasks only, conflicts serialize)
+- **Trimmed**: Removed Swift Parallel / Parallel Scheduling sections
+- **Runtime files**: Added `.moa/` working files (界线.json, 足迹模板.md, 拦路虎模板.md)
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+模型梯度重梳理：GLM-5.2 退役，由 DeepSeek V4 Flash 接替。
+
+### 模型梯度
+
+- **GLM-5.2 退役**：旗舰·规划（flag-plan）与 前端·总工（fe-lead）切换为 `deepseek-v4-flash`，`reasoningEffort: max`
+- **档位提升**：旗舰·实现（flag-impl）`high`→`max`；中级·创意（mid-creative）与 前端·逻辑（fe-logic）`medium`→`high`
+- **矩阵更新**：`deepseek-v4-flash` 仅支持 `high`/`max`（其余 400，0731 起）
+
+### 配置
+
+- **白名单**：opencode-go provider 模型白名单补充 `kimi-k2.6`、`kimi-k3`（系统 opencode.json、install.sh、install.ps1）
+
+### Agents
+
+- **门童路由员更名门童**（concierge-router）：`reasoningEffort` `medium`→`high`、移除 `max_tokens`、新增 `todowrite: allow`
+- **任务白名单**：旗舰·实现（flag-impl）→ 旗舰·执行（flag-exec）
+- **工具约束**：简化为 JSON 三键格式（`description`/`prompt`/`subagent_type`），新增「并行规则」（仅独立任务可并行，冲突串行）
+- **精简**：删除「闪电侠并行」「并行调度」两节
+- **运行时文件**：新增 `.moa/` 工作文件（界线.json、足迹模板.md、拦路虎模板.md）
+
+</details>
+---
+
+
 ## v0.0.16（2026-07-30）
 
 <details open>

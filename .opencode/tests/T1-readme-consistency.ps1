@@ -24,6 +24,7 @@ foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
 # ── 2. Normalization map: README display name -> model-id ──
 $displayToModel = @{
     "Flash"           = "deepseek-v4-flash"
+    "DeepSeek V4 Flash" = "deepseek-v4-flash"
     "MiMo"            = "mimo-v2.5"
     "MiMo-Pro"        = "mimo-v2.5-pro"
     "DeepSeek Pro"    = "deepseek-v4-pro"
@@ -32,6 +33,7 @@ $displayToModel = @{
     "GLM-5.2"         = "glm-5.2"
     "Qwen3.7 Max"     = "qwen3.7-max"
     "Qwen3.7 Plus"    = "qwen3.7-plus"
+    "GPT 5.6 Luna"    = "gpt-5.6-luna"
     "MiniMax M3"      = "minimax-m3"
     "Kimi K3"         = "kimi-k3"
     "Kimi K2.6"       = "kimi-k2.6"
@@ -48,7 +50,7 @@ function Normalize($display) {
 $readmeFiles = @("README.md","README.zh.md","README.ja.md","README.ko.md","README.es.md","README.fr.md","README.de.md")
 
 # Role keywords that indicate an agent definition line
-$rolePattern = 'flag-|fe-|tool-|swift|vision|mid-|concierge-router|门童路由员|融合·保底'
+$rolePattern = 'flag-|fe-|tool-|swift|vision|mid-|concierge-router|门童|融合·保底'
 
 foreach ($rf in $readmeFiles) {
     $p = Join-Path $base $rf
