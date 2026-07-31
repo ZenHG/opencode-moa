@@ -8,3 +8,6 @@
 .github/moa-arch*.png !filter !diff !merge -text
 .github/moa-cost*.png !filter !diff !merge -text
 .github/moa-social-zh.png !filter !diff !merge -text
+
+# hooks 必须保持 LF（shebang 要求），禁止 CRLF 转换
+.githooks/* text eol=lf
