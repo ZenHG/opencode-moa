@@ -184,7 +184,7 @@ concierge-router (门童, Flash)
  │   vision-translator (视觉翻译官, Qwen3.7 Plus ) screenshot/UI→text; logs/diagrams/docs→decomposition
  │
  ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
- ├── confidence-assessor (置信度评估者, GPT 5.6 Luna    ) assess fusion result confidence
+ ├── confidence-assessor (置信度评估者, DeepSeek V4 Flash    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
  │   mid-eng      (中级·工程, Kimi K2.6 ) engineering view

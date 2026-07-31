@@ -1298,7 +1298,7 @@ permission:
 ---
 description: 评估 MoA 融合结果的置信度和合规性
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/deepseek-v4-flash
 temperature: 0.2
 reasoningEffort: max
 hidden: true
@@ -1352,6 +1352,7 @@ permission:
 置信度 ≥ 85: 直接采纳
 置信度 60-84: 有条件采纳 — [需修正的点]
 置信度 < 60: 打回重做 — [主要原因]
+
 
 
 
@@ -2101,6 +2102,7 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.17 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
 
 
 

@@ -257,7 +257,7 @@ concierge-routeur (门童, Flash)
  │   traducteur visuel          (视觉翻译官, Qwen3.7 Plus ) capture d'écran/UI→texte ; journaux/diagrammes/documents→décomposition
  │
  ├── extracteur de résidus  (残差提取者,  Flash     ) analyser la divergence entre les plans
- ├── évaluateur de confiance   (置信度评估者, GPT 5.6 Luna    ) évaluer la confiance du résultat de fusion
+ ├── évaluateur de confiance   (置信度评估者, DeepSeek V4 Flash    ) évaluer la confiance du résultat de fusion
  │
  ├── Couche d'opinion intermédiaire ─────────────────────────────────────────────
  │   mid-eng      (中级·工程, Kimi K2.6 ) vue d'ingénierie

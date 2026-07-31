@@ -254,7 +254,7 @@ rm -rf your-project/.moa/
  │   视觉翻译官 / vision-translator   (Qwen3.7 Plus)        截图/UI→文字；日志/图表/文档→解构
  │
   ├── 残差提取者 (Flash)          分析多方案间的分歧
-  ├── 置信度评估者 (GPT 5.6 Luna)       评估融合结果置信度
+  ├── 置信度评估者 (DeepSeek V4 Flash)       评估融合结果置信度
  │
  ├── 中级意见层 ──────────────────────────────────
  │   中级·工程 / mid-eng    (Kimi K2.6)   工程视角方案

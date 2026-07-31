@@ -59,7 +59,7 @@ $expectedModels = @{
     "前端·动效"  = "mimo-v2.5-pro"
     "前端·总工"  = "deepseek-v4-flash"
     "残差提取者"  = "deepseek-v4-flash"
-    "置信度评估者" = "gpt-5.6-luna"
+    "置信度评估者" = "deepseek-v4-flash"
     "融合·保底"  = "deepseek-v4-pro"
 }
 

@@ -33,7 +33,6 @@ $displayToModel = @{
     "GLM-5.2"         = "glm-5.2"
     "Qwen3.7 Max"     = "qwen3.7-max"
     "Qwen3.7 Plus"    = "qwen3.7-plus"
-    "GPT 5.6 Luna"    = "gpt-5.6-luna"
     "MiniMax M3"      = "minimax-m3"
     "Kimi K3"         = "kimi-k3"
     "Kimi K2.6"       = "kimi-k2.6"

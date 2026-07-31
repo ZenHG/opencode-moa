@@ -255,7 +255,7 @@ concierge-router (门童, Flash)
  │   vision-translator (视觉翻译官, Qwen3.7 Plus ) Screenshot/UI→Text; Protokolle/Dokumente→Zerlegung
  │
  ├── Residual-Extractor  (残差提取者,  Flash     ) analysiert die Divergenz zwischen Plänen
- ├── Confidence-Assessor (置信度评估者, GPT 5.6 Luna    ) bewertet das Vertrauen in das Fusionsresultat
+ ├── Confidence-Assessor (置信度评估者, DeepSeek V4 Flash    ) bewertet das Vertrauen in das Fusionsresultat
  │
  ├── Mittlere Meinungs-Ebene ─────────────────────────────────────────────
  │   mid-eng      (中级·工程, Kimi K2.6 ) ingenieurtechnische Sicht

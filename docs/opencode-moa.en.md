@@ -1088,7 +1088,7 @@ divergence 1:
 ---
 description: Assess the confidence and compliance of MoA fusion results
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/deepseek-v4-flash
 temperature: 0.2
 reasoningEffort: max
 max_tokens: 4096

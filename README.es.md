@@ -258,7 +258,7 @@ conserje-enrutador (门童, Flash)
  │   traductor de visión (视觉翻译官, Qwen3.7 Plus ) captura de pantalla/UI→texto; registros/diagramas/documentos→descomposición
  │
  ├── extractor de residuos  (残差提取者,  Flash     ) analizar divergencia entre planes
- ├── evaluador de confianza (置信度评估者, GPT 5.6 Luna    ) evaluar la confianza en el resultado de la fusión
+ ├── evaluador de confianza (置信度评估者, DeepSeek V4 Flash    ) evaluar la confianza en el resultado de la fusión
  │
  ├── Capa de opinión de nivel medio ─────────────────────────────────────────────
  │   medio-ing      (中级·工程, Kimi K2.6 ) vista de ingeniería
