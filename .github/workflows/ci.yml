@@ -11,9 +11,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Run T0 static verify
         shell: pwsh
         run: pwsh .opencode/tests/T0-static-verify.ps1
+      - name: LFS integrity check (git archive smoke test)
+        shell: bash
+        run: |
+          git lfs fsck 2>&1 | grep -v "should have been a pointer" || true
+          git archive --format=tar HEAD >/dev/null || { echo "::error::git archive failed: LFS objects missing"; exit 1; }
   verify:
     runs-on: ubuntu-latest
     needs: static-check
