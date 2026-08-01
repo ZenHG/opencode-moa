@@ -67,7 +67,7 @@
   },
 
   "antiCheating": {
-    "_description": "反作弊机制，防止执行者作弊达标",
+    "_description": "红线·防作弊：反作弊机制，防止执行者作弊达标",
     "baselineNonRegression": {
       "testCount": "≥基线",
       "coverage": "≥基线",
@@ -81,6 +81,16 @@
       "|| true 吞失败",
       "改阈值或验收脚本"
     ],
+    "mutationTest": {
+      "_description": "验真试验（变异测试）：故意弄坏一次证明检查真的会报警。凡「坏了没人会知道」的检查都要这一步——贴变红输出，还原后贴全绿。检查失灵=验收全假，比 TDD 更关键（TDD 保证测试先于实现，验真保证检查不是摆设）",
+      "required": true,
+      "steps": [
+        "挑一个验收命令，故意破坏对应实现（如删函数/改常量/跳过分支）",
+        "重跑验收命令，必须变红（报警）",
+        "还原破坏，重跑必须全绿",
+        "把两次输出贴进足迹.md 的验证节"
+      ]
+    },
     "implementationDiffCheck": {
       "_description": "补测试类任务专用：实现目录 git diff 为空",
       "enabled": false,

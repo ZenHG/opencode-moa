@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "goal": "<长程目标>",
+  "created_at": null,
+  "updated_at": null,
+  "phase": "working",
+  "roadmap": [],
+  "blockers": [],
+  "finished": false
+}

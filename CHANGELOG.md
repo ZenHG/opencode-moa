@@ -46,6 +46,48 @@
 ---
 
 
+## v0.0.19（2026-08-01）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Add a project-level long-running self-improvement loop driven by the concierge (门童), with an on-disk state protocol for unattended multi-hundred-hour iterations.
+
+### New feature
+
+- **scripts/long-loop.ps1**: Driver script for the long-running loop — wakes the concierge (门童) each round via `opencode run` with an unattended scheduling protocol; the concierge routes through the standard MoA pipeline (tool layer evidence → confidence routing → execution) and agents write back to `.moa/longloop/state.json`; supports `-Goal`/`-Dir`/`-Agent`/`-IntervalSec`/`-MaxIterations`/`-MaxHours`/`-DryRun`/`-RunOnce`; stop conditions: `finished`, 4 consecutive rounds with no state change, max iterations/hours
+- **Desktop app support**: the loop can drive an external `opencode serve` instance (`-ServerPort`/`-ServerPassword` connect to an existing one, `-SpawnServer` starts it automatically) and the desktop app can attach to the same server via Settings → Servers → Add server to watch iterations live; when the requested port is taken, `-SpawnServer` falls back to the next free port and prints the actual URL (no-op fallback also reports a friendly error for the connect mode)
+- **moa-loop MCP control plane**: new `mcp/moa-loop/server.js` (zero-dependency Node stdio MCP server) exposing 7 tools — `moa_state_read`/`moa_roadmap_add`/`moa_roadmap_update`/`moa_blockers_add`/`moa_blockers_resolve`/`moa_footprint_append`/`moa_heartbeat` — so executing agents maintain the state machine through tools instead of editing files; registered in `opencode.json` under `mcp.moa-loop` with permission `moa-loop_*: allow` (plus read-only `grep`/`glob`/`list: allow`) so headless rounds never hang on permission prompts
+- **State protocol**: `state.json` (goal/phase/roadmap/blockers/finished) is the single source of truth; 足迹.md is an append-only history; blocked work goes to `blockers` and the loop switches tasks; `phase=waiting_user` stretches the interval to 30 min and resumes when the user edits the state file
+
+### New files
+
+- `.moa/longloop/state.template.json`, `.moa/longloop/足迹模板.md` (templates, committed; runtime artifacts are git-ignored)
+- `docs/长程自完善.md`, `docs/LongLoop.md` (quick start, protocol, cadence/cost, FAQ)
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+新增「项目级长程自完善」能力：以门童为调度核心的无人值守迭代循环，磁盘状态协议支撑 200 小时不间断推进。
+
+### 新增功能
+
+- **scripts/long-loop.ps1**：长程循环驱动脚本——每轮用 `opencode run` 唤醒门童并注入无人值守调度协议；门童按标准 MoA 流水线路由（工具层取证 → 置信度路由 → 执行）并回写 `.moa/longloop/state.json`；支持 `-Goal`/`-Dir`/`-Agent`/`-IntervalSec`/`-MaxIterations`/`-MaxHours`/`-DryRun`/`-RunOnce`；停止条件：`finished`、连续 4 轮状态无变化、达最大轮数/时长
+- **桌面版支持**：循环可驱动独立 `opencode serve` 实例（`-ServerPort`/`-ServerPassword` 连接已有实例，`-SpawnServer` 自动拉起），桌面版可通过 Settings → Servers → Add server 挂载同一实例实时查看迭代进度；请求端口被占用时 `-SpawnServer` 自动顺延到下一个空闲端口并打印实际地址（连接模式则给出友好报错）
+- **moa-loop MCP 控制面**：新增 `mcp/moa-loop/server.js`（零依赖 Node stdio MCP server），暴露 7 个工具——`moa_state_read`/`moa_roadmap_add`/`moa_roadmap_update`/`moa_blockers_add`/`moa_blockers_resolve`/`moa_footprint_append`/`moa_heartbeat`——执行 agent 通过工具维护状态机而非直接改文件；已在 `opencode.json` 注册 `mcp.moa-loop` 并配 `moa-loop_*: allow` 权限（另加只读 `grep`/`glob`/`list: allow`），保证无人值守轮次不会因权限询问挂起
+- **状态协议**：state.json（goal/phase/roadmap/blockers/finished）为唯一事实源；足迹.md 为 append-only 历史；受阻任务进 blockers 挂起并换任务继续；`phase=waiting_user` 时轮间隔拉长到 30 分钟，用户改状态文件后自动恢复
+
+### 新增文件
+
+- `.moa/longloop/state.template.json`、`.moa/longloop/足迹模板.md`（模板入库；运行时产物已加入 .gitignore）
+- `docs/长程自完善.md`、`docs/LongLoop.md`（快速开始、协议、节奏与成本、FAQ）
+
+</details>
+---
+
+
 ## v0.0.18（2026-08-01）
 
 <details open>

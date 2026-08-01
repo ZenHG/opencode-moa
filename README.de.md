@@ -10,6 +10,8 @@
 
 > 🔥 **Aktuell (2026-07):** **DeepSeek-V4-Flash-0731** offiziell veröffentlicht — Agent-Fähigkeiten stark verbessert, übertrifft das teurere **GLM-5.2** (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9). Günstig schlägt teuer — MoAs Flash-Ebene (Werkzeuge + Meinungen) wird zum gleichen Preis deutlich stärker.
 
+> 🔄 **Langfristige Selbstverbesserung (200h+ unbeaufsichtigt):** dein Projekt tagelang automatisch iterieren lassen — ohne Vergessen, ohne Anhalten, ohne Wiederholen. Der Portier wacht jede Runde auf, durchläuft die gesamte MoA-Pipeline und speichert den Fortschritt auf der Festplatte. Ein Befehl zum Starten: **[▶ Loslegen →](docs/LongLoop.md)**
+
 > strukturierte Ausgabe, Grenz-Akzeptanzkriterien, Anti-Betrug, Auto-Routing. Siehe [CHANGELOG](CHANGELOG.md).
 
 > **Ein Einstiegspunkt für Gespräche, 22 spezialisierte Modelle, die automatisch zusammenarbeiten. Einfache Aufgaben nutzen Flash (günstig), komplexe Aufgaben rufen das Flaggschiff (teuer) auf. Kostenreduktion um bis zu ~90% (im Vergleich zu allem Flaggschiff), wenn einfache Aufgaben die Arbeitslast dominieren und Flaggschiff-Aufrufe minimiert werden — tatsächliche Einsparungen hängen von der Aufgabenmischung ab; die Codequalität ist signifikant gestiegen.**

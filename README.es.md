@@ -10,6 +10,8 @@
 
 > 🔥 **Caliente (2026-07):** lanzamiento oficial de **DeepSeek-V4-Flash-0731** — capacidades de agente muy reforzadas, superando al más caro **GLM-5.2** (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9). Lo barato vence a lo caro — la capa Flash de MoA (herramientas + opiniones) mucho más fuerte al mismo costo.
 
+> 🔄 **Auto-mejora de larga duración (200h+ sin supervisión):** tu proyecto iterando solo durante días — sin olvidar, sin parar, sin repetir. El portero se activa cada ronda, pasa por toda la tubería MoA y guarda el progreso en disco. Empieza con un comando: **[▶ Empezar →](docs/LongLoop.md)**
+
 > salida estructurada, criterios de aceptación por límites, anti-trampa, enrutamiento automático. Ver [CHANGELOG](CHANGELOG.md).
 
 > **Un punto de entrada a la conversación, 22 modelos especializados colaborando automáticamente. Tareas simples utilizan Flash (barato), tareas complejas llaman a la insignia (caro). Reducción de costos de hasta ~90% (vs todo-insignia) cuando las tareas simples dominan la carga de trabajo y las llamadas a la insignia se minimizan — los ahorros reales dependen de la mezcla de tareas; calidad del código significativamente mejorada.**

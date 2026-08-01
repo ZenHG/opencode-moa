@@ -4,6 +4,10 @@
     "subagent_depth":  2,
     "permission":  {
                        "*":  "ask",
+                       "moa-loop_*":  "allow",
+                       "grep":  "allow",
+                       "glob":  "allow",
+                       "list":  "allow",
                        "bash":  {
                                     "*":  "ask",
                                     "git status *":  "allow",
@@ -113,6 +117,13 @@
                        "auto":  true,
                        "reserved":  15000
                    },
+    "mcp":  {
+               "moa-loop":  {
+                                "type":  "local",
+                                "command":  ["node", "mcp/moa-loop/server.js"],
+                                "enabled":  true
+                            }
+           },
     "share":  "manual",
     "snapshot":  true,
     "provider":  {
