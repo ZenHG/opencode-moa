@@ -1556,6 +1556,7 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "门童",
+  "subagent_depth": 2,
   "permission": {
     "*": "ask",
     "bash": {
@@ -1620,7 +1621,7 @@ description: 前端三重 MoA——还原 + 逻辑 + 动效 → 总工择优
   // "instructions": ["AGENTS.md"],   // 可选：仅当项目根已有 AGENTS.md 才启用，否则留注释避免启动告警
   "compaction": {
     "auto": true,
-    "reserved": 10000
+    "reserved": 15000
   },
   "share": "manual",
   "snapshot": true

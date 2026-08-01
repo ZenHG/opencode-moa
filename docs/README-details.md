@@ -143,13 +143,13 @@ Opinion-layer agents are forbidden from reading code directly (via `read: deny` 
 
 ### Task nesting defense
 
-All non-routing agents declare `task: deny` to prevent child agents from calling task() again, blocking recursive nesting:
+Non-routing agents declare `task: deny` by default to prevent child agents from calling task() again, blocking recursive nesting; exceptions: opinion layer and flagship QC authorize `task: {工具人: allow}` for evidence-gathering / independent verification. `subagent_depth: 2` permits one level of agent → tool-handler nesting, while tool-handler itself declares `task: deny`, making depth 3 unreachable — hence no recursion:
 
-- **Layer 1 (agent frontmatter)**: each agent file declares `task: deny`
-- **Layer 2 (opencode.json)**: `permission.task` only allows concierge to call agents; non-routing agents globally denied from calling workers
+- **Layer 1 (agent frontmatter)**: non-routing agents declare `task: deny` by default (12 agents); 8 opinion-layer agents + flagship QC declare `task: {工具人: allow}` for evidence gathering (fallback path, environment-dependent)
+- **Layer 2 (opencode.json)**: `permission.task` allows concierge to call all agents; opinion layer/QC may only call tool-handler; `subagent_depth: 2` opens one level of agent → tool-handler nesting while blocking deeper nesting
 - **Layer 3 (prompt guard)**: concierge prompt ends with constraint forbidding itself from launching a new pipeline via sub-agent
 
-> Added 2026-07 after discovering concierge→tool-handler→tool-handler triple nesting. Three-layer redundancy ensures blocking even if one layer fails.
+> Added 2026-07 after discovering concierge→tool-handler→tool-handler triple nesting. Later, to support QC independent verification (re-running bright/dark acceptance lines), the opinion layer and QC were allowed one level of `task(@工具人)`; tool-handler itself refuses task, so nesting terminates at depth 2.
 
 ### No-material fallback
 
@@ -180,7 +180,7 @@ OpenCode Go plan pricing and quota details: [opencode.ai/docs/go/](https://openc
 | Agent permission isolation | each agent can only use allowed tools                                                                                                                                                         |
 | MCP permission isolation   | opinion layer forbidden from reading code (read: deny / bash: deny), prevents bypassing tool layer (project has no MCP server configured; "MCP" here refers to agent-level tool restrictions) |
 | MCP master kill-switch     | `"*_*": "deny"` on the 10 agent override blocks in `opencode.json` — MCP tool names are always `server_tool` (contain `_`), so this wildcard blocks every MCP tool in any environment without knowing the server list; template ships no MCP servers, so deny-by-default is safe |
-| Task 3-layer defense        | non-routing agents deny task → concierge whitelist → prompt guard, prevents recursive nesting |
+| Task 3-layer defense        | non-routing agents deny task by default (opinion/QC may call tool-handler only) → `subagent_depth: 2` depth cap → prompt guard, prevents recursive nesting |
 | Fallback chain             | tool layer fails → ask user → wait/skip/free model                                                                                                                                            |
 | One-click rollback         | delete `.opencode/` to restore                                                                                                                                                                |
 

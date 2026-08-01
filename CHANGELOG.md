@@ -46,7 +46,43 @@
 ---
 
 
-## v0.0.17（Unreleased）
+## v0.0.18（2026-08-01）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Enable one level of subagent nesting for evidence gathering; sync docs.
+
+### Config
+
+- **subagent_depth**: Set to `2` — opens one level of agent → tool-handler nesting (opinion layer / flagship QC evidence gathering); tool-handler itself denies task, so depth 3 stays unreachable (no recursion)
+
+### Docs
+
+- **README-details**: Rewrote "Task nesting defense" to match reality (12 agents `task: deny`; 8 opinion-layer agents + flagship QC authorize `task: {工具人: allow}`; depth capped at 2, unreachable at 3); updated security table row
+- **Deployment manuals**: Synced `subagent_depth: 2` and `reserved: 15000` into Block 5 (opencode.json) of `opencode-moa.md` / `opencode-moa.en.md`
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+放行一层 subagent 嵌套用于取证；同步文档。
+
+### 配置
+
+- **subagent_depth**：设为 `2`——放行 意见层/旗舰·质检 → 工具人 一层取证嵌套；工具人自身拒绝 task，深度 3 不可达（无递归）
+
+### 文档
+
+- **README-details**：重写「Task 嵌套防御」为真实现状（12 个 agent `task: deny`；意见层 8 个 + 旗舰·质检授权 `task: {工具人: allow}`；深度限 2、3 不可达）；同步安全表对应行
+- **部署手册**：`opencode-moa.md` / `opencode-moa.en.md` 的 Block 5（opencode.json）同步 `subagent_depth: 2` 与 `reserved: 15000`
+
+</details>
+
+---
+
+## v0.0.17（2026-08-01）
 
 <details open>
 <summary>🇬🇧 English</summary>

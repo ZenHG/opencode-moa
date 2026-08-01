@@ -146,13 +146,13 @@ Agent 的激活由声明式 `前置条件` 元数据驱动，而非硬编码路�
 
 ### Task 嵌套防御
 
-所有非路由 agent 声明 `task: deny`，防止子 agent 再次调用 task() 造成嵌套递归：
+非路由 agent 默认 `task: deny`，防止子 agent 再次调用 task() 造成嵌套递归；例外：意见层与旗舰·质检授权 `task: {工具人: allow}` 做备选取证/独立取证。`subagent_depth: 2` 允许 agent → 工具人 一层深度，工具人自身 `task: deny`，深度 3 不可达，故无递归：
 
-- **第一层（agent 文件头部）**：每个 agent 文件头部声明 `task: deny`
-- **第二层（opencode.json）**：`permission.task` 仅门童可调 agent，非路由 agent 全局禁止调 worker
+- **第一层（agent 文件头部）**：非路由 agent 默认声明 `task: deny`（12 个）；意见层 8 个 + 旗舰·质检声明 `task: {工具人: allow}` 做取证（备选路径，依赖环境）
+- **第二层（opencode.json）**：`permission.task` 门童可调全部 agent，意见层/质检仅可调工具人；`subagent_depth: 2` 放开 agent → 工具人 一层，阻止更深的嵌套
 - **第三层（prompt 护栏）**：门童 prompt 末尾追加约束，禁止自身调子 agent 进入新流水线
 
-> 2026-07 发现门童→工具人→工具人三层嵌套后添加的防御。三层的冗余设计保证即使某一层失效仍能阻断递归。
+> 2026-07 发现门童→工具人→工具人三层嵌套后添加的防御。后为支持质检独立取证（明线/暗线复跑），意见层与质检放行一层 `task(@工具人)`；工具人自身拒绝 task，深度 2 即终结。
 
 ### 无材料保底
 
@@ -183,7 +183,7 @@ OpenCode Go 订阅的价格与额度详情：[opencode.ai/docs/go/](https://open
 | Agent 权限隔离   | 每个 agent 只能用允许的工具                                                                 |
 | MCP 权限隔离     | 意见层禁止直接读代码/调命令（read: deny + bash: deny），防止绕过工具层（项目未配置 MCP server，此处指 agent 级工具限制） |
 | MCP 主开关（kill-switch） | `opencode.json` 中 10 个 agent override 块的 `"*_*": "deny"` —— MCP 工具名恒为 `server_tool`（含下划线），无需预知名单即可封禁任意环境下的全部 MCP 工具；模板不附带 MCP server，deny-by-default 安全 |
-| task 三级防御     | 非路由 agent 拒绝 task → 门童白名单 → prompt 护栏，防嵌套递归 |
+| task 三级防御     | 非路由 agent 默认拒绝 task（意见层/质检仅可调工具人）→ `subagent_depth: 2` 限深 → prompt 护栏，防嵌套递归 |
 | 降级链          | 工具层失败 → ask 用户 → 等待/跳过/免费模型                                                       |
 | 一键回滚         | 删掉 `.opencode/` 目录即可还原                                                            |
 

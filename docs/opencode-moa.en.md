@@ -1315,6 +1315,7 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "concierge-router",
+  "subagent_depth": 2,
   "permission": {
     "*": "ask",
     "bash": {
@@ -1379,7 +1380,7 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
   // "instructions": ["AGENTS.md"],   // optional: enable only when AGENTS.md already exists at project root, otherwise keep commented to avoid startup warning
   "compaction": {
     "auto": true,
-    "reserved": 10000
+    "reserved": 15000
   },
   "share": "manual",
   "snapshot": true
