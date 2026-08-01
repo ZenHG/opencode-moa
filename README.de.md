@@ -10,7 +10,7 @@
 
 > 🔥 **Aktuell (2026-07):** **DeepSeek-V4-Flash-0731** offiziell veröffentlicht — Agent-Fähigkeiten stark verbessert, übertrifft das teurere **GLM-5.2** (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9). Günstig schlägt teuer — MoAs Flash-Ebene (Werkzeuge + Meinungen) wird zum gleichen Preis deutlich stärker.
 
-> 🔄 **Langfristige Selbstverbesserung (200h+ unbeaufsichtigt):** dein Projekt tagelang automatisch iterieren lassen — ohne Vergessen, ohne Anhalten, ohne Wiederholen. Der Portier wacht jede Runde auf, durchläuft die gesamte MoA-Pipeline und speichert den Fortschritt auf der Festplatte. Ein Befehl zum Starten: **[▶ Loslegen →](docs/LongLoop.md)**
+> 🔄 **Langfristige Selbstverbesserung (24h unbeaufsichtigt):** dein Projekt tagelang automatisch iterieren lassen — ohne Vergessen, ohne Anhalten, ohne Wiederholen. Der Portier wacht jede Runde auf, durchläuft die gesamte MoA-Pipeline und speichert den Fortschritt auf der Festplatte. Ein Befehl zum Starten: **[▶ Loslegen →](docs/LongLoop.md)**
 
 > strukturierte Ausgabe, Grenz-Akzeptanzkriterien, Anti-Betrug, Auto-Routing. Siehe [CHANGELOG](CHANGELOG.md).
 

@@ -99,7 +99,7 @@ const tools = [
   },
   {
     name: "moa_footprint_append",
-    description: "足迹.md 追加一行（append-only 历史，防遗忘）。格式: 任务/做了什么/验证/结果。evidence 用 ref（commit:/smoke:/pr:/run:），不用散文。",
+    description: "足迹.md 追加一条结构化足迹（append-only 历史，防遗忘）。格式参照 .moa/longloop/足迹模板.md：任务/做了什么/验证/证据/负结果/下一步。负结果必填——无进展也要如实记录（把没做成的改名成成功视为作弊）。evidence 用 ref（commit:/smoke:/pr:/run:），不用散文。",
     inputSchema: {
       type: "object",
       properties: {
@@ -108,6 +108,8 @@ const tools = [
         verify: { type: "string", description: "验证命令+结果，或「未验证」" },
         result: { type: "string", enum: ["done", "blocked", "partial"], description: "结果（partial 需 note 保留进度）" },
         evidence: { type: "string", description: "证据 ref（可选）：commit:<sha> / smoke:<用例名> / pr:<编号> / run:<运行id>；todo 完成/自述不算证据" },
+        negative: { type: "string", description: "负结果（可选）：失败尝试/未达成的验收；无进展轮次必须写明，禁止省略或粉饰" },
+        next: { type: "string", description: "下一步决策（可选）：留给下一轮的问题或建议" },
       },
       required: ["task", "did", "result"], additionalProperties: false,
     },
@@ -184,6 +186,8 @@ function callTool(name, args) {
         `- 验证：${args.verify || "未验证"}`,
         `- 证据：${args.evidence || "无 ref（todo 完成/自述不算证据）"}`,
         `- 结果：${args.result}${args.result === "partial" ? "（note 保留进度）" : ""}`,
+        `- 负结果：${args.negative || "无"}`,
+        `- 下一步：${args.next || "—"}`,
       ].join("\n");
       fs.mkdirSync(stateDir, { recursive: true });
       fs.appendFileSync(footprintFile, "\n" + line + "\n", "utf8");

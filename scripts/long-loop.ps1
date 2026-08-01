@@ -131,8 +131,24 @@ function Start-LoopServer {
 
 function Invoke-Round {
     param([int]$N)
+    # 动态首句：喂给 opencode 的自动标题生成（不传 --title 时由 title agent 概括）
+    $taskHint = ""
+    if (Test-Path $script:stateFile) {
+        try {
+            $st = Get-Content $script:stateFile -Raw | ConvertFrom-Json
+            $openTask = @($st.roadmap | Where-Object { $_.status -in @("open", "in_progress") }) | Select-Object -First 1
+            if ($openTask) { $taskHint = "本轮推进：$($openTask.title)" }
+            elseif ($st.finished) { $taskHint = "状态已收官（finished）" }
+            elseif (@($st.blockers).Count -gt 0) { $taskHint = "等待用户答复（blockers=$(@($st.blockers).Count)）" }
+        } catch { }
+    }
+    if (-not $taskHint -and $script:goalText) {
+        $goalShort = $script:goalText
+        if ($goalShort.Length -gt 60) { $goalShort = $goalShort.Substring(0, 60) + "…" }
+        $taskHint = "本轮目标：$goalShort"
+    }
     $prompt = @"
-[长程自完善模式 · 第 $N 轮 · 无人值守]
+[长程自完善 · 第 $N 轮 · 无人值守] $taskHint
 你是门童。本次输入不是用户需求，而是自主循环的调度请求。
 目标：推进 .moa/longloop/state.json 的 goal 字段（先取证再行动）。
 
@@ -141,7 +157,7 @@ function Invoke-Round {
 2. 从 roadmap 选一个 open 任务（in_progress 先看 note 恢复现场）；无则按 goal 新开一项
 3. 按置信度路由派发：简单→闪电侠/中级·码农；中→中级链（三意见+融合）；探索型→意见层并行直接汇总；重任务→旗舰链
 4. 无人值守约束：需求不清晰/置信度低 → 不烧旗舰链，写 blockers 换任务；同一任务连续 3 轮无进展 → blocked 换路线；同一条验收连败 3 次 → blocked 换下一项（「没做成但说清了」合格，「做了但更糟」不合格）
-5. 派发时要求执行 agent 更新状态并 append 一行到 足迹.md：
+5. 派发时要求执行 agent 更新状态并 append 一条结构化足迹到 足迹.md（格式见 .moa/longloop/足迹模板.md：做了什么/验证/证据/负结果/下一步，负结果必填）：
    - 首选 moa-loop MCP 工具（moa_state_read/moa_roadmap_add/moa_roadmap_update/moa_blockers_add/moa_footprint_append/moa_heartbeat/moa_finish），
      由执行 agent 直接调用维护 state.json（注意工具目录=当前项目，与文件路径一致）
    - 工具不可用时退化为直接编辑 state.json（任务标 done/blocked + note 保留进度）
@@ -156,7 +172,8 @@ function Invoke-Round {
         $prompt += "`n本轮目标：$($script:goalText)（目标全文在 state.json 的 goal 字段）。"
     }
     Write-Host "  [run] opencode --agent $Agent --dir $Dir" -ForegroundColor Gray
-    $out = & $script:opencode run --agent $Agent --dir $Dir --print-logs=false --log-level ERROR --title "longloop-r$N" -- $prompt 2>&1
+    # 不传 --title：由 opencode 的 title agent 基于首句自动生成智能标题（如「执行 t2：改写 round2」）
+    $out = & $script:opencode run --agent $Agent --dir $Dir --print-logs=false --log-level ERROR -- $prompt 2>&1
     $code = $LASTEXITCODE
     $text = ($out | Out-String).Trim()
     if ($code -ne 0) {
