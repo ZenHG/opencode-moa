@@ -48,3 +48,11 @@ docs/benchmark/cases/*.yml
 
 # 本地出图方案文档（含本地路径/个人工作流，非仓库共享内容）
 docs/opencode-moa-出图方案.md
+
+# docs 仅推送白名单文档，其余文件/目录一律不推送
+docs/*
+!docs/README-details.zh.md
+!docs/TRANSLATION.md
+!docs/README-details.md
+!docs/opencode-moa.en.md
+!docs/opencode-moa.md
