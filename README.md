@@ -134,7 +134,7 @@ rm -rf your-project/.moa/
 | message with screenshot              | vision-translator converts to text → normal routing              | vision-translator                   |
 | message with error log / diagram / complex content | vision-translator decomposes content → normal routing  | vision-translator (fallback role)   |
 
-**Direct `@` calls (visible agents only):** `@闪电侠 help me write a hello world` · `@工具人 search all TODOs in the project` · `@视觉翻译官 analyze this screenshot` — the other 18 agents are hidden from the `@` menu; 门童 calls them via the Task tool automatically.
+**Direct `@` calls (visible agents only):** `@闪电侠 help me write a hello world` · `@工具人 search all TODOs in the project` · `@视觉翻译 analyze this screenshot` — the other 18 agents are hidden from the `@` menu; 门童 calls them via the Task tool automatically.
 
 **One-click commands:**
 
@@ -174,7 +174,7 @@ Opinion and fusion agents use `---section-name---` markers for structured output
 
 ## 22 Agents
 
-> The English name is the logical role; the Chinese in parentheses is the **exact filename** under `.opencode/agents/`. Call visible agents directly with `@` (`@门童`, `@工具人`, `@闪电侠`, `@视觉翻译官`); the 18 `[hidden]` agents are orchestrated by 门童 via the Task tool and are not directly @-callable.
+> The English name is the logical role; the Chinese in parentheses is the **exact filename** under `.opencode/agents/`. Call visible agents directly with `@` (`@门童`, `@工具人`, `@闪电侠`, `@视觉翻译`); the 18 `[hidden]` agents are orchestrated by 门童 via the Task tool and are not directly @-callable.
 
 ```
 concierge-router (门童, Flash)
@@ -183,10 +183,10 @@ concierge-router (门童, Flash)
  │   tool-handler      (工具人, Flash    ) read code, search files
  │   tool-handler-mimo (工具人-mimo, MiMo) [hidden]  reliable file read (fallback + parallel)
  │   swift             (闪电侠, Flash    ) simple tasks in one shot
- │   vision-translator (视觉翻译官, Qwen3.7 Plus ) screenshot/UI→text; logs/diagrams/docs→decomposition
+ │   vision-translator (视觉翻译, Qwen3.7 Plus ) screenshot/UI→text; logs/diagrams/docs→decomposition
  │
- ├── residual-extractor  (残差提取者,  Flash     ) analyze divergence between plans
- ├── confidence-assessor (置信度评估者, DeepSeek V4 Flash    ) assess fusion result confidence
+ ├── residual-extractor  (残差提取,  Flash     ) analyze divergence between plans
+ ├── confidence-assessor (置信度评估, DeepSeek V4 Flash    ) assess fusion result confidence
  │
  ├── Mid-tier opinion layer ─────────────────────────────────────────────
  │   mid-eng      (中级·工程, Kimi K2.6 ) engineering view

@@ -186,10 +186,10 @@ The concierge-router automatically: judges complexity → dispatches the tool ag
 
 **Method 3: `@` invoke (usable independently)**
 
-Type `@` and pick an agent to talk directly. Directly @-callable (not hidden): 门童, 工具人, 闪电侠, 视觉翻译官:
+Type `@` and pick an agent to talk directly. Directly @-callable (not hidden): 门童, 工具人, 闪电侠, 视觉翻译:
 
 - `@门童` → entry for all tasks, auto-routing (execution / exploration / frontend chains)
-- `@工具人` / `@视觉翻译官` → read files / screenshots directly
+- `@工具人` / `@视觉翻译` → read files / screenshots directly
 - The other 18 agents are `hidden` and orchestrated by 门童 via the Task tool, not directly @-callable (to force a specific chain, say so in the task and 门童 picks the matching agent)
 
 ### Fallback chain
@@ -399,7 +399,7 @@ frontend→[@fe-restore @fe-logic @fe-motion]→@fe-lead | fusion failed→@fusi
 Inline upstream outputs into task() prompt so child agents don't need to read files themselves.
 
 Rules:
-- Opinion/fusion/implementation layer: inline all upstream materials (plans/reports/metadata)
+- Opinion/fusion/execution layer: inline all upstream materials (plans/reports/metadata)
 - Tool layer: inline necessary context only (material bundle ≤4K, opinion plan ≤2K each, fusion plan ≤3K)
 - Exception: @swift/@fe-restore/tool-handler series don't need inlining
 
@@ -443,7 +443,7 @@ Short-circuit: condition met → activate | none met → ask user
 ## Routing Decision Display
 Before each forward, display to user (without exposing agent names):
 ```
-[Pipeline] mode=<lite|balanced|strict> stage=<tool layer|opinion layer|fusion layer|implementation layer> confidence=<high|medium|low>(<0-100>)
+[Pipeline] mode=<lite|balanced|strict> stage=<tool layer|opinion layer|fusion layer|execution layer> confidence=<high|medium|low>(<0-100>)
   reason: <why this layer>
   path: <mid chain|flagship chain|frontend chain>
   status: <idle|in_progress|complete|degraded|stuck>
@@ -1497,7 +1497,7 @@ Expected same as above. If `Select-String` count is high, it's because `task:` a
 {
   "$schema": "acceptance-criteria",
   "_description": "界线：融合层输出后写入此文件，后续只能追加 bonus 项。",
-  "_usage": "旗舰·融合/中级·融合/融合·保底 输出时，将 ---验收标准--- 节内容写入此文件；实现层将进度写入 .moa/足迹.md，未决事项写入 .moa/拦路虎.md",
+  "_usage": "旗舰·融合/中级·融合/融合·保底 输出时，将 ---验收标准--- 节内容写入此文件；执行层将进度写入 .moa/足迹.md，未决事项写入 .moa/拦路虎.md",
   "_rules": [
     "输出后冻结，不可修改基础条件",
     "只能追加bonus项",
@@ -1593,7 +1593,7 @@ Expected same as above. If `Select-String` count is high, it's because `task:` a
   },
 
   "progressTracking": {
-    "_description": "足迹机制：实现层开工前写 ≤10 行开工回执（理解的目标/顺序/最大风险），每完成一项立即更新 .moa/足迹.md；拿不准/受阻写 .moa/拦路虎.md 后跳过继续；收不回的操作停下写 .moa/拦路虎.md 做别的；交付时待裁决随交付提交（空则写「无」）"
+    "_description": "足迹机制：执行层开工前写 ≤10 行开工回执（理解的目标/顺序/最大风险），每完成一项立即更新 .moa/足迹.md；拿不准/受阻写 .moa/拦路虎.md 后跳过继续；收不回的操作停下写 .moa/拦路虎.md 做别的；交付时待裁决随交付提交（空则写「无」）"
   },
 
   "deliveryRequirements": {

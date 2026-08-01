@@ -98,7 +98,7 @@ MOA_JSON='{
       "工具人": "allow",
       "工具人-mimo": "allow",
       "闪电侠": "allow",
-      "视觉翻译官": "allow",
+      "视觉翻译": "allow",
       "中级·工程": "allow",
       "中级·创意": "allow",
       "中级·码农": "allow",
@@ -114,8 +114,8 @@ MOA_JSON='{
       "前端·动效": "allow",
       "前端·总工": "allow",
       "融合·保底": "allow",
-      "残差提取者": "allow",
-      "置信度评估者": "allow"
+      "残差提取": "allow",
+      "置信度评估": "allow"
     },
     "webfetch": "allow",
     "read": {

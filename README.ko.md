@@ -192,7 +192,7 @@ rm -rf your-project/.moa/
 ```
 @闪电侠 help me write a hello world
 @工具人 search all TODOs in the project
-@视觉翻译官 analyze this screenshot
+@视觉翻译 analyze this screenshot
 ```
 
 **원클릭 명령어:**
@@ -254,10 +254,10 @@ concierge-router (门童, Flash)
  │   tool-handler      (工具人, Flash    ) 코드 읽기, 파일 검색
  │   tool-handler-mimo (工具人-mimo, MiMo) [숨김] 신뢰할 수 있는 파일 읽기 (백업 + 병렬)
  │   swift             (闪电侠, Flash    ) 간단한 작업을 한 번에
- │   vision-translator (视觉翻译官, Qwen3.7 Plus ) 스크린샷/UI→텍스트; 로그/다이어그램/문서→분해
+ │   vision-translator (视觉翻译, Qwen3.7 Plus ) 스크린샷/UI→텍스트; 로그/다이어그램/문서→분해
  │
- ├── 잔여물 추출기  (残差提取者,  Flash     ) 계획 간의 분기를 분석
- ├── 신뢰도 평가자 (置信度评估者, DeepSeek V4 Flash    ) 융합 결과 신뢰도 평가
+ ├── 잔여물 추출기  (残差提取,  Flash     ) 계획 간의 분기를 분석
+ ├── 신뢰도 평가자 (置信度评估, DeepSeek V4 Flash    ) 융합 결과 신뢰도 평가
  │
  ├── 중간 의견 계층 ─────────────────────────────────────────────
  │   mid-eng      (中级·工程, Kimi K2.6 ) 엔지니어링 관점

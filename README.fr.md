@@ -192,7 +192,7 @@ rm -rf your-project/.moa/
 ```
 @闪电侠 aide-moi à écrire un hello world
 @工具人 recherche tous les TODOs dans le projet
-@视觉翻译官 analyse cette capture d'écran
+@视觉翻译 analyse cette capture d'écran
 ```
 
 **Commandes en un clic :**
@@ -256,10 +256,10 @@ concierge-routeur (门童, Flash)
  │   gestionnaire d'outils      (工具人, Flash    ) lire le code, rechercher des fichiers
  │   gestionnaire-d'outils-mimo (工具人-mimo, MiMo) [caché]  lecture de fichiers fiable (secours + parallèle)
  │   swift                      (闪电侠, Flash    ) tâches simples en une seule fois
- │   traducteur visuel          (视觉翻译官, Qwen3.7 Plus ) capture d'écran/UI→texte ; journaux/diagrammes/documents→décomposition
+ │   traducteur visuel          (视觉翻译, Qwen3.7 Plus ) capture d'écran/UI→texte ; journaux/diagrammes/documents→décomposition
  │
- ├── extracteur de résidus  (残差提取者,  Flash     ) analyser la divergence entre les plans
- ├── évaluateur de confiance   (置信度评估者, DeepSeek V4 Flash    ) évaluer la confiance du résultat de fusion
+ ├── extracteur de résidus  (残差提取,  Flash     ) analyser la divergence entre les plans
+ ├── évaluateur de confiance   (置信度评估, DeepSeek V4 Flash    ) évaluer la confiance du résultat de fusion
  │
  ├── Couche d'opinion intermédiaire ─────────────────────────────────────────────
  │   mid-eng      (中级·工程, Kimi K2.6 ) vue d'ingénierie

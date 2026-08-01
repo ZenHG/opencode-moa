@@ -45,7 +45,7 @@ Individual opinion agents (architecture/planning/engineering, frontend-restore/l
   → any agent returns empty result → retry that agent once
     → retry succeeds → continue normally
     → retry fails → mark as "degraded" and proceed with N/3 inputs
-      → 残差提取者 works with available inputs only
+      → 残差提取 works with available inputs only
       → 旗舰·融合 applies degraded fusion rules
       → output carries "[Partial] N/3 inputs" label
       → confidence score is adjusted downward
@@ -67,7 +67,7 @@ Agent activation is governed by declarative `precondition` metadata, not hardcod
 |-------|---------------|
 | 闪电侠 | always |
 | 工具人 | requires codebase context |
-| 视觉翻译官 | primary: `screenshot`; fallback: `error_log OR diagram OR long_document OR ambiguous_intent` |
+| 视觉翻译 | primary: `screenshot`; fallback: `error_log OR diagram OR long_document OR ambiguous_intent` |
 | 中级·工程 | requires engineering complexity |
 | 中级·创意 | requires creative complexity |
 | 中级·码农 | requires implementation complexity |
@@ -82,21 +82,21 @@ Condition activation follows short-circuit logic: preconditions met → activate
 Every routing decision outputs a stage identifier so users can track pipeline progress without learning internal step numbers:
 
 ```
-[Stage: Tool Layer] → [Stage: Opinion Layer] → [Stage: Fusion Layer] → [Stage: Implementation Layer]
+[Stage: Tool Layer] → [Stage: Opinion Layer] → [Stage: Fusion Layer] → [Stage: Execution Layer]
 ```
 
 Stage-to-phase mapping:
 - `Tool Layer` — material collection phase
 - `Opinion Layer` — parallel plan design phase (mid-tier / flagship / frontend)
 - `Fusion Layer` — plan fusion and verification phase
-- `Implementation Layer` — code implementation and acceptance phase
+- `Execution Layer` — code implementation and acceptance phase
 
 ### Unified progress reporting
 
 Both success and failure paths follow the same reporting format, never exposing internal agent names:
 
 ```
-[Pipeline] mode=<lite|balanced|strict>  stage=<Tool Layer|Opinion Layer|Fusion Layer|Implementation Layer>  status=<idle|in_progress|complete|degraded|stuck>
+[Pipeline] mode=<lite|balanced|strict>  stage=<Tool Layer|Opinion Layer|Fusion Layer|Execution Layer>  status=<idle|in_progress|complete|degraded|stuck>
   reason: <why this stage>
   path: <Tool Layer|Mid-tier chain|Flagship chain|Frontend chain>
   fallback: <recovery strategy>
@@ -113,7 +113,7 @@ Status indicators:
 When the main pipeline is executing, swift can be dispatched in parallel for independent simple subtasks:
 
 ```
-Main pipeline: Tool Layer → Opinion Layer → Fusion Layer → Implementation Layer
+Main pipeline: Tool Layer → Opinion Layer → Fusion Layer → Execution Layer
 Parallel lane: swift (always ready, runs alongside main pipeline)
 ```
 

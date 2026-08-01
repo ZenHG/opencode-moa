@@ -21,7 +21,7 @@ Write-Host "  预期：闪电侠一步到位`n"
 
 Write-Host "[5] /moa-describe 截图转文字" -ForegroundColor Yellow
 Write-Host "  操作：/moa-describe [粘贴一张截图]"
-Write-Host "  预期：视觉翻译官精确还原截图内容`n"
+Write-Host "  预期：视觉翻译精确还原截图内容`n"
 
 Write-Host "[6] 门童降级" -ForegroundColor Yellow
 Write-Host "  操作：输入一个超长复杂需求"

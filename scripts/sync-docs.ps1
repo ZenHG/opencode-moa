@@ -119,7 +119,7 @@ $enNameMap = @{
     "工具人"       = "tool-handler"
     "工具人-mimo"  = "tool-handler-mimo"
     "闪电侠"       = "swift"
-    "视觉翻译官"   = "vision-translator"
+    "视觉翻译"   = "vision-translator"
     "中级·工程"   = "mid-eng"
     "中级·创意"   = "mid-creative"
     "中级·码农"   = "mid-coder"
@@ -134,8 +134,8 @@ $enNameMap = @{
     "前端·逻辑"   = "fe-logic"
     "前端·动效"   = "fe-motion"
     "前端·总工"   = "fe-lead"
-    "残差提取者"   = "residual-extractor"
-    "置信度评估者" = "confidence-assessor"
+    "残差提取"   = "residual-extractor"
+    "置信度评估" = "confidence-assessor"
     "融合·保底"   = "fusion-fallback"
 }
 

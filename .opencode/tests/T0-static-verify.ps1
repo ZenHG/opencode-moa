@@ -43,7 +43,7 @@ $expectedModels = @{
     "工具人"     = "deepseek-v4-flash"
     "工具人-mimo" = "mimo-v2.5"
     "闪电侠"     = "deepseek-v4-flash"
-    "视觉翻译官"  = "qwen3.7-plus"
+    "视觉翻译"  = "qwen3.7-plus"
     "中级·工程"  = "kimi-k2.6"
     "中级·创意"  = "qwen3.7-plus"
     "中级·码农"  = "deepseek-v4-flash"
@@ -58,8 +58,8 @@ $expectedModels = @{
     "前端·逻辑"  = "qwen3.7-plus"
     "前端·动效"  = "mimo-v2.5-pro"
     "前端·总工"  = "deepseek-v4-flash"
-    "残差提取者"  = "deepseek-v4-flash"
-    "置信度评估者" = "deepseek-v4-flash"
+    "残差提取"  = "deepseek-v4-flash"
+    "置信度评估" = "deepseek-v4-flash"
     "融合·保底"  = "deepseek-v4-pro"
 }
 
@@ -103,7 +103,7 @@ foreach ($f in (Get-ChildItem "$agentDir/*.md")) {
 Check "task: = 22" ($taskCount -eq 22)
 
 Write-Host "`n=== Permission groups ===" -ForegroundColor Yellow
-$toolAgents = @("工具人", "工具人-mimo", "视觉翻译官")
+$toolAgents = @("工具人", "工具人-mimo", "视觉翻译")
 foreach ($a in $toolAgents) {
     $c = Get-Content (Join-Path $agentDir "$a.md") -Raw -Encoding utf8
     Check "$($a) edit=deny" ($c -match "edit:\s*deny")

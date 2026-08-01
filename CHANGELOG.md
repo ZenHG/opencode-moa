@@ -71,6 +71,12 @@ Model gradient rework: GLM-5.2 retired, replaced by DeepSeek V4 Flash.
 - **Trimmed**: Removed Swift Parallel / Parallel Scheduling sections
 - **Runtime files**: Added `.moa/` working files (界线.json, 足迹模板.md, 拦路虎模板.md)
 
+### Agents (rename)
+
+- **Renamed**: 视觉翻译官→视觉翻译 (vis-translator), 残差提取者→残差提取 (residual-extractor), 置信度评估者→置信度评估 (confidence-eval) — full-repo sync (router whitelist, opencode.json, installers, README ×7, docs, tests)
+- **Terminology**: 实现层→执行层 (router output protocol, .moa/界线.json)
+- **Execution split-parallel**: 旗舰·执行 splits oversized tasks (steps >8) via `---拆分请求---`; 门童 dispatches independent subtasks in parallel with per-subtask footprint `.moa/足迹-子N.md`, serializes dependencies
+
 </details>
 
 <details>
@@ -95,6 +101,12 @@ Model gradient rework: GLM-5.2 retired, replaced by DeepSeek V4 Flash.
 - **工具约束**：简化为 JSON 三键格式（`description`/`prompt`/`subagent_type`），新增「并行规则」（仅独立任务可并行，冲突串行）
 - **精简**：删除「闪电侠并行」「并行调度」两节
 - **运行时文件**：新增 `.moa/` 工作文件（界线.json、足迹模板.md、拦路虎模板.md）
+
+### Agents（改名）
+
+- **改名**：视觉翻译官→视觉翻译、残差提取者→残差提取、置信度评估者→置信度评估（全仓同步：门童白名单、opencode.json、安装双脚本、README×7、docs、测试）
+- **术语统一**：实现层→执行层（门童路由输出协议、.moa/界线.json）
+- **执行层拆分并行**：旗舰·执行遇任务过大（步骤>8）先拆分并输出 `---拆分请求---`；门童对无依赖子任务并行派遣旗舰·执行（子任务足迹写 `.moa/足迹-子N.md`），依赖项串行
 
 </details>
 ---
