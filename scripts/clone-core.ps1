@@ -4,6 +4,8 @@
 # Core files retrieved:
 #   README.md, opencode.json, docs/opencode-moa.md, docs/opencode-moa.en.md
 #   .opencode/agents, .opencode/commands, .opencode/skills
+#   scripts/long-loop.ps1, mcp/moa-loop, docs/长程自完善.md, docs/LongLoop.md
+#   .moa/界线.json, .moa/足迹模板.md, .moa/拦路虎模板.md
 
 param(
     [string]$Dest = "opencode-moa-core",
@@ -30,10 +32,17 @@ $sparsePaths = @(
     "docs/opencode-moa.en.md",
     ".opencode/agents",
     ".opencode/commands",
-    ".opencode/skills"
+    ".opencode/skills",
+    "scripts/long-loop.ps1",
+    "mcp/moa-loop",
+    "docs/长程自完善.md",
+    "docs/LongLoop.md",
+    ".moa/界线.json",
+    ".moa/足迹模板.md",
+    ".moa/拦路虎模板.md"
 )
 
-git sparse-checkout set $sparsePaths `
+git sparse-checkout set --skip-checks $sparsePaths `
     || throw "Sparse checkout failed"
 
 Write-Host "`n--- Core files retrieved ---" -ForegroundColor Green
