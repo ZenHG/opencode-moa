@@ -8,6 +8,8 @@
 
 > 🔥 **Hot (2026-07) :** la fusion phare mise à niveau vers **Kimi K3** — 2.8T params, 1M contexte, modèle de pointe. Le plafond de qualité de MoA est maintenant à l'avant du peloton.
 
+> 🔥 **Hot (2026-07) :** sortie officielle de **DeepSeek-V4-Flash-0731** — capacités d'agent fortement renforcées, surpassant V4-Pro (Preview) avec beaucoup moins de paramètres activés (Terminal Bench 82.7 vs 72.1, DeepSWE 54.4 vs 12.8, Toolathlon 70.3 vs 55.9). La couche Flash de MoA (outils + opinions) bien plus forte au même coût.
+
 > sortie structurée, critères d'acceptation par limites, anti-triche, routage automatique. Voir [CHANGELOG](CHANGELOG.md).
 
 > **Un point d'entrée de conversation, 22 modèles spécialisés collaborant automatiquement. Les tâches simples utilisent Flash (économique), les tâches complexes appellent le modèle phare (coûteux). Réduction des coûts jusqu'à ~90 % (vs tout-phare) lorsque les tâches simples dominent la charge de travail et que les appels au phare sont minimisés — les économies réelles dépendent du mélange des tâches ; qualité du code significativement améliorée.**

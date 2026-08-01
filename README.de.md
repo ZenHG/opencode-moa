@@ -8,6 +8,8 @@
 
 > 🔥 **Aktuell (2026-07):** Flaggschiff-Fusion auf **Kimi K3** aktualisiert — 2,8T Parameter, 1M Kontext, erstklassiges Frontier-Modell. Die Qualitätsschwelle von MoA liegt jetzt an der Spitze.
 
+> 🔥 **Aktuell (2026-07):** **DeepSeek-V4-Flash-0731** offiziell veröffentlicht — Agent-Fähigkeiten stark verbessert, übertrifft V4-Pro (Preview) trotz deutlich weniger aktivierter Parameter (Terminal Bench 82.7 vs 72.1, DeepSWE 54.4 vs 12.8, Toolathlon 70.3 vs 55.9). MoAs Flash-Ebene (Werkzeuge + Meinungen) wird zum gleichen Preis deutlich stärker.
+
 > strukturierte Ausgabe, Grenz-Akzeptanzkriterien, Anti-Betrug, Auto-Routing. Siehe [CHANGELOG](CHANGELOG.md).
 
 > **Ein Einstiegspunkt für Gespräche, 22 spezialisierte Modelle, die automatisch zusammenarbeiten. Einfache Aufgaben nutzen Flash (günstig), komplexe Aufgaben rufen das Flaggschiff (teuer) auf. Kostenreduktion um bis zu ~90% (im Vergleich zu allem Flaggschiff), wenn einfache Aufgaben die Arbeitslast dominieren und Flaggschiff-Aufrufe minimiert werden — tatsächliche Einsparungen hängen von der Aufgabenmischung ab; die Codequalität ist signifikant gestiegen.**
