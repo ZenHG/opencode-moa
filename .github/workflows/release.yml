@@ -34,15 +34,16 @@ jobs:
           echo "version=$VER" >> "$GITHUB_OUTPUT"
           echo "解析到版本: ${VER:-（无，跳过）}"
 
-      - name: Idempotency guard (skip if tag/release exists)
+      - name: Idempotency guard (skip only if release exists)
         id: decide
         if: steps.ver.outputs.version != ''
         shell: bash
         run: |
           VER=${{ steps.ver.outputs.version }}
-          if git rev-parse "$VER" >/dev/null 2>&1 || gh release view "$VER" >/dev/null 2>&1; then
+          # tag 存在 ≠ release 存在（tag 可能手动打）；只看 release，Create tag 步骤自身已幂等
+          if gh release view "$VER" >/dev/null 2>&1; then
             echo "skip=1" >> "$GITHUB_OUTPUT"
-            echo "$VER 已存在，跳过"
+            echo "$VER release 已存在，跳过"
           else
             echo "skip=0" >> "$GITHUB_OUTPUT"
           fi
