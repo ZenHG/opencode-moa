@@ -8,7 +8,7 @@
 
 > 🔥 **Aktuell (2026-07):** Flaggschiff-Fusion auf **Kimi K3** aktualisiert — 2,8T Parameter, 1M Kontext, erstklassiges Frontier-Modell. Die Qualitätsschwelle von MoA liegt jetzt an der Spitze.
 
-> 🔥 **Aktuell (2026-07):** **DeepSeek-V4-Flash-0731** offiziell veröffentlicht — Agent-Fähigkeiten stark verbessert, übertrifft V4-Pro (Preview) trotz deutlich weniger aktivierter Parameter (Terminal Bench 82.7 vs 72.1, DeepSWE 54.4 vs 12.8, Toolathlon 70.3 vs 55.9). MoAs Flash-Ebene (Werkzeuge + Meinungen) wird zum gleichen Preis deutlich stärker.
+> 🔥 **Aktuell (2026-07):** **DeepSeek-V4-Flash-0731** offiziell veröffentlicht — Agent-Fähigkeiten stark verbessert, übertrifft das teurere **GLM-5.2** (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9). Günstig schlägt teuer — MoAs Flash-Ebene (Werkzeuge + Meinungen) wird zum gleichen Preis deutlich stärker.
 
 > strukturierte Ausgabe, Grenz-Akzeptanzkriterien, Anti-Betrug, Auto-Routing. Siehe [CHANGELOG](CHANGELOG.md).
 

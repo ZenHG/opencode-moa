@@ -8,7 +8,7 @@
 
 > 🔥 **热点（2026-07）：** 旗舰融合已升级至 **Kimi K3** —— 2.8T 参数、1M 上下文、顶级前沿模型。MoA 质量天花板现已站在第一梯队最前。
 
-> 🔥 **热点（2026-07）：** **DeepSeek-V4-Flash-0731** 正式版发布 —— agentic 能力大幅增强，激活参数远小于 V4-Pro 却在 agent 基准上全面反超（Terminal Bench 82.7 vs 72.1、DeepSWE 54.4 vs 12.8、Toolathlon 70.3 vs 55.9）。MoA 工具层与意见层的 Flash 主力，同价能力再上台阶。
+> 🔥 **热点（2026-07）：** **DeepSeek-V4-Flash-0731** 正式版发布 —— agentic 能力大幅增强，在 agent 基准上反超更贵的 **GLM-5.2**（Terminal Bench 82.7 vs 81.0、DeepSWE 54.4 vs 46.2、Toolathlon 70.3 vs 59.9）。便宜打败贵——MoA 工具层与意见层的 Flash 主力，同价能力再上台阶。
 
 > 结构化输出、界线验收、明线/暗线反作弊、自动路由。详见 [CHANGELOG](CHANGELOG.md)。
 

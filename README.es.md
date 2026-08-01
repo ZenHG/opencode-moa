@@ -8,7 +8,7 @@
 
 > 🔥 **Caliente (2026-07):** fusión insignia actualizada a **Kimi K3** — 2.8T parámetros, 1M contexto, modelo de frontera de primer nivel. El techo de calidad de MoA ahora está al frente del grupo.
 
-> 🔥 **Caliente (2026-07):** lanzamiento oficial de **DeepSeek-V4-Flash-0731** — capacidades de agente muy reforzadas, superando a V4-Pro (Preview) con muchos menos parámetros activados (Terminal Bench 82.7 vs 72.1, DeepSWE 54.4 vs 12.8, Toolathlon 70.3 vs 55.9). La capa Flash de MoA (herramientas + opiniones) mucho más fuerte al mismo costo.
+> 🔥 **Caliente (2026-07):** lanzamiento oficial de **DeepSeek-V4-Flash-0731** — capacidades de agente muy reforzadas, superando al más caro **GLM-5.2** (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9). Lo barato vence a lo caro — la capa Flash de MoA (herramientas + opiniones) mucho más fuerte al mismo costo.
 
 > salida estructurada, criterios de aceptación por límites, anti-trampa, enrutamiento automático. Ver [CHANGELOG](CHANGELOG.md).
 

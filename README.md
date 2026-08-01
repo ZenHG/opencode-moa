@@ -6,7 +6,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
 
-> 🔥 **Hot (2026-07):** **DeepSeek-V4-Flash-0731** official release — agentic capability sharply upgraded, beating V4-Pro (Preview) on agent benchmarks (Terminal Bench 82.7 vs 72.1, DeepSWE 54.4 vs 12.8, Toolathlon 70.3 vs 55.9) with far fewer activated params. MoA's Flash tier (tool + opinion layers) got much stronger at the same low cost.
+> 🔥 **Hot (2026-07):** **DeepSeek-V4-Flash-0731** official release — agentic capability sharply upgraded, beating the pricier **GLM-5.2** on agent benchmarks (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9) at far lower cost. MoA's Flash tier (tool + opinion layers) got much stronger at the same low price.
 
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
