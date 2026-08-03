@@ -24,7 +24,16 @@ Set-Location $Dest
 # ── Core paths from the shared manifest ──
 $sparsePaths = Get-Content (Join-Path $PSScriptRoot "core-paths.txt") | Where-Object { $_ -and $_ -notmatch '^\s*#' }
 
-git sparse-checkout set --skip-checks $sparsePaths `
+# ── non-cone 精确匹配（严格最小，不展开父目录）──
+# .gitattributes 必须一并带出：否则 LFS smudge 过滤器不生效，.github/*.png 会落成指针文本
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$patterns = foreach ($p in $sparsePaths) {
+    $anchor = "/" + $p
+    if (Test-Path (Join-Path $repoRoot $p) -PathType Container) { "$anchor/" } else { $anchor }
+}
+$patterns += "/.gitattributes"
+
+git sparse-checkout set --no-cone $patterns `
     || { throw "Sparse checkout failed" }
 
 Write-Host "`n--- Core files retrieved ---" -ForegroundColor Green
