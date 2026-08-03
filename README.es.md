@@ -5,6 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-%3E%3D1.3.4-orange.svg)](https://opencode.ai)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D14-brightgreen.svg)](https://nodejs.org)
+[![PowerShell](https://img.shields.io/badge/PowerShell-7%2B-blue.svg)](https://github.com/PowerShell/PowerShell)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](longloop/docs/LongLoop.md)
 
 > 🔥 **Caliente (2026-07):** fusión insignia actualizada a **Kimi K3** — 2.8T parámetros, 1M contexto, modelo de frontera de primer nivel. El techo de calidad de MoA ahora está al frente del grupo.
 
