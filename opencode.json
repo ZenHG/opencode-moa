@@ -167,10 +167,11 @@
                                                 }
                              },
                    "旗舰·执行":  {
-                                 "permission":  {
-                                                    "*_*":  "deny"
-                                                }
-                             },
+                                  "permission":  {
+                                                     "*_*":  "deny",
+                                                     "moa-loop_*":  "allow"
+                                                 }
+                              },
                    "旗舰·质检":  {
                                  "permission":  {
                                                     "*_*":  "deny",

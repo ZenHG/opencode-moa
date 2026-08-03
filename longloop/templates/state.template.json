@@ -6,5 +6,7 @@
   "phase": "working",
   "roadmap": [],
   "blockers": [],
-  "finished": false
+  "finished": false,
+  "onboarding": null,
+  "baseline": null
 }

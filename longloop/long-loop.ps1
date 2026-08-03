@@ -166,8 +166,38 @@ function Invoke-Round {
      禁止 grep/glob/bash/webfetch/探索类动作；任务外多想一步 → 写进 note 回传，禁止自行扩展动作）
    - 执行 agent 用 todowrite（opencode 原生任务清单）把本轮任务拆成步骤并逐步标记完成
 6. 全部任务 done/blocked 且 blockers 空 → 让执行 agent 调 moa_finish 收官（校验通过才置 finished=true，防提前收尾）；全 blocked 且 blockers 非空 → phase=waiting_user
-7. 回复一行总结：本轮任务 + 结果 + state.json 变更要点
+ 7. 回复一行总结：本轮任务 + 结果 + state.json 变更要点
 "@
+    # ── bootstrap 协议注入（草案 v3.1：state.json 含 onboarding/baseline 时启用）──
+    try {
+        $bSt = Get-Content $script:stateFile -Raw | ConvertFrom-Json
+        if ($bSt.PSObject.Properties.Name -contains 'onboarding' -and $bSt.onboarding) {
+            $probeExe = Join-Path $script:stateDir "probes/check-syntax.ps1"
+            $prompt += @"
+
+【自举协议（bootstrap 已初始化，必须遵守）】
+A. 每轮先验：第 1 步取证时让 @工具人 同时执行（工具人可用 bash）：
+   1) 探针: pwsh ".moa/longloop/probes/check-syntax.ps1" -Root "."（在 $Dir 下运行；退出码 0=全绿）
+   2) 快照: pwsh ".moa/longloop/bootstrap.ps1" -Dir "." -ScanOnly（输出 JSON 含 score/delta/regressed，同时更新历史）
+   取证内联须包含：探针退出码 + 快照 delta/regressed。
+B. 完善判定（机器可判，不许主观）：任务完成后重跑 A 的两条命令——
+   探针全绿 且 快照未回退（regressed=false，连续 2 轮下降才算回退）→ 任务可标 done；
+    探针红 或 regressed=true → 本轮改动不保留：回滚到改动前（git reset/checkout 或手改还原），
+    足迹负结果如实记录，任务继续 open 换路线（同任务连续 3 轮无进展 → blocked）。
+    探针自检（防假绿）：探针首次构建/修改后必须做一次负对照——构造坏样本（故意断括号/必然失败
+    的构造）放入 probes/.fixtures/（不进 .gitignore，供用户审查）验证探针真能「红」；假绿（探针空跑/
+    误测却报绿）= 无效探针，须修正或废弃重建。负对照仅首次构建时执行一次，后续循环只跑正检。
+    注：第 5 点「执行 agent 禁止 bash」在此模式下放宽——bash 仅允许用于跑探针/ScanOnly 两条验证命令。
+C. 授权分级（state.json onboarding.auth_boundary）：
+   L1=只读+小步改进（改文件须先写清改动计划，改动限单文件/局部）；L2=可回滚改动（留回滚点）；L3=全权。
+   超出当前授权级的动作 → 不执行，写 moa_blockers_add 挂起（三段式：阻塞条件/已尝试诊断/恢复条件），循环继续做别的。
+D. 轮次有效性：本轮必须交付三要素——工件（改动/新文件）+ 验证（探针/快照对比）+ 状态回写（足迹/roadmap），
+   缺任一 = 无效轮；连续 3 轮无效 → 降级：换任务 / 检查探针是否假绿 / 降档只读分析。
+E. 预审边界（软墙）：roadmap 耗尽后仍可生成新候选假设，但一律进待预审区（写 blockers 挂起，注明"待预审"），
+   不自主扩大执行范围；已预审任务优先做完。任务来源始终是用户已预审的 roadmap。
+"@
+        }
+    } catch { }
     if ($N -eq 1 -and $script:goalText) {
         $prompt += "`n本轮目标：$($script:goalText)（目标全文在 state.json 的 goal 字段）。"
     }
@@ -279,6 +309,9 @@ if ($DryRun) {
 执行协议：@工具人 取证 → 选 open 任务 → 按置信度路由派发 → 执行 agent 回写 state.json/足迹.md → blockers 挂起 → finished 停止。
 "@
     if ($Goal) { $p1 += "`n本轮目标：$Goal（目标全文在 state.json 的 goal 字段）。" }
+    if ($state.PSObject.Properties.Name -contains 'onboarding' -and $state.onboarding) {
+        $p1 += "`n`n【自举协议（bootstrap 已初始化）】先验取证含探针+快照（ScanOnly）→ 完善判定=探针全绿+未回退 → 授权分级 $($state.onboarding.auth_boundary) → 轮次三要素 → 软墙预审边界。"
+    }
     Write-Host "  $p1" -ForegroundColor DarkGray
     exit 0
 }

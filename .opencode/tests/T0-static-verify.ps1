@@ -177,8 +177,25 @@ foreach ($a in $isolatedAgents) {
     Check "$a bash=deny" ($p.bash -eq "deny")
     Check "$a no self-fetch (grep/glob/list/webfetch)" ($p.grep -eq "deny" -and $p.glob -eq "deny" -and $p.list -eq "deny" -and $p.webfetch -eq "deny")
 }
+
+Write-Host "`n=== Agent YAML task whitelist (material source contract) ===" -ForegroundColor Yellow
+$opinionTaskAgents = @("中级·工程","中级·创意","中级·码农","旗舰·架构","旗舰·规划","旗舰·工程","前端·逻辑","前端·动效")
+foreach ($a in $opinionTaskAgents) {
+    $yaml = Get-Content (Join-Path $agentDir "$a.md") -Raw -Encoding utf8
+    Check "$a task(工具人)=allow (取证)" ($yaml -match 'task:\s*\r?\n\s*"工具人":\s*allow')
+}
+$fusionInnerAgents = @("中级·融合","旗舰·融合","前端·总工","融合·保底","残差提取","置信度评估")
+foreach ($a in $fusionInnerAgents) {
+    $yaml = Get-Content (Join-Path $agentDir "$a.md") -Raw -Encoding utf8
+    Check "$a task=deny (纯内联)" ($yaml -match 'task:\s*deny')
+}
+$qaYaml = Get-Content (Join-Path $agentDir "旗舰·质检.md") -Raw -Encoding utf8
+Check "旗舰·质检 task(工具人)=allow (独立取证)" ($qaYaml -match 'task:\s*\r?\n\s*"工具人":\s*allow')
+$execYaml = Get-Content (Join-Path $agentDir "旗舰·执行.md") -Raw -Encoding utf8
+Check "旗舰·执行 task=deny" ($execYaml -match 'task:\s*deny')
 $execPerm = $oc.agent.'旗舰·执行'.permission
 Check "旗舰·执行 keeps read/bash (executor)" ($execPerm.read -ne "deny" -and $execPerm.bash -ne "deny")
+Check "旗舰·执行 moa-loop_* allow (LongLoop state writes)" ($execPerm."moa-loop_*" -eq "allow")
 $taskObjCount = ([regex]::Matches($ocJsonRaw, '"task":  \{')).Count
 Check "task object only in global permission (1)" ($taskObjCount -eq 1)
 $askStarCount = ([regex]::Matches($ocJsonRaw, '"\*":\s*"ask"')).Count

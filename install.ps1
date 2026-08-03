@@ -113,7 +113,7 @@ $moaConfig = @{
         "旗舰·规划" = @{ permission = @{ "*_*" = "deny"; read = "deny"; bash = "deny"; grep = "deny"; glob = "deny"; list = "deny"; webfetch = "deny"; websearch = "deny"; edit = "deny" } }
         "旗舰·工程" = @{ permission = @{ "*_*" = "deny"; read = "deny"; bash = "deny"; grep = "deny"; glob = "deny"; list = "deny"; webfetch = "deny"; websearch = "deny"; edit = "deny" } }
         "旗舰·融合" = @{ permission = @{ "*_*" = "deny"; read = "deny"; bash = "deny"; grep = "deny"; glob = "deny"; list = "deny"; webfetch = "deny"; websearch = "deny"; edit = "deny" } }
-        "旗舰·执行" = @{ permission = @{ "*_*" = "deny" } }
+        "旗舰·执行" = @{ permission = @{ "*_*" = "deny"; "moa-loop_*" = "allow" } }
         "旗舰·质检" = @{ permission = @{ "*_*" = "deny"; read = "deny"; bash = "deny"; grep = "deny"; glob = "deny"; list = "deny"; webfetch = "deny"; websearch = "deny"; edit = "deny" } }
         "前端·逻辑" = @{ permission = @{ "*_*" = "deny"; read = "deny"; bash = "deny"; grep = "deny"; glob = "deny"; list = "deny"; webfetch = "deny"; websearch = "deny"; edit = "deny" } }
         "前端·动效" = @{ permission = @{ "*_*" = "deny"; read = "deny"; bash = "deny"; grep = "deny"; glob = "deny"; list = "deny"; webfetch = "deny"; websearch = "deny"; edit = "deny" } }

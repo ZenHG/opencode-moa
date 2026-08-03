@@ -495,7 +495,8 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     },
     "flag-impl": {
       "permission": {
-        "*_*": "deny"
+        "*_*": "deny",
+        "moa-loop_*": "allow"
       }
     },
     "flag-qa": {
@@ -1099,6 +1100,7 @@ model: ollama-local/qwen3-coder
 ---
 
 > **Doc version**: v0.0.17 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+
 
 
 

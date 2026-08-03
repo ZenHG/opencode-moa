@@ -496,7 +496,8 @@ OpenCode 的 `@` 自动补全菜单有**显示行数上限**（约 10 行），a
     },
     "旗舰·执行": {
       "permission": {
-        "*_*": "deny"
+        "*_*": "deny",
+        "moa-loop_*": "allow"
       }
     },
     "旗舰·质检": {
@@ -1101,6 +1102,7 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.17 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
 
 
 
