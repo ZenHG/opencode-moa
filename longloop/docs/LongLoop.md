@@ -28,6 +28,11 @@ longloop/long-loop.ps1 (driver script, loop orchestration)
 Prerequisite: the `opencode` CLI must be available (`npm install -g opencode-ai`, or `curl -fsSL https://opencode.ai/install | bash` on macOS/Linux). **The loop drives each round via `opencode run` — it cannot run without the CLI**; the desktop app only serves as a viewer (see below) and cannot replace it. The CLI shares config and login with the desktop app.
 
 ```powershell
+# Zero-knowledge bootstrap (no goal / unfamiliar project): scans health baseline,
+# generates a candidate improvement list, interactive pre-review; writes state.json +
+# baseline + probe skeleton. -AutoAccept accepts all; -NonInteractive skips questions
+pwsh longloop/bootstrap.ps1 -Dir . [-AutoAccept] [-NonInteractive]
+
 # First launch (creates .moa/longloop/state.json with your goal)
 pwsh longloop/long-loop.ps1 -Goal "Raise test coverage from 60% to 85%, module by module" -Dir . -IntervalSec 180 -MaxHours 200
 
@@ -93,9 +98,14 @@ The templates under `.moa/` already carry these: 界线.json (frozen acceptance 
   "phase": "working | waiting_user | finished",
   "roadmap": [{ "id": "t1", "title": "...", "status": "open|in_progress|done|blocked", "note": "resume point" }],
   "blockers": [{ "question": "question needing a human decision", "context": "...", "since": "ISO time" }],
-  "finished": false
+  "finished": false,
+  "onboarding": { "run_command": "how to run (bootstrap question)", "auth_boundary": "L1|L2|L3", "budget_rounds": 100, "pref_reviewed": true },
+  "baseline": { "file": ".moa/longloop/health-baseline.json", "score": 7.5 }
 }
 ```
+
+- State initialized by `bootstrap.ps1` carries `onboarding`/`baseline` fields — long-loop.ps1 detects them and enables the **bootstrap protocol** (each round: evidence gathering runs probes + ScanOnly snapshot; "done" requires probes all-green and no regression; authorization tiers; three-element round validity; soft-wall pre-review). Manual `-Goal` init skips these fields and uses the original protocol
+- The baseline file `health-baseline.json` holds a `history` array (last 30 scores); `-ScanOnly` appends the current score and prints `{score, delta, regressed}` (regression = 2 consecutive drops, tolerating single-round noise)
 
 - `phase=waiting_user`: all tasks blocked — edit state.json to answer the blockers (turn the question into an answer, or delete it and reopen the task); the loop resumes next round
 - Machine fields (iteration/updated_at/last_round_change) are maintained by the script, not the agents

@@ -45,6 +45,60 @@
 </details>
 ---
 
+## v0.0.22（2026-08-03）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Zero-knowledge bootstrap for LongLoop — `longloop/bootstrap.ps1` takes an unfamiliar project and produces the state, baseline, and probe skeleton the loop needs, no goal required.
+
+### New
+
+- **`longloop/bootstrap.ps1`**: content-probing health scan (8 markers: oversized files >800 lines / long lines >200 chars / TODO density / empty catch / debug console logs / hardcoded secrets / swallowed failures (`|| true`) / deep nesting, excluding .git/node_modules/.moa/.opencode/build artifacts) → 8-dimension health score (/10, secrets > 0 zeroes the score) → candidate improvement list (c1-c8, each with file:line evidence and L1/L2 risk) → Onboarding questions (how to run / optional goal / authorization boundary / budget rounds) → interactive pre-review (y/N per candidate, `-AutoAccept` accepts all) → writes `state.json` (with `onboarding` + `baseline` fields), `health-baseline.json`, 足迹.md, and a `probes/` skeleton (README protocol + `check-syntax.ps1` with per-language parse checks)
+- **`-ScanOnly` mode**: machine-checkable regression judge for every loop round — re-scans, appends score to `history` (last 30), prints JSON `{score, delta, regressed}`; regression = 2 consecutive drops (single-round noise tolerated); bootstrap self-copies into the user project (`.moa/longloop/bootstrap.ps1`) so rounds don't depend on this repo
+- **Bootstrap protocol in the loop** (`long-loop.ps1` prompt section + 门童.md 长程循环模式): when state has `onboarding` — each round starts with evidence gathering that also runs probes + ScanOnly snapshot (delta/regressed inlined); task `done` requires probes all-green AND no regression (else rollback + negative footprint); authorization tiers L1/L2/L3 (out-of-tier → blockers, keep working); three-element round validity (artifact + verification + state writeback); soft-wall pre-review (exhausted roadmap → new candidates go to a pending-pre-review area, never auto-expanded)
+- **Anti-fake-green (负对照)**: every probe must be built with a negative control once at first construction — a known-bad sample (broken bracket / guaranteed failure) placed in `probes/.fixtures/` (not gitignored, user-reviewable) proving the probe can actually turn red; a probe that cannot turn red (no-op / false-positive green) is invalid and must be rebuilt; later rounds only run positive checks
+
+### Fix
+
+- `opencode.json` / `install.ps1` / `install.sh`: 旗舰·执行 override gains `moa-loop_*: allow` (was only `*_*: deny`) — without it the executor's MoA state writes were locked out by the wildcard deny and the long-loop state machine was broken
+- `T0-static-verify.ps1`: new assertions for the YAML `task` whitelist contract (8 opinion agents `task: {工具人, 视觉翻译: allow}`, fusion/analysis 6 agents `task: deny`, 旗舰·质检 `task: {工具人: allow}`, 旗舰·执行 `task: deny`) + executor `moa-loop_*: allow` exception
+- 门童.md: inline-material rule corrected (analysis layer added; tool layer only gets task descriptions) + 长程循环模式 section
+
+### Docs
+
+- `longloop/docs/长程自完善.md` / `LongLoop.md`: quick-start adds bootstrap usage; state protocol documents `onboarding`/`baseline` fields and the baseline `history` array
+- `longloop/docs/长程自完善-自举设计草案.md`: v3.1 revision (static-layer acceptance line / snapshot aggregation rules / soft-wall pre-review boundary / probe self-check timing) from a 74/100 confidence evaluation
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+LongLoop 零先验自举落地——`longloop/bootstrap.ps1` 面对陌生项目无需目标即可产出循环所需的 state、基线、探针骨架。
+
+### 新增
+
+- **`longloop/bootstrap.ps1`**：内容探测健康扫描（8 个 marker：超长文件 >800 行 / 超长行 >200 字符 / TODO 密度 / 空 catch / 调试 console 日志 / 硬编码 secret / 吞失败（`|| true`）/ 深层嵌套，排除 .git/node_modules/.moa/.opencode/构建产物）→ 8 维度健康分（/10，secret 任一 >0 直接 0 分）→ 候选改进清单（c1-c8，各带 文件:行 证据 + L1/L2 风险）→ Onboarding 问询（怎么运行 / 目标可选 / 授权边界 / 预算轮数）→ 交互预审（逐条 y/N，`-AutoAccept` 全接受）→ 落盘 state.json（含 `onboarding` + `baseline` 字段）、health-baseline.json、足迹.md、probes/ 骨架（README 协议 + 按语言分派的 check-syntax.ps1）
+- **`-ScanOnly` 模式**：每轮循环的机器可判回退判定器——重扫、追加分数到 history（保留 30）、输出 JSON `{score, delta, regressed}`；回退 = 连续 2 轮下降（容忍单轮波动）；bootstrap 自复制到用户项目（`.moa/longloop/bootstrap.ps1`），循环不依赖本仓库
+- **循环内自举协议**（long-loop.ps1 协议段 + 门童.md 长程循环模式）：state 含 onboarding 时——每轮先验取证同时跑探针 + ScanOnly 快照（内联 delta/regressed）；任务 done 需探针全绿 且 未回退（否则回滚 + 足迹负结果）；授权分级 L1/L2/L3（超界写 blockers 挂起继续做别的）；轮次三要素（工件 + 验证 + 状态回写）；软墙预审（roadmap 耗尽 → 新候选进待预审区，不自主扩大）
+- **防假绿（负对照）**：每个探针首次构建时必须配坏样本负对照——故意断括号/必然失败的构造放 `probes/.fixtures/`（不进 .gitignore，供用户审查），验证探针真能「红」；假绿（探针空跑/误测却报绿）= 无效探针须重建；后续循环只跑正检
+
+### 修复
+
+- `opencode.json` / `install.ps1` / `install.sh`：旗舰·执行 override 补 `moa-loop_*: allow`（原来只有 `*_*: deny`）——没有它执行者的 MoA 状态写入被通配 deny 锁死，长程状态机断链
+- `T0-static-verify.ps1`：新增 YAML task 白名单契约断言（意见层 8 个 task{工具人, 视觉翻译}=allow、融合/分析 6 个 task=deny、旗舰·质检 task{工具人}=allow、旗舰·执行 task=deny）+ 执行者 moa-loop_* allow 例外
+- 门童.md：内联规则修正（补分析层；工具层只内联任务描述）+ 长程循环模式节
+
+### 文档
+
+- `longloop/docs/长程自完善.md` / `LongLoop.md`：快速开始加 bootstrap 用法；状态协议补充 onboarding/baseline 字段与基线 history 数组说明
+- `longloop/docs/长程自完善-自举设计草案.md`：v3.1 修订（静态层验收线 / 快照聚合规则 / 软墙预审边界 / 探针自检时机）——置信度评估 74/100 后修正
+
+</details>
+
+---
+
 
 ## v0.0.21（2026-08-03）
 
