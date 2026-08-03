@@ -17,7 +17,7 @@ Write-Host "Target : $Dest`n" -ForegroundColor Gray
 
 # ── Clone with sparse + blob filter ──
 git clone --filter=blob:none --sparse --depth 1 $Repo $Dest `
-    || throw "Clone failed"
+    || { throw "Clone failed" }
 
 Set-Location $Dest
 
@@ -25,7 +25,7 @@ Set-Location $Dest
 $sparsePaths = Get-Content (Join-Path $PSScriptRoot "core-paths.txt") | Where-Object { $_ -and $_ -notmatch '^\s*#' }
 
 git sparse-checkout set --skip-checks $sparsePaths `
-    || throw "Sparse checkout failed"
+    || { throw "Sparse checkout failed" }
 
 Write-Host "`n--- Core files retrieved ---" -ForegroundColor Green
 foreach ($p in $sparsePaths) {
