@@ -50,7 +50,7 @@
 <details open>
 <summary>🇬🇧 English</summary>
 
-Zero-knowledge bootstrap for LongLoop — `longloop/bootstrap.ps1` takes an unfamiliar project and produces the state, baseline, and probe skeleton the loop needs, no goal required.
+Zero-knowledge bootstrap for LongLoop — `longloop/bootstrap.ps1` takes an unfamiliar project and produces the state, baseline, and probe skeleton the loop needs, no goal required. Also ships cross-platform hardening of the loop scripts (Unix-safe path/exe handling, ExecutionPolicy-safe invocation, BOM/lock robustness) and dependency check-then-install (see Fix).
 
 ### New
 
@@ -65,6 +65,8 @@ Zero-knowledge bootstrap for LongLoop — `longloop/bootstrap.ps1` takes an unfa
 - `T0-static-verify.ps1`: new assertions for the YAML `task` whitelist contract (8 opinion agents `task: {工具人, 视觉翻译: allow}`, fusion/analysis 6 agents `task: deny`, 旗舰·质检 `task: {工具人: allow}`, 旗舰·执行 `task: deny`) + executor `moa-loop_*: allow` exception
 - 门童.md: inline-material rule corrected (analysis layer added; tool layer only gets task descriptions) + 长程循环模式 section
 - 门童.md: task retry rule now also fires on `terminated`/network errors — a dropped SSE stream raises a bare `TypeError: terminated` that the SDK's error classifier (v1.18.10) does not map to a retryable error, so subagents previously failed instantly with no retry; the concierge now re-sends the same prompt once per the fault-tolerance rules (README-details 双语 document the transient-error retry behavior)
+- **Cross-platform hardening (longloop scripts + installers)**: `long-loop.ps1` — Unix-safe `Get-OpencodeBin` (npm-global both `opencode`/`opencode.exe`, fallbacks `~/.opencode/bin` / `~/.local/bin`), .ps1-shim invocation via `pwsh -NoProfile -File` (ExecutionPolicy protection), inline state fallback rewritten as here-string (was literal `\n`); `bootstrap.ps1` — exclusion regex rewritten as cross-platform path-segment matching (works with `/` and `\`), probe template `python3`-first, auto `-NonInteractive` when stdin is redirected (CI/pipes), probe regex unified with the health scan (`bin|obj`); `server.js` — Node >=14 startup check, 30s stale `.lock` expiry, BOM stripping on read, tmp cleanup + explicit error when rename fails (file locked), footprint append moved under the lock, state dir auto-created; `package.json` adds `engines.node >= 14`; `.gitattributes` — `* text=auto` + `eol=lf` for scripts/config (ps1/psm1/sh/js/json/md/yml/yaml) to keep line endings consistent cross-platform
+- **Dependency check-then-install**: `install.ps1` gains `-InstallNode` (auto-installs the official Node.js MSI when missing or <14) and `-InstallDeps` (pwsh+node in one shot), plus a default Node.js check in the verification section; `install.sh` gains `--install-jq` (auto-installs jq via apt-get/brew/dnf when missing, then retries the merge) plus a Node.js check; README×7 install commands document the new flags
 
 ### Docs
 
@@ -77,7 +79,7 @@ Zero-knowledge bootstrap for LongLoop — `longloop/bootstrap.ps1` takes an unfa
 <details>
 <summary>🇨🇳 中文</summary>
 
-LongLoop 零先验自举落地——`longloop/bootstrap.ps1` 面对陌生项目无需目标即可产出循环所需的 state、基线、探针骨架。
+LongLoop 零先验自举落地——`longloop/bootstrap.ps1` 面对陌生项目无需目标即可产出循环所需的 state、基线、探针骨架。另含跨平台兼容加固（Unix 路径/执行策略防护/BOM 与锁健壮性）与依赖先检查再安装（见修复）。
 
 ### 新增
 
@@ -92,6 +94,8 @@ LongLoop 零先验自举落地——`longloop/bootstrap.ps1` 面对陌生项目�
 - `T0-static-verify.ps1`：新增 YAML task 白名单契约断言（意见层 8 个 task{工具人, 视觉翻译}=allow、融合/分析 6 个 task=deny、旗舰·质检 task{工具人}=allow、旗舰·执行 task=deny）+ 执行者 moa-loop_* allow 例外
 - 门童.md：内联规则修正（补分析层；工具层只内联任务描述）+ 长程循环模式节
 - 门童.md：task 重试规则扩展到 `terminated`/网络错误——SSE 流中断抛出的裸 `TypeError: terminated` 不在 SDK（v1.18.10）错误分类器的可重试列表里，此前子任务直接失败不重试；现在门童按容错规则对同一 prompt 重发一次（README-details 双语已补充瞬时错误重试说明）
+- **跨平台兼容加固（longloop 脚本 + 安装器）**：`long-loop.ps1`——Get-OpencodeBin Unix 化（npm 全局兼容 opencode/opencode.exe、回退 `~/.opencode/bin` 与 `~/.local/bin`）、.ps1 shim 经 `pwsh -NoProfile -File` 调用（ExecutionPolicy 防护）、内联 state 回退模板改 here-string（原为字面 `\n` 非法 JSON）；`bootstrap.ps1`——排除正则改跨平台路径段匹配（`/` 与 `\` 皆可）、探针模板 python3 优先、stdin 被重定向时自动启用 `-NonInteractive`（CI/管道）、探针正则与健康扫描统一（补 bin|obj）；`server.js`——Node >=14 启动检查、`.lock` 30s 过期、读取剥 BOM、rename 失败清理 tmp 并明确报错（文件被占用）、足迹追加移入锁内、状态目录自动创建；`package.json` 加 engines.node >= 14；`.gitattributes`——`* text=auto` + 脚本/配置类 `eol=lf`（ps1/psm1/sh/js/json/md/yml/yaml）
+- **依赖先检查再安装**：`install.ps1` 新增 `-InstallNode`（node 缺失或 <14 自动下载官方 MSI 静默安装）与 `-InstallDeps`（pwsh+node 一键全装），验证节默认 node 检查；`install.sh` 新增 `--install-jq`（jq 缺失自动 apt-get/brew/dnf 安装后重试合并）+ node 检查提示；README×7 安装命令补充新参数说明
 
 ### 文档
 
