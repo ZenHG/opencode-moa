@@ -317,65 +317,68 @@ One file per command in `.opencode/commands/`; copy from the repo during deploym
 
 First read the existing `opencode.json`, merge `permissions.task` rather than overwrite.
 
-> ✅ **Don't hardcode `instructions`**: the `instructions` in the JSON below is **optional**, commented out by default. OpenCode reports a startup warning if it references a non-existent `AGENTS.md`.
+> ✅ **`instructions` is omitted**: the JSON below is an exact mirror of the actual `opencode.json` and does not include `instructions`. OpenCode reports a startup warning if it references a non-existent `AGENTS.md`.
 >
-> - Only uncomment and enable `"instructions": ["AGENTS.md"]` when an `AGENTS.md` **already exists** at the project root.
-> - If the project has no `AGENTS.md`, keep it commented/omitted — MoA does not impose a convention file on the project.
-> - To use custom project guidance: create your own `AGENTS.md` then uncomment; no agent change needed.
+> - Only add `"instructions": ["AGENTS.md"]` yourself when an `AGENTS.md` **already exists** at the project root.
+> - If the project has no `AGENTS.md`, keep it omitted — MoA does not impose a convention file on the project.
+> - To use custom project guidance: create your own `AGENTS.md` then add it yourself; no agent change needed.
 
 ```jsonc
+<!-- SYNC:BLOCK5 start -->
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "concierge-router",
   "subagent_depth": 2,
   "permission": {
     "*": "ask",
+    "moa-loop_*": "allow",
+    "grep": "allow",
+    "glob": "allow",
+    "list": "allow",
     "bash": {
       "*": "ask",
       "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "grep *": "allow",
-      "rg *": "allow",
-      "Select-String *": "allow",
       "ls *": "allow",
-      "Get-ChildItem *": "allow",
-      "Get-Content *": "allow",
       "cd *": "allow",
       "npm run *": "allow",
+      "rg *": "allow",
+      "Select-String *": "allow",
+      "Get-ChildItem *": "allow",
+      "Get-Content *": "allow",
       "pwsh .opencode/tests/*": "allow",
-      "rm *": "deny",
-      "del *": "deny",
-      "Remove-Item *": "deny",
-      "rd *": "deny",
-      "rmdir *": "deny"
+      "rm *": "ask",
+      "del *": "ask",
+      "Remove-Item *": "ask",
+      "rd *": "ask",
+      "rmdir *": "ask"
     },
-<!-- SYNC:TASK_WHITELIST start -->
     "task": {
       "*": "deny",
-      "residual-extractor": "allow",
       "tool-handler": "allow",
       "tool-handler-mimo": "allow",
-      "flag-eng": "allow",
-      "flag-plan": "allow",
+      "swift": "allow",
+      "vision-translator": "allow",
+      "mid-eng": "allow",
+      "mid-creative": "allow",
+      "mid-coder": "allow",
+      "mid-fuse": "allow",
       "flag-arch": "allow",
+      "flag-plan": "allow",
+      "flag-eng": "allow",
       "flag-fuse": "allow",
       "flag-impl": "allow",
       "flag-qa": "allow",
-      "fe-motion": "allow",
       "fe-restore": "allow",
       "fe-logic": "allow",
+      "fe-motion": "allow",
       "fe-lead": "allow",
       "fusion-fallback": "allow",
-      "swift": "allow",
-      "vision-translator": "allow",
-      "confidence-assessor": "allow",
-      "mid-creative": "allow",
-      "mid-eng": "allow",
-      "mid-coder": "allow",
-      "mid-fuse": "allow"
+      "residual-extractor": "allow",
+      "confidence-assessor": "allow"
     },
-<!-- SYNC:TASK_WHITELIST end -->
     "webfetch": "allow",
     "read": {
       "*": "allow",
@@ -385,18 +388,223 @@ First read the existing `opencode.json`, merge `permissions.task` rather than ov
     },
     "todowrite": "allow"
   },
-  "agent": {<!-- SYNC:PER_AGENT_CONFIG start -->
-    // (no agent-level overrides)
-<!-- SYNC:PER_AGENT_CONFIG end -->
+  "agent": {
+    "mid-eng": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "mid-creative": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "mid-coder": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "mid-fuse": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "flag-arch": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "flag-plan": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "flag-eng": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "flag-fuse": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "flag-impl": {
+      "permission": {
+        "*_*": "deny"
+      }
+    },
+    "flag-qa": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "fe-logic": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "fe-motion": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "fe-lead": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "fusion-fallback": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "residual-extractor": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "confidence-assessor": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    }
   },
-  // "instructions": ["AGENTS.md"],   // optional: enable only when AGENTS.md already exists at project root, otherwise keep commented to avoid startup warning
   "compaction": {
     "auto": true,
     "reserved": 15000
   },
+  "mcp": {
+    "moa-loop": {
+      "type": "local",
+      "command": ["node","mcp/moa-loop/server.js"],
+      "enabled": true
+    }
+  },
   "share": "manual",
   "snapshot": true
 }
+<!-- SYNC:BLOCK5 end -->
 ```
 
 ### Block 5.5: verification script T0-static-verify.ps1 (generated during deploy)
@@ -891,6 +1099,8 @@ model: ollama-local/qwen3-coder
 ---
 
 > **Doc version**: v0.0.17 | **Corresponding opencode**: >= 1.3.4 (agent-level reasoningEffort/hidden/task support; `@ai-sdk/openai-compatible` transparently passes reasoning, no `forceReasoning` needed)
+
+
 
 
 

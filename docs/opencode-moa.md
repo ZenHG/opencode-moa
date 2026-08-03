@@ -318,65 +318,68 @@ OpenCode 的 `@` 自动补全菜单有**显示行数上限**（约 10 行），a
 
 先读现有 `opencode.json`，合并 permissions.task 而不是覆盖。
 
-> ✅ **`instructions` 不要写死**：下方 JSON 里 `instructions` 是**可选**的，默认注释掉。OpenCode 引用了不存在的 `AGENTS.md` 会在启动时报告警。
+> ✅ **`instructions` 已省略**：下方 JSON 是实际 `opencode.json` 的精确镜像，不包含 `instructions`。OpenCode 引用了不存在的 `AGENTS.md` 会在启动时报告警。
 > 
-> - 仅当**项目根目录已存在** `AGENTS.md` 时，才取消注释启用 `"instructions": ["AGENTS.md"]`。
-> - 项目没有 `AGENTS.md` 就保持注释/省略——MoA 不替项目强加约定文件。
-> - 想用自定义项目指引：自己建 `AGENTS.md` 后取消注释即可，无需改 agent。
+> - 仅当**项目根目录已存在** `AGENTS.md` 时，才自行添加 `"instructions": ["AGENTS.md"]`。
+> - 项目没有 `AGENTS.md` 就保持省略——MoA 不替项目强加约定文件。
+> - 想用自定义项目指引：自己建 `AGENTS.md` 后自行添加即可，无需改 agent。
 
 ```jsonc
+<!-- SYNC:BLOCK5 start -->
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "门童",
   "subagent_depth": 2,
   "permission": {
     "*": "ask",
+    "moa-loop_*": "allow",
+    "grep": "allow",
+    "glob": "allow",
+    "list": "allow",
     "bash": {
       "*": "ask",
       "git status *": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "grep *": "allow",
-      "rg *": "allow",
-      "Select-String *": "allow",
       "ls *": "allow",
-      "Get-ChildItem *": "allow",
-      "Get-Content *": "allow",
       "cd *": "allow",
       "npm run *": "allow",
+      "rg *": "allow",
+      "Select-String *": "allow",
+      "Get-ChildItem *": "allow",
+      "Get-Content *": "allow",
       "pwsh .opencode/tests/*": "allow",
-      "rm *": "deny",
-      "del *": "deny",
-      "Remove-Item *": "deny",
-      "rd *": "deny",
-      "rmdir *": "deny"
+      "rm *": "ask",
+      "del *": "ask",
+      "Remove-Item *": "ask",
+      "rd *": "ask",
+      "rmdir *": "ask"
     },
-<!-- SYNC:TASK_WHITELIST start -->
     "task": {
       "*": "deny",
-      "残差提取": "allow",
       "工具人": "allow",
       "工具人-mimo": "allow",
-      "旗舰·工程": "allow",
-      "旗舰·规划": "allow",
+      "闪电侠": "allow",
+      "视觉翻译": "allow",
+      "中级·工程": "allow",
+      "中级·创意": "allow",
+      "中级·码农": "allow",
+      "中级·融合": "allow",
       "旗舰·架构": "allow",
+      "旗舰·规划": "allow",
+      "旗舰·工程": "allow",
       "旗舰·融合": "allow",
       "旗舰·执行": "allow",
       "旗舰·质检": "allow",
-      "前端·动效": "allow",
       "前端·还原": "allow",
       "前端·逻辑": "allow",
+      "前端·动效": "allow",
       "前端·总工": "allow",
       "融合·保底": "allow",
-      "闪电侠": "allow",
-      "视觉翻译": "allow",
-      "置信度评估": "allow",
-      "中级·创意": "allow",
-      "中级·工程": "allow",
-      "中级·码农": "allow",
-      "中级·融合": "allow"
+      "残差提取": "allow",
+      "置信度评估": "allow"
     },
-<!-- SYNC:TASK_WHITELIST end -->
     "webfetch": "allow",
     "read": {
       "*": "allow",
@@ -386,18 +389,223 @@ OpenCode 的 `@` 自动补全菜单有**显示行数上限**（约 10 行），a
     },
     "todowrite": "allow"
   },
-  "agent": {<!-- SYNC:PER_AGENT_CONFIG start -->
-    // (no agent-level overrides)
-<!-- SYNC:PER_AGENT_CONFIG end -->
+  "agent": {
+    "中级·工程": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "中级·创意": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "中级·码农": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "中级·融合": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "旗舰·架构": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "旗舰·规划": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "旗舰·工程": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "旗舰·融合": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "旗舰·执行": {
+      "permission": {
+        "*_*": "deny"
+      }
+    },
+    "旗舰·质检": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "前端·逻辑": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "前端·动效": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "前端·总工": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "融合·保底": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "残差提取": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    },
+    "置信度评估": {
+      "permission": {
+        "*_*": "deny",
+        "read": "deny",
+        "bash": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "edit": "deny"
+      }
+    }
   },
-  // "instructions": ["AGENTS.md"],   // 可选：仅当项目根已有 AGENTS.md 才启用，否则留注释避免启动告警
   "compaction": {
     "auto": true,
     "reserved": 15000
   },
+  "mcp": {
+    "moa-loop": {
+      "type": "local",
+      "command": ["node","mcp/moa-loop/server.js"],
+      "enabled": true
+    }
+  },
   "share": "manual",
   "snapshot": true
 }
+<!-- SYNC:BLOCK5 end -->
 ```
 
 ### Block 5.5：验证脚本 T0-static-verify.ps1（随部署生成）
@@ -893,6 +1101,8 @@ model: ollama-local/qwen3-coder
 ---
 
 > **文档版本**：v0.0.17 | **对应 opencode**：>= 1.3.4（agent 级 reasoningEffort/hidden/task 支持；`@ai-sdk/openai-compatible` 原生透传 reasoning，无需 `forceReasoning`）
+
+
 
 
 

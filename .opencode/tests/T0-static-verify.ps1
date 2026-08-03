@@ -167,9 +167,18 @@ foreach ($k in @('rm *','del *','Remove-Item *','rd *','rmdir *')) {
 Check "read *.env deny" ($oc.permission.read."*.env" -eq "deny")
 Check "read *.env.example allow" ($oc.permission.read."*.env.example" -eq "allow")
 $agentBlockCount = @($oc.agent.PSObject.Properties.Name).Count
-Check "agent override blocks = 10" ($agentBlockCount -eq 10)
+Check "agent override blocks = 16" ($agentBlockCount -eq 16)
 $mcpDenyCount = ([regex]::Matches($ocJsonRaw, '"\*_\*":')).Count
-Check "MCP deny (*_*) in 10 agent blocks only" ($mcpDenyCount -eq 10)
+Check "MCP deny (*_*) in 16 agent blocks only" ($mcpDenyCount -eq 16)
+$isolatedAgents = @("中级·工程","中级·创意","中级·码农","中级·融合","旗舰·架构","旗舰·规划","旗舰·工程","旗舰·融合","旗舰·质检","前端·逻辑","前端·动效","前端·总工","融合·保底","残差提取","置信度评估")
+foreach ($a in $isolatedAgents) {
+    $p = $oc.agent.$a.permission
+    Check "$a read=deny" ($p.read -eq "deny")
+    Check "$a bash=deny" ($p.bash -eq "deny")
+    Check "$a no self-fetch (grep/glob/list/webfetch)" ($p.grep -eq "deny" -and $p.glob -eq "deny" -and $p.list -eq "deny" -and $p.webfetch -eq "deny")
+}
+$execPerm = $oc.agent.'旗舰·执行'.permission
+Check "旗舰·执行 keeps read/bash (executor)" ($execPerm.read -ne "deny" -and $execPerm.bash -ne "deny")
 $taskObjCount = ([regex]::Matches($ocJsonRaw, '"task":  \{')).Count
 Check "task object only in global permission (1)" ($taskObjCount -eq 1)
 $askStarCount = ([regex]::Matches($ocJsonRaw, '"\*":\s*"ask"')).Count

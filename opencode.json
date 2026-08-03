@@ -62,57 +62,207 @@
                        "todowrite":  "allow"
                    },
     "agent":  {
-                  "中级·工程":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "中级·创意":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "中级·码农":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "旗舰·架构":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "旗舰·规划":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "旗舰·工程":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "旗舰·执行":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "旗舰·质检":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "前端·逻辑":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            },
-                  "前端·动效":  {
-                                "permission":  {
-                                                   "*_*":  "deny"
-                                               }
-                            }
-              },
+                   "中级·工程":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "中级·创意":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "中级·码农":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "中级·融合":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "旗舰·架构":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "旗舰·规划":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "旗舰·工程":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "旗舰·融合":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "旗舰·执行":  {
+                                 "permission":  {
+                                                    "*_*":  "deny"
+                                                }
+                             },
+                   "旗舰·质检":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "前端·逻辑":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "前端·动效":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "前端·总工":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "融合·保底":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "残差提取":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             },
+                   "置信度评估":  {
+                                 "permission":  {
+                                                    "*_*":  "deny",
+                                                    "read":  "deny",
+                                                    "bash":  "deny",
+                                                    "grep":  "deny",
+                                                    "glob":  "deny",
+                                                    "list":  "deny",
+                                                    "webfetch":  "deny",
+                                                    "websearch":  "deny",
+                                                    "edit":  "deny"
+                                                }
+                             }
+               },
     "compaction":  {
                        "auto":  true,
                        "reserved":  15000

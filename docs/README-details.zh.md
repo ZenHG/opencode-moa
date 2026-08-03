@@ -182,7 +182,7 @@ OpenCode Go 订阅的价格与额度详情：[opencode.ai/docs/go/](https://open
 | 全局兜底 | 未声明的工具调用 → 弹窗确认                                                                   |
 | Agent 权限隔离   | 每个 agent 只能用允许的工具                                                                 |
 | MCP 权限隔离     | 意见层禁止直接读代码/调命令（read: deny + bash: deny），防止绕过工具层（项目未配置 MCP server，此处指 agent 级工具限制） |
-| MCP 主开关（kill-switch） | `opencode.json` 中 10 个 agent override 块的 `"*_*": "deny"` —— MCP 工具名恒为 `server_tool`（含下划线），无需预知名单即可封禁任意环境下的全部 MCP 工具；模板不附带 MCP server，deny-by-default 安全 |
+| MCP 主开关（kill-switch） | `opencode.json` 中 16 个 agent override 块的 `"*_*": "deny"` —— MCP 工具名恒为 `server_tool`（含下划线），无需预知名单即可封禁任意环境下的全部 MCP 工具；模板不附带 MCP server，deny-by-default 安全 |
 | task 三级防御     | 非路由 agent 默认拒绝 task（意见层/质检仅可调工具人）→ `subagent_depth: 2` 限深 → prompt 护栏，防嵌套递归 |
 | 降级链          | 工具层失败 → ask 用户 → 等待/跳过/免费模型                                                       |
 | 一键回滚         | 删掉 `.opencode/` 目录即可还原                                                            |

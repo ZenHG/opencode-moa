@@ -6,10 +6,10 @@
 #
 # 同步范围:
 #   1. Agent YAML frontmatter（以 agent 文件为准）
-#   2. opencode.json permission.task 白名单 (<!-- SYNC:TASK_WHITELIST -->)
-#   3. opencode.json per-agent 配置 (<!-- SYNC:PER_AGENT_CONFIG -->)
-#   4. Agent 计数
-#   5. todowrite 权限存在性检查
+#   2. Block 5 opencode.json 全量镜像 (<!-- SYNC:BLOCK5 -->)
+#   3. Agent 计数
+#   4. todowrite 权限存在性检查
+#   5. .moa 目录（界线/足迹/拦路虎）
 
 param(
     [ValidateSet("zh","en","all")]
@@ -46,70 +46,98 @@ $taskAllowlist = $ocJson.permission.task.PSObject.Properties |
 $totalAgents = $agents.Count
 $hasTodoWrite = ($ocJson.permission.todowrite -eq "allow")
 
-# ── 2b. 提取 per‑agent 配置（steps 等非默认值） ──
-$ocObj = $ocRaw | ConvertFrom-Json -AsHashtable
-$agentOverrides = @{}
-if ($ocObj.ContainsKey('agent')) {
-    foreach ($kv in $ocObj['agent'].GetEnumerator()) {
-        $aName = $kv.Key
-        $aCfg  = $kv.Value
-        $hasSteps = $aCfg.ContainsKey('steps')
-        if ($hasSteps) {
-            $taskList = @()
-            if ($aCfg.ContainsKey('permission') -and $aCfg['permission'].ContainsKey('task')) {
-                $taskList = ($aCfg['permission']['task'].GetEnumerator() |
-                    Where-Object { $_.Value -eq "allow" } |
-                    ForEach-Object { $_.Key } | Sort-Object)
-            }
-            $agentOverrides[$aName] = @{ steps = $aCfg['steps']; task = $taskList }
-        }
-    }
-}
+# ── 2b. agent override 数量 ──
+$agentOverrideCount = if ($null -ne $ocJson.agent) { @($ocJson.agent.PSObject.Properties).Count } else { 0 }
 
 # ── 2c. 读取 .moa 目录（界线/足迹/拦路虎） ──
 $moaBoundaries = if (Test-Path "$base\.moa\界线.json") { (Get-Content "$base\.moa\界线.json" -Raw -Encoding utf8).TrimEnd("`r","`n") } else { '' }
 $moaFootprint  = if (Test-Path "$base\.moa\足迹模板.md")  { (Get-Content "$base\.moa\足迹模板.md" -Raw -Encoding utf8).TrimEnd("`r","`n") } else { '' }
 $moaBlocker    = if (Test-Path "$base\.moa\拦路虎模板.md") { (Get-Content "$base\.moa\拦路虎模板.md" -Raw -Encoding utf8).TrimEnd("`r","`n") } else { '' }
 
-# ── 生成 task 白名单块 ──
-function Gen-TaskWhitelist {
-    param([string[]]$names, [string]$lang)
-    $mapped = Map-Allowlist -cnNames $names -lang $lang
-    $indent = "      "
-    $lines = @()
-    $lines += '    "task": {'
-    $lines += '      "*": "deny",'
-    foreach ($a in $mapped) {
-        $lines += "$indent`"$a`": `"allow`","
-    }
-    $lines[-1] = $lines[-1] -replace ',$', ''
-    $lines += '    },'
-    return ($lines -join "`n")
-}
+# ── 生成 Block 5 opencode.json 全量镜像（精确镜像实际配置） ──
+function Gen-Block5 {
+    param([string]$lang)
 
-# ── 生成 per‑agent 配置块 ──
-function Gen-AgentConfig {
-    param([hashtable]$overrides)
-    if ($overrides.Count -eq 0) { return "    // (no agent-level overrides)" }
-    $lines = @()
-    foreach ($kv in $overrides.GetEnumerator()) {
-        $name = $kv.Key
-        $cfg  = $kv.Value
-        $lines += "    `"$name`": {"
-        $lines += "      `"steps`": $($cfg.steps),"
-        $lines += '      "permission": {'
-        $lines += '        "*": "ask",'
-        $lines += '        "task": {'
-        foreach ($t in $cfg.task) { $lines += "          `"$t`": `"allow`"," }
-        $lines[-1] = $lines[-1] -replace ',$', ''
-        $lines += '        },'
-        $lines += '        "*_*": "deny"'
-        $lines += '      }'
-        $lines += '    },'
+    $def = $ocJson.default_agent
+    if ($lang -eq 'en' -and $enNameMap.ContainsKey($def)) { $def = $enNameMap[$def] }
+
+    # permission 顶层键序镜像 opencode.json 原序（ConvertFrom-Json 默认保序）
+    $permParts = @()
+    foreach ($p in $ocJson.permission.PSObject.Properties) {
+        $k = $p.Name; $v = $p.Value
+        if ($v -is [System.Management.Automation.PSCustomObject]) {
+            $innerParts = @()
+            foreach ($ip in $v.PSObject.Properties) {
+                $ik = $ip.Name; $iv = $ip.Value
+                if ($k -eq 'task' -and $ik -ne '*') {
+                    if ($iv -ne 'allow') { continue }
+                    $dn = if ($lang -eq 'en' -and $enNameMap.ContainsKey($ik)) { $enNameMap[$ik] } else { $ik }
+                    $innerParts += "      `"$dn`": `"allow`""
+                } else {
+                    $innerParts += "      `"$ik`": `"$iv`""
+                }
+            }
+            $permParts += "    `"$k`": {`n" + ($innerParts -join ",`n") + "`n    }"
+        } else {
+            $permParts += "    `"$k`": `"$v`""
+        }
     }
-    # 去尾逗号
-    if ($lines.Count -gt 0) { $lines[-1] = $lines[-1] -replace ',$', '' }
-    return ($lines -join "`n")
+    $permBlock = "  `"permission`": {`n" + ($permParts -join ",`n") + "`n  }"
+
+    $agentParts = @()
+    if ($ocJson.agent) {
+        foreach ($ap in $ocJson.agent.PSObject.Properties) {
+            $an = $ap.Name
+            $dn = if ($lang -eq 'en' -and $enNameMap.ContainsKey($an)) { $enNameMap[$an] } else { $an }
+            $innerParts = @()
+            foreach ($pp in $ap.Value.permission.PSObject.Properties) {
+                $innerParts += "        `"$($pp.Name)`": `"$($pp.Value)`""
+            }
+            $agentParts += "    `"$dn`": {`n      `"permission`": {`n" + ($innerParts -join ",`n") + "`n      }`n    }"
+        }
+    }
+    if ($agentParts.Count -gt 0) {
+        $agentBlock = "  `"agent`": {`n" + ($agentParts -join ",`n") + "`n  }"
+    } else {
+        $agentBlock = "  `"agent`": {`n    // (no agent-level overrides)`n  }"
+    }
+
+    $mcpParts = @()
+    if ($ocJson.mcp) {
+        foreach ($mp in $ocJson.mcp.PSObject.Properties) {
+            $innerParts = @()
+            foreach ($ip in $mp.Value.PSObject.Properties) {
+                $iv = $ip.Value
+                if ($iv -is [bool]) {
+                    $innerParts += "      `"$($ip.Name)`": $(if ($iv) {'true'} else {'false'})"
+                } elseif ($iv -is [System.Object[]]) {
+                    $innerParts += "      `"$($ip.Name)`": [`"$($iv -join '","')`"]"
+                } else {
+                    $innerParts += "      `"$($ip.Name)`": `"$iv`""
+                }
+            }
+            $mcpParts += "    `"$($mp.Name)`": {`n" + ($innerParts -join ",`n") + "`n    }"
+        }
+    }
+
+    $L = @()
+    $L += '{'
+    $L += '  "$schema": "https://opencode.ai/config.json",'
+    $L += "  `"default_agent`": `"$def`","
+    $L += "  `"subagent_depth`": $($ocJson.subagent_depth),"
+    $L += $permBlock + ','
+    $L += $agentBlock + ','
+    $L += '  "compaction": {'
+    $L += "    `"auto`": $(if ($ocJson.compaction.auto) {'true'} else {'false'}),"
+    $L += "    `"reserved`": $($ocJson.compaction.reserved)"
+    $L += '  },'
+    if ($mcpParts.Count -gt 0) {
+        $L += "  `"mcp`": {`n" + ($mcpParts -join ",`n") + "`n  },"
+    }
+    $L += '  "share": "manual",'
+    $L += "  `"snapshot`": $(if ($ocJson.snapshot) {'true'} else {'false'})"
+    $L += '}'
+    return ($L -join "`n")
 }
 
 # ── 根据 lang 映射 agent 名称 ──
@@ -205,12 +233,12 @@ function Sync-Doc {
         Ok "${shortName}: 更新 ${agentName} frontmatter"
     }
 
-    # ── 3b. Task whitelist (SYNC:TASK_WHITELIST) ──
-    $taskBlock = Gen-TaskWhitelist -names $taskAllowlist -lang $lang
-    $content, $taskChanged = Replace-BetweenMarkers $content "<!-- SYNC:TASK_WHITELIST start -->" "<!-- SYNC:TASK_WHITELIST end -->" $taskBlock
-    if ($taskChanged) {
+    # ── 3b. Block 5 opencode.json 全量镜像 (SYNC:BLOCK5) ──
+    $block5 = Gen-Block5 -lang $lang
+    $content, $b5Changed = Replace-BetweenMarkers $content "<!-- SYNC:BLOCK5 start -->" "<!-- SYNC:BLOCK5 end -->" $block5
+    if ($b5Changed) {
         $changes++
-        Ok "${shortName}: 更新 task whitelist ($($taskAllowlist.Count) 条)"
+        Ok "${shortName}: 更新 Block 5 opencode.json 镜像"
     }
 
     # ── 3c. Agent 计数 ──
@@ -230,14 +258,6 @@ function Sync-Doc {
             if ($old -ne $totalAgents) { $changes++; Ok "${shortName}: 计数 $old → $totalAgents" }
             return $m.Value.Replace($m.Groups[1].Value, $totalAgents.ToString())
         })
-    }
-
-    # ── 3d. Per‑agent config (SYNC:PER_AGENT_CONFIG) ──
-    $agentBlock = Gen-AgentConfig $agentOverrides
-    $content, $agentChanged = Replace-BetweenMarkers $content "<!-- SYNC:PER_AGENT_CONFIG start -->" "<!-- SYNC:PER_AGENT_CONFIG end -->" $agentBlock
-    if ($agentChanged) {
-        $changes++
-        Ok "${shortName}: 更新 per‑agent 配置 ($($agentOverrides.Count) 个有覆盖)"
     }
 
     # ── 3e. todowrite 权限 ──
@@ -273,7 +293,7 @@ if ($Target -in @("zh","all")) { $files += "$base\docs\opencode-moa.md" }
 if ($Target -in @("en","all")) { $files += "$base\docs\opencode-moa.en.md" }
 
 Write-Host "=== 同步部署手册 ===" -ForegroundColor Cyan
-Write-Host "  检测到 $totalAgents 个 agent | task 白名单 $($taskAllowlist.Count) 条 | $($agentOverrides.Count) 个 agent 覆盖" -ForegroundColor Gray
+Write-Host "  检测到 $totalAgents 个 agent | task 白名单 $($taskAllowlist.Count) 条 | $($agentOverrideCount) 个 agent 覆盖" -ForegroundColor Gray
 
 $total = 0
 foreach ($f in $files) { $total += Sync-Doc $f }
