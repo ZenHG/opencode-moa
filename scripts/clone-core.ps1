@@ -2,10 +2,12 @@
 # Usage: pwsh ./scripts/clone-core.ps1 [-Dest <path>] [-Repo <url>]
 #
 # Core files retrieved:
-#   README.md, opencode.json, docs/opencode-moa.md, docs/opencode-moa.en.md
+#   README.md, opencode.json, docs/opencode-moa.md, docs/opencode-moa.en.md,
+#   docs/README-details.md, install.ps1, install.sh
 #   .opencode/agents, .opencode/commands, .opencode/skills
-#   longloop/（long-loop.ps1 + server.js + docs + templates）
+#   longloop/（long-loop.ps1 + server.js + package.json + templates + 2 文档）
 #   .moa/界线.json, .moa/足迹模板.md, .moa/拦路虎模板.md
+#   .github/moa-arch.png, .github/moa-cost.png（README 引用）
 
 param(
     [string]$Dest = "opencode-moa-core",
@@ -30,13 +32,23 @@ $sparsePaths = @(
     "opencode.json",
     "docs/opencode-moa.md",
     "docs/opencode-moa.en.md",
+    "docs/README-details.md",
     ".opencode/agents",
     ".opencode/commands",
     ".opencode/skills",
-    "longloop",
+    "longloop/long-loop.ps1",
+    "longloop/server.js",
+    "longloop/package.json",
+    "longloop/templates",
+    "longloop/docs/长程自完善.md",
+    "longloop/docs/LongLoop.md",
     ".moa/界线.json",
     ".moa/足迹模板.md",
-    ".moa/拦路虎模板.md"
+    ".moa/拦路虎模板.md",
+    "install.ps1",
+    "install.sh",
+    ".github/moa-arch.png",
+    ".github/moa-cost.png"
 )
 
 git sparse-checkout set --skip-checks $sparsePaths `
