@@ -1,13 +1,8 @@
 # clone-core.ps1 — Minimal clone of opencode-moa core files
 # Usage: pwsh ./scripts/clone-core.ps1 [-Dest <path>] [-Repo <url>]
 #
-# Core files retrieved:
-#   README.md, opencode.json,
-#   docs/README-details.md, install.ps1, install.sh
-#   .opencode/agents, .opencode/commands, .opencode/skills
-#   longloop/（long-loop.ps1 + server.js + package.json + templates + 2 文档）
-#   .moa/界线.json, .moa/足迹模板.md, .moa/拦路虎模板.md
-#   .github/moa-arch.png, .github/moa-cost.png（README 引用）
+# Core file list lives in scripts/core-paths.txt (single source of truth,
+# shared with .github/workflows/release.yml archive list).
 
 param(
     [string]$Dest = "opencode-moa-core",
@@ -26,28 +21,8 @@ git clone --filter=blob:none --sparse --depth 1 $Repo $Dest `
 
 Set-Location $Dest
 
-# ── Define core paths ──
-$sparsePaths = @(
-    "README.md",
-    "opencode.json",
-    "docs/README-details.md",
-    ".opencode/agents",
-    ".opencode/commands",
-    ".opencode/skills",
-    "longloop/long-loop.ps1",
-    "longloop/server.js",
-    "longloop/package.json",
-    "longloop/templates",
-    "longloop/docs/长程自完善.md",
-    "longloop/docs/LongLoop.md",
-    ".moa/界线.json",
-    ".moa/足迹模板.md",
-    ".moa/拦路虎模板.md",
-    "install.ps1",
-    "install.sh",
-    ".github/moa-arch.png",
-    ".github/moa-cost.png"
-)
+# ── Core paths from the shared manifest ──
+$sparsePaths = Get-Content (Join-Path $PSScriptRoot "core-paths.txt") | Where-Object { $_ -and $_ -notmatch '^\s*#' }
 
 git sparse-checkout set --skip-checks $sparsePaths `
     || throw "Sparse checkout failed"
