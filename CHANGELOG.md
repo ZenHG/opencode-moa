@@ -64,11 +64,13 @@ Zero-knowledge bootstrap for LongLoop — `longloop/bootstrap.ps1` takes an unfa
 - `opencode.json` / `install.ps1` / `install.sh`: 旗舰·执行 override gains `moa-loop_*: allow` (was only `*_*: deny`) — without it the executor's MoA state writes were locked out by the wildcard deny and the long-loop state machine was broken
 - `T0-static-verify.ps1`: new assertions for the YAML `task` whitelist contract (8 opinion agents `task: {工具人, 视觉翻译: allow}`, fusion/analysis 6 agents `task: deny`, 旗舰·质检 `task: {工具人: allow}`, 旗舰·执行 `task: deny`) + executor `moa-loop_*: allow` exception
 - 门童.md: inline-material rule corrected (analysis layer added; tool layer only gets task descriptions) + 长程循环模式 section
+- 门童.md: task retry rule now also fires on `terminated`/network errors — a dropped SSE stream raises a bare `TypeError: terminated` that the SDK's error classifier (v1.18.10) does not map to a retryable error, so subagents previously failed instantly with no retry; the concierge now re-sends the same prompt once per the fault-tolerance rules (README-details 双语 document the transient-error retry behavior)
 
 ### Docs
 
 - `longloop/docs/长程自完善.md` / `LongLoop.md`: quick-start adds bootstrap usage; state protocol documents `onboarding`/`baseline` fields and the baseline `history` array
 - `longloop/docs/长程自完善-自举设计草案.md`: v3.1 revision (static-layer acceptance line / snapshot aggregation rules / soft-wall pre-review boundary / probe self-check timing) from a 74/100 confidence evaluation
+- Deployment manual removed: `docs/opencode-moa.md` / `.en.md` and `scripts/sync-docs.ps1` deleted — the manual duplicated agent frontmatter with manual-maintenance drift; the repo itself is the installer, so README "30-second deploy" Method 1 (all 7 languages) now tells the AI to deploy from the real source files (`.opencode/`, `opencode.json`) via `git clone`; synced: README×7, README-details 双语 (Appendix A reference + desktop FAQ), T1-readme-consistency.ps1 (2 deploy-doc checks dropped), release.yml / clone-core.ps1 archive lists, CONTRIBUTING.md, .gitignore
 
 </details>
 
@@ -89,11 +91,13 @@ LongLoop 零先验自举落地——`longloop/bootstrap.ps1` 面对陌生项目�
 - `opencode.json` / `install.ps1` / `install.sh`：旗舰·执行 override 补 `moa-loop_*: allow`（原来只有 `*_*: deny`）——没有它执行者的 MoA 状态写入被通配 deny 锁死，长程状态机断链
 - `T0-static-verify.ps1`：新增 YAML task 白名单契约断言（意见层 8 个 task{工具人, 视觉翻译}=allow、融合/分析 6 个 task=deny、旗舰·质检 task{工具人}=allow、旗舰·执行 task=deny）+ 执行者 moa-loop_* allow 例外
 - 门童.md：内联规则修正（补分析层；工具层只内联任务描述）+ 长程循环模式节
+- 门童.md：task 重试规则扩展到 `terminated`/网络错误——SSE 流中断抛出的裸 `TypeError: terminated` 不在 SDK（v1.18.10）错误分类器的可重试列表里，此前子任务直接失败不重试；现在门童按容错规则对同一 prompt 重发一次（README-details 双语已补充瞬时错误重试说明）
 
 ### 文档
 
 - `longloop/docs/长程自完善.md` / `LongLoop.md`：快速开始加 bootstrap 用法；状态协议补充 onboarding/baseline 字段与基线 history 数组说明
 - `longloop/docs/长程自完善-自举设计草案.md`：v3.1 修订（静态层验收线 / 快照聚合规则 / 软墙预审边界 / 探针自检时机）——置信度评估 74/100 后修正
+- 移除部署手册：删除 `docs/opencode-moa.md` / `.en.md` 与 `scripts/sync-docs.ps1`——手册与 agent frontmatter 重复且手动维护易漂移；仓库本身就是安装器，README「30-second deploy」方式一（7 语言）改为 `git clone` 后让 AI 直接读源文件（`.opencode/`、`opencode.json`）部署；同步面：README×7、README-details 双语（附录 A 引用 + 桌面端 FAQ）、T1-readme-consistency.ps1（删 2 项手册检查）、release.yml / clone-core.ps1 打包清单、CONTRIBUTING.md、.gitignore
 
 </details>
 

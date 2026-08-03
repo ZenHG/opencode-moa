@@ -103,27 +103,6 @@ foreach ($rf in $readmeFiles) {
     }
 }
 
-# ── 4. Check 2 deploy docs ──
-$deployDocs = @("docs/opencode-moa.md","docs/opencode-moa.en.md")
-foreach ($df in $deployDocs) {
-    $p = Join-Path $base $df
-    if (-not (Test-Path $p)) { Check "$df exists" $false; continue }
-    $c = Get-Content $p -Raw -Encoding utf8
-    $docModels = [regex]::Matches($c, 'model:\s*opencode-go/(\S+)') | ForEach-Object { $_.Groups[1].Value }
-    $agentModelVals = $agentModels.Values | Sort-Object -Unique
-    $docModelVals = $docModels | Sort-Object -Unique
-
-    $missing = $agentModelVals | Where-Object { $_ -notin $docModelVals }
-    $extra = $docModelVals | Where-Object { $_ -notin $agentModelVals }
-
-    if ($missing.Count -eq 0 -and $extra.Count -eq 0) {
-        Check "$df : all $($agentModelVals.Count) model-ids present" $true
-    } else {
-        if ($missing) { Check "$df : missing models [$($missing -join ', ')]" $false }
-        if ($extra) { Check "$df : extra models [$($extra -join ', ')]" $false }
-    }
-}
-
 Write-Host "`n==============================" -ForegroundColor Yellow
 Write-Host "  PASS: $pass  FAIL: $fail" -ForegroundColor $(if ($fail -eq 0) {'Green'} else {'Red'})
 Write-Host "==============================`n" -ForegroundColor Yellow

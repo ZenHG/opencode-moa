@@ -14,11 +14,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# CI/管道环境（stdin 被重定向）自动启用非交互，避免 Read-Host 静默全默认或抛错
+if (-not $NonInteractive -and [Console]::IsInputRedirected) {
+    Write-Host "检测到非交互环境（stdin 重定向），自动启用 -NonInteractive（全接受候选）。" -ForegroundColor Yellow
+    $NonInteractive = $true
+}
+
 # ── 1. 内容探测（语言无关统计 marker，确定性检查器）──
 function Invoke-HealthScan {
     param([string]$Root)
     $files = Get-ChildItem $Root -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch '\\.git\\|\\node_modules\\|\\.moa\\|\\.opencode\\|\\dist\\|\\build\\|\\__pycache__\\|\\bin\\|\\obj\\' }
+        Where-Object { $_.FullName -notmatch '(?:^|[\\/])(?:\.git|node_modules|\.moa|\.opencode|dist|build|__pycache__|bin|obj)(?:[\\/]|$)' }
     $extMap = @{
         '.ps1' = 'powershell'; '.psm1' = 'powershell'; '.psd1' = 'powershell'
         '.py' = 'python'; '.js' = 'javascript'; '.mjs' = 'javascript'; '.cjs' = 'javascript'
@@ -335,10 +341,11 @@ $syntaxTemplate = @'
 # 用法: pwsh ./check-syntax.ps1 [-Root <项目根>]
 param([string]$Root = (Get-Location).Path)
 $failed = 0
-Get-ChildItem $Root -Recurse -File | Where-Object { $_.FullName -notmatch '\\node_modules\\|\\.git\\|\\.moa\\|\\.opencode\\|\\dist\\|\\build\\|\\__pycache__\\' } | ForEach-Object {
+$py = if (Get-Command python3 -ErrorAction SilentlyContinue) { "python3" } else { "python" }
+Get-ChildItem $Root -Recurse -File | Where-Object { $_.FullName -notmatch '(?:^|[\\/])(?:\.git|node_modules|\.moa|\.opencode|dist|build|__pycache__|bin|obj)(?:[\\/]|$)' } | ForEach-Object {
     $file = $_
     switch -Regex ($file.Extension.ToLowerInvariant()) {
-        '\.py'        { & python -m py_compile $file.FullName 2>&1 | Out-Null; if ($LASTEXITCODE -ne 0) { Write-Host "[FAIL] $($file.FullName)" -ForegroundColor Red; $failed++ } }
+        '\.py'        { & $py -m py_compile $file.FullName 2>&1 | Out-Null; if ($LASTEXITCODE -ne 0) { Write-Host "[FAIL] $($file.FullName)" -ForegroundColor Red; $failed++ } }
         '\.js|\.mjs|\.cjs' { & node --check $file.FullName 2>&1 | Out-Null; if ($LASTEXITCODE -ne 0) { Write-Host "[FAIL] $($file.FullName)" -ForegroundColor Red; $failed++ } }
         '\.ts|\.tsx'  { & npx tsc --noEmit $file.FullName 2>&1 | Out-Null; if ($LASTEXITCODE -ne 0) { Write-Host "[FAIL] $($file.FullName)" -ForegroundColor Red; $failed++ } }
         '\.ps1|\.psm1' { $errs = $null; [void][System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$errs); if ($errs.Count -gt 0) { Write-Host "[FAIL] $($file.FullName)" -ForegroundColor Red; $failed++ } }

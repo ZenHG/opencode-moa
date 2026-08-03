@@ -110,7 +110,7 @@ jobs:
           mkdir -p dist
           tar -czf "dist/opencode-moa-core-$VER.tar.gz" \
             README.md opencode.json \
-            docs/opencode-moa.md docs/opencode-moa.en.md docs/README-details.md \
+            docs/README-details.md \
             .opencode/agents .opencode/commands .opencode/skills \
             longloop/long-loop.ps1 longloop/server.js longloop/package.json \
             longloop/templates longloop/docs/长程自完善.md longloop/docs/LongLoop.md \

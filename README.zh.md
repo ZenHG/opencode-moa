@@ -71,8 +71,9 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 | 条件              | 检查命令             | 说明                                                         |
 | --------------- | ---------------- | ---------------------------------------------------------- |
-| PowerShell Core | `pwsh --version` | install.ps1 需要，Windows 自带或 `brew install powershell`       |
+| PowerShell Core | `pwsh --version` | 运行 LongLoop 与 install.ps1 需要；**Windows 自带的是 5.1 不满足**（装 PS7：`winget install Microsoft.PowerShell`，或 `powershell -File install.ps1 -InstallPwsh` 自动装官方 MSI），macOS `brew install powershell`，Linux 见 [长程文档](longloop/docs/长程自完善.md) |
 | jq              | `jq --version`   | install.sh 合并 JSON 需要，`apt install jq` / `brew install jq` |
+| Node.js >= 14   | `node --version` | 运行 moa-loop MCP（longloop/server.js）需要                     |
 
 > 没有 pwsh/jq 也没关系，可以用方式一（AI 自动部署）或方式三（手动合并）。
 
@@ -97,14 +98,14 @@ OpenCode MoA 是 OpenCode 的 Mixture of Agents 配置包。它让多个模型**
 
 ### 方式一：AI 自动部署（推荐）
 
-1. 下载 [`docs/opencode-moa.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.md)
-2. 在 OpenCode 中上传该文档，发送：
+1. 克隆仓库：`git clone https://github.com/ZenHG/opencode-moa.git`
+2. 在 OpenCode（当前项目）中发送：
 
-> 请按这份部署手册，帮我把 22 个 agent、5 个命令、3 个技能全部部署到当前项目
+> 请按这个仓库，帮我把 22 个 agent、5 个命令、3 个技能全部部署到当前项目
 
-3. AI 会自动创建所有文件。完成后**重启 OpenCode** 即可。
+3. AI 会直接读取仓库里的 `.opencode/` 与 `opencode.json` 源文件，自动创建所有文件。完成后**重启 OpenCode** 即可。
 
-> 全程不需要手动创建任何文件。部署手册本身就是安装器。
+> 仓库本身就是安装器——AI 直接从真实源文件部署，无需下载或维护任何手册。
 
 ### 方式二：一键安装脚本（脚本版 · CLI 友好）
 
@@ -115,15 +116,16 @@ git clone https://github.com/ZenHG/opencode-moa.git
 # 进入你的项目目录
 cd your-project
 
-# 从仓库复制 .opencode 目录和 .moa 配置
+# 从仓库复制 .opencode、.moa 配置与 longloop 目录
 cp -r ../opencode-moa/.opencode/ .
 cp -r ../opencode-moa/.moa/ .
+cp -r ../opencode-moa/longloop/ .
 
 # 运行安装脚本（自动合并配置，保留你的 API key）
-# Windows:
+# Windows（缺依赖可自动装：-InstallPwsh / -InstallNode / -InstallDeps 一键全装）:
 pwsh ../opencode-moa/install.ps1
-# Linux/macOS:
-bash ../opencode-moa/install.sh
+# Linux/macOS（jq 缺失时加 --install-jq 自动安装）:
+bash ../opencode-moa/install.sh --install-jq
 ```
 
 > 安装脚本会自动备份原 `opencode.json`，只合并 MoA 配置，保留你的 provider 和 API key。
@@ -294,7 +296,6 @@ rm -rf your-project/.moa/
 | 文档 | 内容 |
 | ---- | ---- |
 | [docs/README-details.zh.md](docs/README-details.zh.md) | 容错设计 · 成本模型 · 安全 · 本地模型 · 验证 · 常见问题 |
-| [docs/opencode-moa.md](docs/opencode-moa.md) | 完整部署手册——同时也是 AI 自动部署的安装器本体 |
 
 ---
 

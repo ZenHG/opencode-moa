@@ -7,11 +7,19 @@
 const fs = require("fs");
 const path = require("path");
 
+const NODE_MAJOR = parseInt(process.versions.node.split(".")[0], 10);
+if (NODE_MAJOR < 14) {
+  console.error(`moa-loop: 需要 Node.js >= 14（当前 ${process.versions.node}）`);
+  process.exit(1);
+}
+
 const baseDir = process.env.MOA_LOOP_DIR || process.cwd();
 const stateDir = path.join(baseDir, ".moa", "longloop");
 const stateFile = path.join(stateDir, "state.json");
 const footprintFile = path.join(stateDir, "足迹.md");
 const lockFile = path.join(stateDir, ".lock");
+
+fs.mkdirSync(stateDir, { recursive: true });
 
 const VALID_STATUS = ["open", "in_progress", "done", "blocked"];
 
@@ -19,14 +27,19 @@ function readState() {
   if (!fs.existsSync(stateFile)) {
     throw new Error(`state.json 不存在: ${stateFile}（先用 long-loop.ps1 初始化）`);
   }
-  return JSON.parse(fs.readFileSync(stateFile, "utf8"));
+  return JSON.parse(fs.readFileSync(stateFile, "utf8").replace(/^\uFEFF/, ""));
 }
 
 function writeState(state) {
   state.updated_at = new Date().toISOString();
   const tmp = stateFile + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(state, null, 2), "utf8");
-  fs.renameSync(tmp, stateFile);
+  try {
+    fs.renameSync(tmp, stateFile);
+  } catch (e) {
+    try { fs.unlinkSync(tmp); } catch (_) { /* tmp 清理失败忽略 */ }
+    throw new Error(`moa-loop: 写 state.json 失败（${e.code}）—— 文件可能被其他进程占用，请重试`);
+  }
 }
 
 function withLock(fn) {
@@ -36,6 +49,10 @@ function withLock(fn) {
       try { return fn(); } finally { fs.closeSync(fd); fs.unlinkSync(lockFile); }
     } catch (e) {
       if (e.code !== "EEXIST") throw e;
+      try {
+        const st = fs.statSync(lockFile);
+        if (Date.now() - st.mtimeMs > 30000) { fs.unlinkSync(lockFile); continue; }
+      } catch (_) { /* 锁已被并发侧移除 */ }
       const wait = new Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
       if (!wait) { /* sleep fallback */ }
     }
@@ -180,18 +197,20 @@ function callTool(name, args) {
       });
     }
     case "moa_footprint_append": {
-      const line = [
-        `## ${args.task}（${new Date().toISOString()}）`,
-        `- 做了什么：${args.did}`,
-        `- 验证：${args.verify || "未验证"}`,
-        `- 证据：${args.evidence || "无 ref（todo 完成/自述不算证据）"}`,
-        `- 结果：${args.result}${args.result === "partial" ? "（note 保留进度）" : ""}`,
-        `- 负结果：${args.negative || "无"}`,
-        `- 下一步：${args.next || "—"}`,
-      ].join("\n");
-      fs.mkdirSync(stateDir, { recursive: true });
-      fs.appendFileSync(footprintFile, "\n" + line + "\n", "utf8");
-      return ok(`已追加足迹: ${args.task} → ${args.result}`);
+      return withLock(() => {
+        const line = [
+          `## ${args.task}（${new Date().toISOString()}）`,
+          `- 做了什么：${args.did}`,
+          `- 验证：${args.verify || "未验证"}`,
+          `- 证据：${args.evidence || "无 ref（todo 完成/自述不算证据）"}`,
+          `- 结果：${args.result}${args.result === "partial" ? "（note 保留进度）" : ""}`,
+          `- 负结果：${args.negative || "无"}`,
+          `- 下一步：${args.next || "—"}`,
+        ].join("\n");
+        fs.mkdirSync(stateDir, { recursive: true });
+        fs.appendFileSync(footprintFile, "\n" + line + "\n", "utf8");
+        return ok(`已追加足迹: ${args.task} → ${args.result}`);
+      });
     }
     case "moa_finish": {
       return withLock(() => {

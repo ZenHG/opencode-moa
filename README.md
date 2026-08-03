@@ -56,8 +56,10 @@ Three independent plans from three different models naturally form a "consensus 
 | OpenCode **>= 1.3.4** | agent-level `reasoningEffort`/`hidden`/`task` support, [install](https://opencode.ai/install) |
 | OpenCode Go plan   | [Subscribe](https://opencode.ai/auth), first month $5, then $10/month                           |
 | Git                | used to clone the repo                                                                         |
+| PowerShell 7+ (`pwsh`) | drives LongLoop (`long-loop.ps1`) & `install.ps1` — Windows ships 5.1, install PS7 (`winget install Microsoft.PowerShell`, or auto-MSI: `powershell -File install.ps1 -InstallPwsh`), macOS `brew install powershell`, Linux see [LongLoop docs](longloop/docs/LongLoop.md) |
+| Node.js >= 14      | runs the `moa-loop` MCP server (`longloop/server.js`) — [nodejs.org](https://nodejs.org)                                                                       |
 
-Install scripts additionally need `pwsh` (Windows) / `jq` (Linux/macOS) — without them use Method 1 or Method 3 below.
+`install.sh` additionally needs `jq` (Linux/macOS) — without them use Method 1 or Method 3 below.
 
 > ⚠️ **Key path pitfall** — put the provider + key in either the **project-level `opencode.json`** or the **system-level** shared path, pick **one**. System-level correct path: Linux/macOS `~/.config/opencode/opencode.json`; Windows `%USERPROFILE%\.config\opencode\opencode.json` (**not** `%APPDATA%\opencode`). Wrong path → "deployment succeeds but all agents can't connect".
 
@@ -67,14 +69,14 @@ Install scripts additionally need `pwsh` (Windows) / `jq` (Linux/macOS) — with
 
 ### Method 1: AI auto-deploy (recommended)
 
-1. Download [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md)
-2. Upload that document in OpenCode and send:
+1. Clone the repo: `git clone https://github.com/ZenHG/opencode-moa.git`
+2. In OpenCode (opened in your project), send:
 
-> Deploy all 22 agents, 5 commands, and 3 skills from this manual into the current project
+> Deploy all 22 agents, 5 commands, and 3 skills from the opencode-moa repo into the current project
 
-3. The AI creates all files automatically. **Restart OpenCode** when done.
+3. The AI reads the real source files (`.opencode/agents/`, `opencode.json`) and creates all files automatically. **Restart OpenCode** when done.
 
-> The deployment manual is itself the installer — no need to manually create any file.
+> The repo itself is the installer — the AI deploys from the actual source files, so there is no manual to download or keep in sync.
 
 ### Method 2: one-click install script (CLI-friendly)
 
@@ -84,10 +86,11 @@ git clone https://github.com/ZenHG/opencode-moa.git
 cd your-project
 cp -r ../opencode-moa/.opencode/ .
 cp -r ../opencode-moa/.moa/ .
+cp -r ../opencode-moa/longloop/ .
 
 # run the install script (auto-merge config, keeps your API key)
-# Windows:  pwsh ../opencode-moa/install.ps1
-# Linux/macOS:  bash ../opencode-moa/install.sh
+# Windows:  pwsh ../opencode-moa/install.ps1   (auto-installs missing deps: -InstallPwsh / -InstallNode / -InstallDeps for all)
+# Linux/macOS:  bash ../opencode-moa/install.sh --install-jq   (auto-installs jq if missing)
 ```
 
 > The install script auto-backs up your original `opencode.json`, only merging MoA config while keeping your provider and API key.
@@ -224,7 +227,6 @@ fallback (融合·保底, DeepSeek V4 Pro) — same residual-enhanced fusion, us
 | Doc | Contents |
 | --- | -------- |
 | [docs/README-details.md](docs/README-details.md) | Fault tolerance design · cost model · security · local models · verification · FAQ · maintainer tooling |
-| [docs/opencode-moa.md](docs/opencode-moa.md) (zh) / [.en.md](docs/opencode-moa.en.md) | Full deployment manual — also serves as the AI auto-deploy installer |
 
 ---
 

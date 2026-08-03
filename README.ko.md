@@ -73,8 +73,9 @@ You: help me design a message queue solution
 
 | 요구 사항         | 확인 명령어    | 비고                                                                     |
 | ----------------- | ---------------- | ------------------------------------------------------------------------- |
-| PowerShell Core    | `pwsh --version` | install.ps1에서 필요, Windows에 번들로 포함되거나 `brew install powershell`로 설치  |
+| PowerShell Core    | `pwsh --version` | LongLoop 및 install.ps1에 필요. **Windows 번들의 5.1은 부족** (PS7 설치: `winget install Microsoft.PowerShell`, 또는 `powershell -File install.ps1 -InstallPwsh`로 공식 MSI 자동 설치), macOS는 `brew install powershell`, Linux는 [LongLoop 문서](longloop/docs/LongLoop.md) 참조 |
 | jq                | `jq --version`   | JSON 병합을 위한 install.sh에서 필요, `apt install jq` / `brew install jq` |
+| Node.js >= 14     | `node --version` | moa-loop MCP(longloop/server.js) 실행에 필요 |
 
 > pwsh/jq가 없어도 괜찮습니다 — 방법 1(AI 자동 배포) 또는 방법 3(수동 병합)을 사용할 수 있습니다.
 
@@ -100,14 +101,14 @@ You: help me design a message queue solution
 
 ### 방법 1: AI 자동 배포 (권장)
 
-1. [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md) 다운로드
-2. OpenCode에 해당 문서를 업로드하고 전송:
+1. 리포지토리 클론: `git clone https://github.com/ZenHG/opencode-moa.git`
+2. OpenCode(현재 프로젝트)에서 전송:
 
-> 현재 프로젝트에 이 매뉴얼에서 22개의 에이전트, 5개의 명령어 및 3개의 기술을 배포합니다.
+> 이 리포지토리에서 22개의 에이전트, 5개의 명령어 및 3개의 기술을 현재 프로젝트에 배포합니다.
 
-3. AI가 모든 파일을 자동으로 생성합니다. **완료되면 OpenCode를 재시작하세요.**
+3. AI가 리포지토리의 `.opencode/`와 `opencode.json` 실제 소스 파일을 직접 읽고 모든 파일을 자동으로 생성합니다. **완료되면 OpenCode를 재시작하세요.**
 
-> 파일을 수동으로 생성할 필요가 없습니다. 배포 매뉴얼 자체가 설치 프로그램입니다.
+> 리포지토리 자체가 설치 프로그램입니다 — AI가 실제 소스 파일에서 직접 배포하므로 다운로드하거나 유지 관리할 매뉴얼이 없습니다.
 
 ### 방법 2: 원클릭 설치 스크립트 (스크립트 버전 · CLI 친화적)
 
@@ -118,15 +119,16 @@ git clone https://github.com/ZenHG/opencode-moa.git
 # 프로젝트 디렉토리로 이동
 cd your-project
 
-# 레포에서 .opencode 디렉토리와 .moa 구성 복사
+# 레포에서 .opencode 디렉토리, .moa 구성, longloop 디렉토리 복사
 cp -r ../opencode-moa/.opencode/ .
 cp -r ../opencode-moa/.moa/ .
+cp -r ../opencode-moa/longloop/ .
 
 # 설치 스크립트 실행 (구성 자동 병합, API 키 유지)
-# Windows:
+# Windows（누락된 의존성 자동 설치: -InstallPwsh / -InstallNode / -InstallDeps 한 번에）:
 pwsh ../opencode-moa/install.ps1
-# Linux/macOS:
-bash ../opencode-moa/install.sh
+# Linux/macOS（jq 없으면 --install-jq 로 자동 설치）:
+bash ../opencode-moa/install.sh --install-jq
 ```
 
 > 설치 스크립트는 원본 `opencode.json`을 자동으로 백업하며, 제공자와 API 키를 유지하면서 MoA 구성을 병합합니다.
@@ -308,7 +310,6 @@ pwsh .opencode/tests/run-all.ps1
 | 문서 | 내용 |
 | ---- | ---- |
 | [docs/README-details.md](docs/README-details.md) | 내결함성 설계 · 비용 · 보안 · 검증 · FAQ |
-| [docs/opencode-moa.md](docs/opencode-moa.md) | 전체 배포 매뉴얼 — AI 자동 배포 설치 프로그램 본체 |
 
 ---
 ## 기여

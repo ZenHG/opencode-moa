@@ -6,6 +6,15 @@
 
 set -e
 
+# --install-jq: jq 缺失时自动用系统包管理器安装（apt-get/brew/dnf），先检查再安装
+INSTALL_JQ=0
+for arg in "$@"; do
+    case "$arg" in
+        --install-jq) INSTALL_JQ=1 ;;
+        *) ;;
+    esac
+done
+
 # 颜色
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -146,8 +155,38 @@ MOA_JSON='{
   },
   "compaction": { "auto": true, "reserved": 15000 },
   "share": "manual",
-  "snapshot": true
+  "snapshot": true,
+  "mcp": {
+    "moa-loop": {
+      "type": "local",
+      "command": ["node", "longloop/server.js"],
+      "enabled": true
+    }
+  }
 }'
+
+# 合并 MoA 配置 + 用户配置 + 平台删除禁令（jq 就绪后调用）
+merge_config() {
+    if uname -s | grep -qiE 'mingw|msys|cygwin'; then
+        DENY_EXTRA='["del *","Remove-Item *","rd *","rmdir *"]'
+    else
+        DENY_EXTRA='[]'
+    fi
+    USER_PROVIDER=$(jq '.provider // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
+    USER_MODEL=$(jq '.model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
+    USER_SMALL=$(jq '.small_model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
+    echo "$MOA_JSON" | jq \
+        --argjson extra "$DENY_EXTRA" \
+        --argjson provider "${USER_PROVIDER:-null}" \
+        --argjson model "${USER_MODEL:-null}" \
+        --argjson small "${USER_SMALL:-null}" \
+        '.permission.bash = (reduce $extra[] as $k (.permission.bash; .[$k] = "deny")) |
+         . + (if $provider != null then {provider: $provider} else {} end) +
+         (if $model != null then {model: $model} else {} end) +
+         (if $small != null then {small_model: $small} else {} end)' \
+        > "$OPENCODE_JSON"
+    ok "配置已合并（保留用户 provider/model）"
+}
 
 if [ -f "$OPENCODE_JSON" ]; then
     skip "已有 opencode.json，备份原文件"
@@ -156,35 +195,31 @@ if [ -f "$OPENCODE_JSON" ]; then
     ok "已备份到 $(basename "$BACKUP")"
     
     if command -v jq &> /dev/null; then
-        # 平台化：Windows 套（Git Bash/MSYS/CYGWIN 中 opencode bash 工具为 PowerShell）补 Windows 专有删除禁令
-        if uname -s | grep -qiE 'mingw|msys|cygwin'; then
-            DENY_EXTRA='["del *","Remove-Item *","rd *","rmdir *"]'
-        else
-            DENY_EXTRA='[]'
-        fi
-        # 提取用户配置（provider, model, small_model）
-        USER_PROVIDER=$(jq '.provider // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
-        USER_MODEL=$(jq '.model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
-        USER_SMALL=$(jq '.small_model // empty' "$OPENCODE_JSON" 2>/dev/null || echo "")
-        
-        # 合并：MoA 配置 + 用户配置 + 平台删除禁令
-        echo "$MOA_JSON" | jq \
-            --argjson extra "$DENY_EXTRA" \
-            --argjson provider "${USER_PROVIDER:-null}" \
-            --argjson model "${USER_MODEL:-null}" \
-            --argjson small "${USER_SMALL:-null}" \
-            '.permission.bash = (reduce $extra[] as $k (.permission.bash; .[$k] = "deny")) |
-             . + (if $provider != null then {provider: $provider} else {} end) +
-             (if $model != null then {model: $model} else {} end) +
-             (if $small != null then {small_model: $small} else {} end)' \
-            > "$OPENCODE_JSON"
-        ok "配置已合并（保留用户 provider/model）"
+        merge_config
     else
-        fail "未安装 jq，无法自动合并"
-        echo "  请手动合并 opencode.json，或安装 jq："
-        echo "  apt install jq / brew install jq / choco install jq"
-        echo "  参考: https://github.com/ZenHG/opencode-moa#方式三手动安装"
-        exit 1
+        if [ "$INSTALL_JQ" = "1" ]; then
+            echo -e "  ${YELLOW}jq 未安装，自动安装...${NC}"
+            if command -v apt-get &> /dev/null; then
+                (sudo apt-get install -y jq 2>/dev/null || apt-get install -y jq 2>/dev/null) || true
+            elif command -v brew &> /dev/null; then
+                brew install jq 2>/dev/null || true
+            elif command -v dnf &> /dev/null; then
+                (sudo dnf install -y jq 2>/dev/null || dnf install -y jq 2>/dev/null) || true
+            else
+                fail "未找到支持的包管理器（apt-get/brew/dnf），请手动安装 jq"
+                exit 1
+            fi
+        fi
+        if command -v jq &> /dev/null; then
+            merge_config
+        else
+            fail "未安装 jq，无法自动合并"
+            echo "  请手动合并 opencode.json，或安装 jq："
+            echo "  apt install jq / brew install jq / choco install jq"
+            echo "  或加 --install-jq 自动安装"
+            echo "  参考: https://github.com/ZenHG/opencode-moa#方式三手动安装"
+            exit 1
+        fi
     fi
 else
     skip "opencode.json 不存在，请先配置 OpenCode"
@@ -246,6 +281,24 @@ SKILL_COUNT=$(find "$MOA_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -
 [ "$CMD_COUNT" -gt 0 ] && ok "Commands: $CMD_COUNT" || fail "Commands: $CMD_COUNT"
 [ "$SKILL_COUNT" -gt 0 ] && ok "Skills: $SKILL_COUNT" || fail "Skills: $SKILL_COUNT"
 ok "Config: ok"
+if [ -f "$PROJECT_DIR/longloop/server.js" ]; then
+    ok "LongLoop MCP: ok"
+else
+    echo -e "  ${YELLOW}⚠ longloop/ 未复制 —— moa-loop MCP（长程自完善状态工具）将不可用${NC}"
+    echo -e "  ${GRAY}-> 从仓库复制: cp -r <opencode-moa 路径>/longloop/ .${NC}"
+fi
+if command -v node &> /dev/null; then
+    NODE_VER=$(node --version 2>/dev/null)
+    NODE_MAJOR=$(echo "$NODE_VER" | sed -E 's/v([0-9]+).*/\1/')
+    if [ -n "$NODE_MAJOR" ] && [ "$NODE_MAJOR" -ge 14 ] 2>/dev/null; then
+        ok "Node.js: ok ($NODE_VER)"
+    else
+        echo -e "  ${YELLOW}⚠ node $NODE_VER < 14 —— moa-loop MCP 需要 >= 14${NC}"
+    fi
+else
+    echo -e "  ${YELLOW}⚠ node 未安装 —— moa-loop MCP（长程自完善状态工具）不可用${NC}"
+    echo -e "  ${GRAY}-> 安装: https://nodejs.org （LTS 版）${NC}"
+fi
 
 echo ""
 echo -e "${CYAN}=== 安装完成 ===${NC}"

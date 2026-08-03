@@ -1,7 +1,14 @@
 # install.ps1 — MoA 安装脚本（增量合并 opencode.json）
-# 用法: pwsh ./install.ps1
+# 用法: pwsh ./install.ps1 [-InstallPwsh]
 # 兼容: Windows PowerShell 5.1+ / PowerShell Core 7+ (Linux/macOS)
 # 需要: 先将 .opencode/ 复制到当前目录
+# -InstallPwsh: Windows 且无 pwsh 时，自动下载官方 PowerShell 7 MSI 静默安装（5.1 下可用 powershell -File install.ps1 -InstallPwsh）
+
+param(
+    [switch]$InstallPwsh,
+    [switch]$InstallNode,
+    [switch]$InstallDeps
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -22,6 +29,82 @@ function Write-Fail($msg) {
 }
 
 Write-Host "`n=== OpenCode MoA 安装 ===" -ForegroundColor Cyan
+
+# -InstallDeps = 全部依赖先检查再安装
+if ($InstallDeps) { $InstallPwsh = $true; $InstallNode = $true }
+
+# 0. 可选：自动安装 PowerShell 7（官方 MSI 静默安装）
+if ($InstallPwsh) {
+    Write-Step "0/3" "检查 PowerShell 7.1+ (pwsh)..."
+    $pwshPath = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+    $pwshVer = $null
+    if ($pwshPath) { $pwshVer = pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>$null }
+    $pwshOk = $false
+    if ($pwshVer) {
+        try { $pwshOk = [version]$pwshVer -ge [version]"7.1" } catch { $pwshOk = $false }
+    }
+    if ($pwshOk) {
+        Write-Skip "已安装 pwsh $pwshVer (>= 7.1)，无需安装"
+    } else {
+        if ($env:OS -ne "Windows_NT") { Write-Fail "-InstallPwsh 仅支持 Windows（MSI 安装）"; exit 1 }
+        if ($pwshPath) { Write-Host "  当前 pwsh 版本 $pwshVer < 7.1，自动安装官方 MSI 升级..." -ForegroundColor Yellow }
+        else { Write-Host "  pwsh 未安装，自动下载官方 MSI 静默安装..." -ForegroundColor Yellow }
+        try {
+            $rel = Invoke-RestMethod "https://api.github.com/repos/PowerShell/PowerShell/releases/latest" -Headers @{ "User-Agent" = "opencode-moa-installer" }
+            $ver = $rel.tag_name.TrimStart('v')
+            $asset = $rel.assets | Where-Object { $_.name -eq "PowerShell-$ver-win-x64.msi" } | Select-Object -First 1
+            if (-not $asset) { throw "最新版本 $ver 中未找到 win-x64 MSI 资产" }
+            $msi = Join-Path $env:TEMP $asset.name
+            Invoke-WebRequest $asset.browser_download_url -OutFile $msi
+            Write-Ok "已下载 $($asset.name) ($([math]::Round((Get-Item $msi).Length / 1MB, 1)) MB)"
+            $p = Start-Process msiexec -ArgumentList @("/i", "`"$msi`"", "/qn", "/norestart", "ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=0") -Wait -PassThru
+            if ($p.ExitCode -ne 0) { throw "msiexec 静默安装失败（退出码 $($p.ExitCode)）" }
+            Remove-Item $msi -Force -ErrorAction SilentlyContinue
+            Write-Ok "PowerShell 7 ($ver) 已安装，重启终端后可用 pwsh"
+        } catch {
+            Write-Fail "自动安装失败: $($_.Exception.Message)"
+            Write-Host "  手动安装: https://github.com/PowerShell/PowerShell/releases （下载 win-x64 MSI 双击安装）" -ForegroundColor Gray
+            exit 1
+        }
+    }
+}
+
+# 0.5 可选：自动安装 Node.js（官方 MSI 静默安装）
+if ($InstallNode) {
+    Write-Step "0/3" "检查 Node.js 14+..."
+    $nodePath = (Get-Command node -ErrorAction SilentlyContinue).Source
+    $nodeVer = $null
+    if ($nodePath) { $nodeVer = node --version 2>$null }
+    $nodeOk = $false
+    if ($nodeVer) {
+        try { $nodeOk = [int](($nodeVer.TrimStart('v') -split '\.')[0]) -ge 14 } catch { $nodeOk = $false }
+    }
+    if ($nodeOk) {
+        Write-Skip "已安装 node $nodeVer (>= 14)，无需安装"
+    } else {
+        if ($env:OS -ne "Windows_NT") { Write-Fail "-InstallNode 仅支持 Windows（MSI 安装）"; exit 1 }
+        if ($nodePath) { Write-Host "  当前 node $nodeVer < 14，自动下载官方 MSI 升级..." -ForegroundColor Yellow }
+        else { Write-Host "  node 未安装，自动下载官方 MSI 静默安装..." -ForegroundColor Yellow }
+        try {
+            $rel = Invoke-RestMethod "https://nodejs.org/dist/index.json"
+            $latest = $rel | Where-Object { $_.lts } | Select-Object -First 1
+            if (-not $latest) { $latest = $rel | Select-Object -First 1 }
+            $ver = $latest.version
+            $msiName = "node-$ver-x64.msi"
+            $msi = Join-Path $env:TEMP $msiName
+            Invoke-WebRequest "https://nodejs.org/dist/$ver/$msiName" -OutFile $msi
+            Write-Ok "已下载 $msiName ($([math]::Round((Get-Item $msi).Length / 1MB, 1)) MB)"
+            $p = Start-Process msiexec -ArgumentList @("/i", "`"$msi`"", "/qn", "/norestart") -Wait -PassThru
+            if ($p.ExitCode -ne 0) { throw "msiexec 静默安装失败（退出码 $($p.ExitCode)）" }
+            Remove-Item $msi -Force -ErrorAction SilentlyContinue
+            Write-Ok "Node.js $ver 已安装，重启终端后可用 node"
+        } catch {
+            Write-Fail "自动安装失败: $($_.Exception.Message)"
+            Write-Host "  手动安装: https://nodejs.org （下载官方 MSI 双击安装）" -ForegroundColor Gray
+            exit 1
+        }
+    }
+}
 
 $projectDir = Get-Location
 $opencodeJson = Join-Path $projectDir.Path "opencode.json"
@@ -125,6 +208,9 @@ $moaConfig = @{
     compaction = @{ auto = $true; reserved = 15000 }
     share = "manual"
     snapshot = $true
+    mcp = @{
+        "moa-loop" = @{ type = "local"; command = @("node", "longloop/server.js"); enabled = $true }
+    }
 }
 
 # 平台化：Unix 部署移除 Windows 专有删除禁令，保持生成的 opencode.json 平台纯净
@@ -200,6 +286,7 @@ if ($needKey) {
         }
         $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
         if (-not $merged.provider) { $merged | Add-Member -NotePropertyName 'provider' -NotePropertyValue @{} -Force }
+        if ($merged.provider -is [hashtable]) { $merged.provider = [pscustomobject]$merged.provider }
         $merged.provider | Add-Member -NotePropertyName 'opencode-go' -NotePropertyValue $providerBlock -Force
         if (-not $merged.model) { $merged | Add-Member -NotePropertyName 'model' -NotePropertyValue 'opencode-go/deepseek-v4-flash' -Force }
         $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
@@ -231,6 +318,7 @@ if ($needKey) {
     }
     $merged = Get-Content $opencodeJson -Raw -Encoding UTF8 | ConvertFrom-Json
     if (-not $merged.provider) { $merged | Add-Member -NotePropertyName 'provider' -NotePropertyValue @{} -Force }
+    if ($merged.provider -is [hashtable]) { $merged.provider = [pscustomobject]$merged.provider }
     $merged.provider | Add-Member -NotePropertyName 'opencode-go' -NotePropertyValue $placeholderProvider -Force
     if (-not $merged.model) { $merged | Add-Member -NotePropertyName 'model' -NotePropertyValue 'opencode-go/deepseek-v4-flash' -Force }
     $merged | ConvertTo-Json -Depth 10 | Set-Content $opencodeJson -Encoding UTF8
@@ -253,6 +341,22 @@ if ($agentCount -gt 0) { Write-Ok "Agents: $agentCount" } else { Write-Fail "Age
 if ($cmdCount -gt 0) { Write-Ok "Commands: $cmdCount" } else { Write-Fail "Commands: $cmdCount" }
 if ($skillCount -gt 0) { Write-Ok "Skills: $skillCount" } else { Write-Fail "Skills: $skillCount" }
 Write-Ok "Config: ok"
+$nodeVer = node --version 2>$null
+if ($nodeVer) {
+    try {
+        $nodeMajor = [int](($nodeVer.TrimStart('v') -split '\.')[0])
+        if ($nodeMajor -ge 14) { Write-Ok "Node.js: ok ($nodeVer)" }
+        else { Write-Host "  ⚠ node $nodeVer < 14 —— moa-loop MCP 需要 >= 14；可加 -InstallNode 自动升级官方 MSI" -ForegroundColor Yellow }
+    } catch { Write-Host "  ⚠ node 版本解析失败（$nodeVer）" -ForegroundColor Yellow }
+} else {
+    Write-Host "  ⚠ node 未安装 —— moa-loop MCP（长程自完善状态工具）不可用；可加 -InstallNode 自动安装官方 MSI" -ForegroundColor Yellow
+}
+if (Test-Path (Join-Path $projectDir.Path "longloop/server.js")) {
+    Write-Ok "LongLoop MCP: ok"
+} else {
+    Write-Host "  ⚠ longloop/ 未复制 —— moa-loop MCP（长程自完善状态工具）将不可用" -ForegroundColor Yellow
+    Write-Host "  -> 从仓库复制: cp -r <opencode-moa 路径>/longloop/ ." -ForegroundColor Gray
+}
 
 Write-Host "`n=== 安装完成 ===" -ForegroundColor Cyan
 Write-Host "重启 OpenCode 使配置生效。" -ForegroundColor Yellow

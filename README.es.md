@@ -73,8 +73,9 @@ Tres planes independientes de tres modelos diferentes forman naturalmente una es
 
 | Requisito         | Comando de verificación | Notas                                                                     |
 | ----------------- | ----------------------- | ------------------------------------------------------------------------- |
-| PowerShell Core   | `pwsh --version`       | necesario para install.ps1, incluido con Windows o `brew install powershell`  |
+| PowerShell Core   | `pwsh --version`       | necesario para LongLoop e install.ps1 — **el 5.1 incluido con Windows no basta** (instala PS7: `winget install Microsoft.PowerShell`, o MSI automático: `powershell -File install.ps1 -InstallPwsh`), macOS `brew install powershell`, Linux ver [docs de LongLoop](longloop/docs/LongLoop.md) |
 | jq                | `jq --version`         | necesario para install.sh para fusión JSON, `apt install jq` / `brew install jq` |
+| Node.js >= 14     | `node --version`       | necesario para el servidor MCP moa-loop (`longloop/server.js`) |
 
 > No hay problema si no tienes pwsh/jq — puedes usar el Método 1 (despliegue automático de IA) o el Método 3 (fusión manual).
 
@@ -100,14 +101,14 @@ Tres planes independientes de tres modelos diferentes forman naturalmente una es
 
 ### Método 1: Despliegue automático de IA (recomendado)
 
-1. Descarga [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md)
-2. Sube ese documento en OpenCode y envía:
+1. Clona el repositorio: `git clone https://github.com/ZenHG/opencode-moa.git`
+2. En OpenCode (abierto en tu proyecto), envía:
 
-> Desplegar todos los 22 agentes, 5 comandos y 3 habilidades de este manual en el proyecto actual
+> Desplegar todos los 22 agentes, 5 comandos y 3 habilidades del repositorio opencode-moa en el proyecto actual
 
-3. La IA crea todos los archivos automáticamente. **Reinicia OpenCode** cuando termines.
+3. La IA lee los archivos fuente reales (`.opencode/`, `opencode.json`) y crea todos los archivos automáticamente. **Reinicia OpenCode** cuando termines.
 
-> No es necesario crear manualmente ningún archivo. El manual de despliegue es en sí mismo el instalador.
+> El repositorio en sí es el instalador — la IA despliega desde los archivos fuente reales, sin manual que descargar ni mantener.
 
 ### Método 2: script de instalación de un clic (versión de script · amigable con CLI)
 
@@ -118,15 +119,16 @@ git clone https://github.com/ZenHG/opencode-moa.git
 # ingresa a tu directorio de proyecto
 cd your-project
 
-# copia el directorio .opencode y la configuración .moa del repositorio
+# copia el directorio .opencode, la configuración .moa y el directorio longloop del repositorio
 cp -r ../opencode-moa/.opencode/ .
 cp -r ../opencode-moa/.moa/ .
+cp -r ../opencode-moa/longloop/ .
 
 # ejecuta el script de instalación (fusión automática de configuración, mantiene tu clave API)
-# Windows:
+# Windows（instala automáticamente dependencias faltantes: -InstallPwsh / -InstallNode / -InstallDeps todo a la vez）:
 pwsh ../opencode-moa/install.ps1
-# Linux/macOS:
-bash ../opencode-moa/install.sh
+# Linux/macOS（si falta jq, usa --install-jq para instalarlo）:
+bash ../opencode-moa/install.sh --install-jq
 ```
 
 > El script de instalación hace una copia de seguridad automática de tu `opencode.json` original, solo fusionando la configuración de MoA mientras mantiene tu proveedor y clave API.
@@ -308,7 +310,6 @@ Scripts de verificación en `.opencode/tests/`: la Capa 0 es automática (T0 est
 | Documento | Contenido |
 | ---- | ---- |
 | [docs/README-details.md](docs/README-details.md) | Diseño de tolerancia a fallos · costo · seguridad · verificación · FAQ |
-| [docs/opencode-moa.md](docs/opencode-moa.md) | Manual de despliegue completo — el propio instalador para despliegue por IA |
 
 ---
 ## Contribuyendo

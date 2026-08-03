@@ -8,3 +8,14 @@
 .github/moa-arch*.png !filter !diff !merge -text
 .github/moa-cost*.png !filter !diff !merge -text
 .github/moa-social-zh.png !filter !diff !merge -text
+
+# 脚本与配置统一 LF（防 Windows autocrlf 检出/提交 CRLF 混入，跨平台协作一致）
+* text=auto
+*.ps1 text eol=lf
+*.psm1 text eol=lf
+*.sh text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

@@ -36,10 +36,17 @@ function Get-OpencodeBin {
     }
     $npmRoot = npm root -g 2>$null
     if ($npmRoot) {
-        $p = Join-Path $npmRoot "opencode-ai/bin/opencode.exe"
-        if (Test-Path $p) { return $p }
+        foreach ($name in @("opencode.exe", "opencode")) {
+            $p = Join-Path $npmRoot "opencode-ai/bin/$name"
+            if (Test-Path $p) { return $p }
+        }
     }
-    foreach ($p in @("$HOME\.opencode\bin\opencode.exe", "$HOME\.local\bin\opencode.exe", "$env:APPDATA\npm\node_modules\opencode-ai\bin\opencode.exe")) {
+    foreach ($p in @(
+        "$HOME/.opencode/bin/opencode.exe", "$HOME/.opencode/bin/opencode",
+        "$HOME/.local/bin/opencode.exe", "$HOME/.local/bin/opencode",
+        "$env:APPDATA/npm/node_modules/opencode-ai/bin/opencode.exe",
+        "$env:APPDATA/npm/node_modules/opencode-ai/bin/opencode"
+    )) {
         if (Test-Path $p) { return $p }
     }
     return $null
@@ -110,12 +117,12 @@ function Start-LoopServer {
     }
     $script:serverPort = $port
     Write-Host "启动 opencode server (127.0.0.1:$port)…" -ForegroundColor Yellow
-    $args = @("serve", "--port", "$port", "--hostname", $ServerHostname, "--log-level", "ERROR")
+    $serverArgs = @("serve", "--port", "$port", "--hostname", $ServerHostname, "--log-level", "ERROR")
     $ext = [System.IO.Path]::GetExtension($script:opencode).ToLowerInvariant()
     $launchArgs = @()
-    if ($ext -eq ".ps1") { $launchArgs = @("pwsh", "-NoProfile", "-File", $script:opencode) + $args }
-    elseif ($ext -in @(".cmd", ".bat")) { $launchArgs = @("cmd.exe", "/c", "`"$script:opencode`"") + $args }
-    else { $launchArgs = @($script:opencode) + $args }
+    if ($ext -eq ".ps1") { $launchArgs = @("pwsh", "-NoProfile", "-File", $script:opencode) + $serverArgs }
+    elseif ($ext -in @(".cmd", ".bat")) { $launchArgs = @("cmd.exe", "/c", "`"$script:opencode`"") + $serverArgs }
+    else { $launchArgs = @($script:opencode) + $serverArgs }
     $p = Start-Process -FilePath $launchArgs[0] -ArgumentList $launchArgs[1..($launchArgs.Count - 1)] -PassThru -WindowStyle Hidden
     $script:serverProc = $p
     $url = "http://${ServerHostname}:${port}"
@@ -203,7 +210,13 @@ E. 预审边界（软墙）：roadmap 耗尽后仍可生成新候选假设，但
     }
     Write-Host "  [run] opencode --agent $Agent --dir $Dir" -ForegroundColor Gray
     # 不传 --title：由 opencode 的 title agent 基于首句自动生成智能标题（如「执行 t2：改写 round2」）
-    $out = & $script:opencode run --agent $Agent --dir $Dir --print-logs=false --log-level ERROR -- $prompt 2>&1
+    # .ps1 shim（npm 全局）直接 & 调用受 ExecutionPolicy 限制，统一走 pwsh -NoProfile -File（与 SpawnServer 分支一致）
+    $ext = [System.IO.Path]::GetExtension($script:opencode).ToLowerInvariant()
+    if ($ext -eq ".ps1") {
+        $out = & pwsh -NoProfile -File $script:opencode run --agent $Agent --dir $Dir --print-logs=false --log-level ERROR -- $prompt 2>&1
+    } else {
+        $out = & $script:opencode run --agent $Agent --dir $Dir --print-logs=false --log-level ERROR -- $prompt 2>&1
+    }
     $code = $LASTEXITCODE
     $text = ($out | Out-String).Trim()
     if ($code -ne 0) {
@@ -230,7 +243,18 @@ if (-not (Test-Path $templateState)) {
 if (-not (Test-Path $templateState)) {
     # 回退2: 内联默认模板（脚本可独立运行，不依赖仓库目录）
     New-Item -ItemType Directory -Path (Split-Path $templateState -Parent) -Force | Out-Null
-    $inlineState = '{\n  "schema_version": 1,\n  "goal": "<长程目标>",\n  "created_at": null,\n  "updated_at": null,\n  "phase": "working",\n  "roadmap": [],\n  "blockers": [],\n  "finished": false\n}'
+    $inlineState = @"
+{
+  "schema_version": 1,
+  "goal": "<长程目标>",
+  "created_at": null,
+  "updated_at": null,
+  "phase": "working",
+  "roadmap": [],
+  "blockers": [],
+  "finished": false
+}
+"@
     $inlineState | Set-Content -Path $templateState -Encoding utf8
     if (-not (Test-Path $templateFoot)) {
         Set-Content -Path $templateFoot -Value "# 长程足迹（append-only）`n`n> 每轮追加一行：任务/做了什么/验证/结果。`n" -Encoding utf8

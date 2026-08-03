@@ -19,7 +19,7 @@
       C. 切换到免费模型处理
 ```
 
-> 大多数 provider 错误（502/503/timeout）是瞬时的，快速重试一次通常能成功。
+> 大多数 provider 错误（502/503/timeout/网络中断/SSE 流终止 terminated）是瞬时的，快速重试一次通常能成功。门童在 task 调用返回 terminated/网络错误时按容错规则自动重发同一任务一次（`.opencode/agents/门童.md` 容错节）。
 
 ### 融合层降级
 
@@ -198,7 +198,7 @@ OpenCode Go 订阅的价格与额度详情：[opencode.ai/docs/go/](https://open
 model: ollama-local/qwen3-coder
 ```
 
-详见 [`docs/opencode-moa.md`](docs/opencode-moa.md) 附录 A。
+详见仓库根目录的 [`opencode.json`](../opencode.json)（完整 provider 配置示例）。
 
 ---
 
@@ -245,7 +245,7 @@ xcopy opencode-moa\.opencode .\.opencode /E /I /Y
 A: 可以。用方式一（AI 自动部署）或方式三（手动合并配置）。
 
 **Q: 桌面端怎么装？**
-A: 方式一最方便——把 `docs/opencode-moa.md` 拖进对话框，让 AI 自动部署。方式二/三需要先在终端（CMD/PowerShell/Terminal）操作。
+A: 方式一最方便——克隆仓库（`git clone https://github.com/ZenHG/opencode-moa.git`）后，在 OpenCode 中让 AI 按 `opencode-moa` 仓库把 22 个 agent 全部部署进当前项目。方式二/三需要先在终端（CMD/PowerShell/Terminal）操作。
 
 ### 使用相关
 

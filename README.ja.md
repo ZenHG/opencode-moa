@@ -73,8 +73,9 @@ You: メッセージキューソリューションの設計を手伝ってくだ
 
 | 要件               | チェックコマンド    | メモ                                                                     |
 | ------------------- | ---------------- | ------------------------------------------------------------------------- |
-| PowerShell Core     | `pwsh --version` | install.ps1で必要、Windowsにバンドルされているか、`brew install powershell` でインストール |
+| PowerShell Core     | `pwsh --version` | LongLoopとinstall.ps1に必要。**Windows付属の5.1では不十分**（PS7をインストール: `winget install Microsoft.PowerShell`、または `powershell -File install.ps1 -InstallPwsh` で公式MSIを自動インストール）、macOSは `brew install powershell`、Linuxは [LongLoopドキュメント](longloop/docs/LongLoop.md) 参照 |
 | jq                  | `jq --version`   | install.shでJSONマージに必要、`apt install jq` / `brew install jq` |
+| Node.js >= 14       | `node --version` | moa-loop MCP（longloop/server.js）の実行に必要 |
 
 > pwsh/jqがなくても大丈夫です — メソッド1（AI自動デプロイ）またはメソッド3（手動マージ）を使用できます。
 
@@ -100,14 +101,14 @@ You: メッセージキューソリューションの設計を手伝ってくだ
 
 ### メソッド1: AI自動デプロイ（推奨）
 
-1. [`docs/opencode-moa.en.md`](https://github.com/ZenHG/opencode-moa/blob/master/docs/opencode-moa.en.md)をダウンロード
-2. そのドキュメントをOpenCodeにアップロードし、送信:
+1. リポジトリをクローン: `git clone https://github.com/ZenHG/opencode-moa.git`
+2. OpenCode（現在のプロジェクト）で送信:
 
-> このマニュアルから22のエージェント、5つのコマンド、3つのスキルを現在のプロジェクトにデプロイします
+> このリポジトリから22のエージェント、5つのコマンド、3つのスキルを現在のプロジェクトにデプロイします
 
-3. AIがすべてのファイルを自動的に作成します。**完了したらOpenCodeを再起動してください。**
+3. AIがリポジトリ内の`.opencode/`と`opencode.json`の実ファイルを直接読み取り、すべてのファイルを自動的に作成します。**完了したらOpenCodeを再起動してください。**
 
-> 手動でファイルを作成する必要はありません。デプロイマニュアル自体がインストーラーです。
+> リポジトリ自体がインストーラーです — AIが実際のソースファイルから直接デプロイするため、ダウンロードやメンテナンスの必要なマニュアルはありません。
 
 ### メソッド2: ワンクリックインストールスクリプト（スクリプト版 · CLIフレンドリー）
 
@@ -118,15 +119,16 @@ git clone https://github.com/ZenHG/opencode-moa.git
 # プロジェクトディレクトリに入る
 cd your-project
 
-# リポジトリから .opencode ディレクトリと .moa 設定をコピー
+# リポジトリから .opencode ディレクトリ、.moa 設定、longloop ディレクトリをコピー
 cp -r ../opencode-moa/.opencode/ .
 cp -r ../opencode-moa/.moa/ .
+cp -r ../opencode-moa/longloop/ .
 
 # インストールスクリプトを実行（設定を自動マージし、APIキーを保持）
-# Windows:
+# Windows（不足している依存を自動インストール: -InstallPwsh / -InstallNode / -InstallDeps 一括）:
 pwsh ../opencode-moa/install.ps1
-# Linux/macOS:
-bash ../opencode-moa/install.sh
+# Linux/macOS（jq 未導入なら --install-jq で自動インストール）:
+bash ../opencode-moa/install.sh --install-jq
 ```
 
 > インストールスクリプトは元の `opencode.json` を自動バックアップし、プロバイダーとAPIキーを保持しながらMoA設定のみをマージします。
@@ -308,7 +310,6 @@ pwsh .opencode/tests/run-all.ps1
 | ドキュメント | 内容 |
 | ---- | ---- |
 | [docs/README-details.md](docs/README-details.md) | フォールトトレランス設計 · コスト · セキュリティ · 検証 · FAQ |
-| [docs/opencode-moa.md](docs/opencode-moa.md) | 完全なデプロイマニュアル — AI 自動デプロイのインストーラー本体 |
 
 ---
 ## 貢献

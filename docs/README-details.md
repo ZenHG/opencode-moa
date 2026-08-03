@@ -19,7 +19,7 @@ tool-handler (Flash) failed → immediate retry once
       C. switch to free model
 ```
 
-> Most provider errors (502/503/timeout) are transient; a quick retry usually succeeds.
+> Most provider errors (502/503/timeout/network drop/SSE-stream terminated) are transient; a quick retry usually succeeds. The concierge router auto-re-sends the same task once when a `task` call returns terminated/network errors (fault-tolerance rules in `.opencode/agents/门童.md`).
 
 ### Fusion layer fallback
 
@@ -195,7 +195,7 @@ Supports mixing in local models like Ollama / LM Studio:
 model: ollama-local/qwen3-coder
 ```
 
-See Appendix A of [`opencode-moa.md`](opencode-moa.md).
+See the full provider config example in [`opencode.json`](../opencode.json) at the repo root.
 
 ---
 
@@ -242,7 +242,7 @@ xcopy opencode-moa\.opencode .\.opencode /E /I /Y
 A: Yes. Use Method 1 (AI auto-deploy) or Method 3 (manual config merge).
 
 **Q: How do I install on the desktop app?**
-A: Method 1 is most convenient — drag `docs/opencode-moa.en.md` into the chat box and let the AI auto-deploy. Methods 2/3 require operating in a terminal (CMD/PowerShell/Terminal) first.
+A: Method 1 is most convenient — clone the repo (`git clone https://github.com/ZenHG/opencode-moa.git`), then tell the AI in OpenCode to deploy all 22 agents from the `opencode-moa` repo into the current project. Methods 2/3 require operating in a terminal (CMD/PowerShell/Terminal) first.
 
 ### Usage
 

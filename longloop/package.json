@@ -4,5 +4,6 @@
   "description": "长程自完善状态控制面 MCP server（state/roadmap/blockers/足迹/heartbeat）",
   "main": "server.js",
   "private": true,
-  "license": "MIT"
+  "license": "MIT",
+  "engines": { "node": ">=14" }
 }

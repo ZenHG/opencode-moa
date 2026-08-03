@@ -71,6 +71,8 @@ pwsh longloop/long-loop.ps1 -Goal "..." -ServerPort 4096 -ServerPassword "your-p
 
 `opencode.json` registers `mcp.moa-loop` (`node longloop/server.js`, zero-dependency), exposing 8 tools: `moa_state_read` / `moa_roadmap_add` / `moa_roadmap_update` / `moa_blockers_add` (with `attempted` diagnosis + `resume` condition fields) / `moa_blockers_resolve` / `moa_footprint_append` (with optional `evidence` ref: commit:/smoke:/pr:/run:) / `moa_heartbeat` / `moa_finish` (guarded finalization: only sets `finished=true` when all tasks are done/blocked and no blockers remain). Any agent with tool permissions can call them in-session (no CLI/desktop distinction).
 
+The state directory defaults to `.moa/longloop/` under the MCP server's working directory (the project root — the relative command `node longloop/server.js` starts with cwd = project root, consistent across platforms). To point it elsewhere, set the `MOA_LOOP_DIR` environment variable to an absolute path. It is **independent** from the loop's `-Dir` parameter: when driving the loop from another directory, make sure both point at the same project root (the MCP's cwd is decided by the directory opencode starts in).
+
 Unattended-reliability grants (already in `opencode.json` → `permission`):
 
 - `moa-loop_*: allow` — state-machine tools never prompt for confirmation

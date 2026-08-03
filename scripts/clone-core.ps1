@@ -2,7 +2,7 @@
 # Usage: pwsh ./scripts/clone-core.ps1 [-Dest <path>] [-Repo <url>]
 #
 # Core files retrieved:
-#   README.md, opencode.json, docs/opencode-moa.md, docs/opencode-moa.en.md,
+#   README.md, opencode.json,
 #   docs/README-details.md, install.ps1, install.sh
 #   .opencode/agents, .opencode/commands, .opencode/skills
 #   longloop/（long-loop.ps1 + server.js + package.json + templates + 2 文档）
@@ -30,8 +30,6 @@ Set-Location $Dest
 $sparsePaths = @(
     "README.md",
     "opencode.json",
-    "docs/opencode-moa.md",
-    "docs/opencode-moa.en.md",
     "docs/README-details.md",
     ".opencode/agents",
     ".opencode/commands",
