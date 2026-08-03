@@ -5,7 +5,7 @@ Run this project (the MoA pipeline) on your own project — **unattended, iterat
 ## 1. Mechanism
 
 ```
-scripts/long-loop.ps1 (driver script, loop orchestration)
+longloop/long-loop.ps1 (driver script, loop orchestration)
         │  injects the [长程自完善模式] scheduling protocol each round
         ▼
      门童 concierge (primary router)
@@ -29,16 +29,16 @@ Prerequisite: the `opencode` CLI must be available (`npm install -g opencode-ai`
 
 ```powershell
 # First launch (creates .moa/longloop/state.json with your goal)
-pwsh scripts/long-loop.ps1 -Goal "Raise test coverage from 60% to 85%, module by module" -Dir . -IntervalSec 180 -MaxHours 200
+pwsh longloop/long-loop.ps1 -Goal "Raise test coverage from 60% to 85%, module by module" -Dir . -IntervalSec 180 -MaxHours 200
 
 # Dry run (show config + first-round prompt, no execution)
-pwsh scripts/long-loop.ps1 -Goal "..." -DryRun
+pwsh longloop/long-loop.ps1 -Goal "..." -DryRun
 
 # Single round (smoke test / debug)
-pwsh scripts/long-loop.ps1 -Goal "..." -RunOnce
+pwsh longloop/long-loop.ps1 -Goal "..." -RunOnce
 
 # Resume after a break: just restart (no -Goal; reads existing state.json)
-pwsh scripts/long-loop.ps1
+pwsh longloop/long-loop.ps1
 ```
 
 Linux/macOS work the same (needs `pwsh`). If opencode is not on PATH, set the `OPENCODE_BIN` environment variable to the executable.
@@ -53,7 +53,7 @@ opencode serve --port 4096 --hostname 127.0.0.1
 #    (On Windows, set env vars first: OPENCODE_SERVER_USERNAME=opencode, OPENCODE_SERVER_PASSWORD=your-password)
 
 # 2. Drive the loop against the external server
-pwsh scripts/long-loop.ps1 -Goal "..." -ServerPort 4096 -ServerPassword "your-password" -RunOnce
+pwsh longloop/long-loop.ps1 -Goal "..." -ServerPort 4096 -ServerPassword "your-password" -RunOnce
 #    Or add -SpawnServer -ServerPassword "your-password" to have the script start the server itself
 ```
 
@@ -64,7 +64,7 @@ pwsh scripts/long-loop.ps1 -Goal "..." -ServerPort 4096 -ServerPassword "your-pa
 
 ### moa-loop MCP control plane (how agents maintain state)
 
-`opencode.json` registers `mcp.moa-loop` (`node mcp/moa-loop/server.js`, zero-dependency), exposing 8 tools: `moa_state_read` / `moa_roadmap_add` / `moa_roadmap_update` / `moa_blockers_add` (with `attempted` diagnosis + `resume` condition fields) / `moa_blockers_resolve` / `moa_footprint_append` (with optional `evidence` ref: commit:/smoke:/pr:/run:) / `moa_heartbeat` / `moa_finish` (guarded finalization: only sets `finished=true` when all tasks are done/blocked and no blockers remain). Any agent with tool permissions can call them in-session (no CLI/desktop distinction).
+`opencode.json` registers `mcp.moa-loop` (`node longloop/server.js`, zero-dependency), exposing 8 tools: `moa_state_read` / `moa_roadmap_add` / `moa_roadmap_update` / `moa_blockers_add` (with `attempted` diagnosis + `resume` condition fields) / `moa_blockers_resolve` / `moa_footprint_append` (with optional `evidence` ref: commit:/smoke:/pr:/run:) / `moa_heartbeat` / `moa_finish` (guarded finalization: only sets `finished=true` when all tasks are done/blocked and no blockers remain). Any agent with tool permissions can call them in-session (no CLI/desktop distinction).
 
 Unattended-reliability grants (already in `opencode.json` → `permission`):
 

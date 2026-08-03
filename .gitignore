@@ -49,7 +49,7 @@ docs/benchmark/cases/*.yml
 # 本地出图方案文档（含本地路径/个人工作流，非仓库共享内容）
 docs/opencode-moa-出图方案.md
 
-# 长程自完善循环 — 运行时产物（模板 state.template.json / 足迹模板.md 必须提交）
+# 长程自完善循环 — 运行时产物（模板在 longloop/templates/，必须提交）
 .moa/longloop/state.json
 .moa/longloop/足迹.md
 .moa/longloop/loop.log
@@ -64,5 +64,4 @@ docs/*
 !docs/README-details.md
 !docs/opencode-moa.en.md
 !docs/opencode-moa.md
-!docs/长程自完善.md
-!docs/LongLoop.md
+!longloop/

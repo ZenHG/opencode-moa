@@ -270,7 +270,7 @@
     "mcp":  {
                "moa-loop":  {
                                 "type":  "local",
-                                "command":  ["node", "mcp/moa-loop/server.js"],
+                                 "command":  ["node", "longloop/server.js"],
                                 "enabled":  true
                             }
            },

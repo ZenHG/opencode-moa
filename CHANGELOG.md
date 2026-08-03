@@ -46,6 +46,44 @@
 ---
 
 
+## v0.0.21（2026-08-03）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Consolidate all LongLoop maintenance files into a single top-level `longloop/` directory (driver script + MCP server + docs + templates); shared pipeline templates under `.moa/` (界线.json / 足迹模板.md / 拦路虎模板.md) are untouched.
+
+### Critical (P0)
+
+- **Permission hardening — opinion/fusion layers can no longer self-fetch**: 15 agents (中级·工程/创意/码农/融合, 旗舰·架构/规划/工程/融合/质检, 前端·逻辑/动效/总工, 融合·保底, 残差提取, 置信度评估) now `deny` `read`/`bash`/`grep`/`glob`/`list`/`webfetch`/`websearch`/`edit` — they must obtain all material via `task(@工具人)` instead of reaching for files/tools themselves (prevents burning tokens bypassing the tool layer). 旗舰·执行 keeps `read`/`bash` (executor). Docs Block 5 is now an exact mirror of `opencode.json` (sync-docs new Gen-Block5; removed old TASK_WHITELIST/PER_AGENT_CONFIG generation). T0 asserts the 15-agent isolation set + executor exception.
+
+### Restructure
+
+- **`longloop/` unified directory**: `scripts/long-loop.ps1` → `longloop/long-loop.ps1`; `mcp/moa-loop/server.js` + `package.json` → `longloop/server.js` + `longloop/package.json`; `docs/长程自完善.md` / `docs/LongLoop.md` / `docs/长程自完善-自举设计草案.md` → `longloop/docs/`; `.moa/longloop/state.template.json` / `足迹模板.md` → `longloop/templates/`
+- **Sync'd all references**: `opencode.json` mcp.moa-loop command → `node longloop/server.js`; `clone-core.ps1` sparse list → `longloop`; `.gitignore` docs whitelist → `!longloop/`; README links (7 languages) → `longloop/docs/*`; long-loop.ps1 template fallback path → `$PSScriptRoot/templates/`; `sync-docs.ps1` re-run regenerated `docs/opencode-moa.md` Block 5
+- Runtime artifacts stay in user-project `.moa/longloop/` (state.json / 足迹.md / loop.log, git-ignored) — unchanged
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+将全部 LongLoop 维护文件整合到顶层 `longloop/` 单目录（驱动脚本 + MCP server + 文档 + 模板）；`.moa/` 下的全流水线共用模板（界线.json / 足迹模板.md / 拦路虎模板.md）保持不变。
+
+### 致命（P0）
+
+- **权限加固——意见层/融合层禁止自行取料**：15 个 agent（中级·工程/创意/码农/融合、旗舰·架构/规划/工程/融合/质检、前端·逻辑/动效/总工、融合·保底、残差提取、置信度评估）一律 `deny` `read`/`bash`/`grep`/`glob`/`list`/`webfetch`/`websearch`/`edit`——所有材料必须经 `task(@工具人)` 获取，不得自己读文件/调工具（防绕过工具层烧 token）。旗舰·执行保留 `read`/`bash`（执行者身份）。docs Block 5 改为 opencode.json 的精确镜像（sync-docs 新增 Gen-Block5，删除旧 TASK_WHITELIST/PER_AGENT_CONFIG 生成）。T0 断言 15 个隔离 agent 集合 + 执行者例外。
+
+### 结构整合
+
+- **`longloop/` 统一目录**：`scripts/long-loop.ps1` → `longloop/long-loop.ps1`；`mcp/moa-loop/server.js` + `package.json` → `longloop/server.js` + `longloop/package.json`；`docs/长程自完善.md` / `docs/LongLoop.md` / `docs/长程自完善-自举设计草案.md` → `longloop/docs/`；`.moa/longloop/state.template.json` / `足迹模板.md` → `longloop/templates/`
+- **同步全部引用**：`opencode.json` mcp.moa-loop 命令 → `node longloop/server.js`；`clone-core.ps1` 稀疏清单 → `longloop`；`.gitignore` docs 白名单 → `!longloop/`；README 链接（7 语言）→ `longloop/docs/*`；long-loop.ps1 模板回退路径 → `$PSScriptRoot/templates/`；重跑 `sync-docs.ps1` 重新生成 `docs/opencode-moa.md` Block 5
+- 运行时产物仍在用户项目的 `.moa/longloop/`（state.json / 足迹.md / loop.log，已 gitignore）——不变
+
+</details>
+---
+
+
 ## v0.0.20（2026-08-01）
 
 <details open>

@@ -4,7 +4,7 @@
 # Core files retrieved:
 #   README.md, opencode.json, docs/opencode-moa.md, docs/opencode-moa.en.md
 #   .opencode/agents, .opencode/commands, .opencode/skills
-#   scripts/long-loop.ps1, mcp/moa-loop, docs/长程自完善.md, docs/LongLoop.md
+#   longloop/（long-loop.ps1 + server.js + docs + templates）
 #   .moa/界线.json, .moa/足迹模板.md, .moa/拦路虎模板.md
 
 param(
@@ -33,10 +33,7 @@ $sparsePaths = @(
     ".opencode/agents",
     ".opencode/commands",
     ".opencode/skills",
-    "scripts/long-loop.ps1",
-    "mcp/moa-loop",
-    "docs/长程自完善.md",
-    "docs/LongLoop.md",
+    "longloop",
     ".moa/界线.json",
     ".moa/足迹模板.md",
     ".moa/拦路虎模板.md"

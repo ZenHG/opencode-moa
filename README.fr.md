@@ -10,7 +10,7 @@
 
 > 🔥 **Hot (2026-07) :** sortie officielle de **DeepSeek-V4-Flash-0731** — capacités d'agent fortement renforcées, surpassant le plus cher **GLM-5.2** (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9). Le moins cher bat le plus cher — la couche Flash de MoA (outils + opinions) bien plus forte au même coût.
 
-> 🔄 **Auto-amélioration longue durée (200 h+ sans supervision) :** faites itérer votre projet seul pendant des jours — sans oublier, sans s'arrêter, sans répéter. Le concierge se réveille à chaque cycle, passe par tout le pipeline MoA et sauvegarde la progression sur disque. Un seul commande pour démarrer : **[▶ Commencer →](docs/LongLoop.md)**
+> 🔄 **Auto-amélioration longue durée (200 h+ sans supervision) :** faites itérer votre projet seul pendant des jours — sans oublier, sans s'arrêter, sans répéter. Le concierge se réveille à chaque cycle, passe par tout le pipeline MoA et sauvegarde la progression sur disque. Un seul commande pour démarrer : **[▶ Commencer →](longloop/docs/LongLoop.md)**
 
 > sortie structurée, critères d'acceptation par limites, anti-triche, routage automatique. Voir [CHANGELOG](CHANGELOG.md).
 

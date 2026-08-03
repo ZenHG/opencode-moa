@@ -1,6 +1,6 @@
 #requires -Version 7
 # long-loop.ps1 — 长程自完善循环驱动脚本
-# 用法: pwsh scripts/long-loop.ps1 -Goal "目标文本" [-Dir <项目根>] [-Agent 门童] [-IntervalSec 180] [-MaxIterations 0] [-MaxHours 0] [-RunOnce] [-DryRun]
+# 用法: pwsh longloop/long-loop.ps1 -Goal "目标文本" [-Dir <项目根>] [-Agent 门童] [-IntervalSec 180] [-MaxIterations 0] [-MaxHours 0] [-RunOnce] [-DryRun]
 # 桌面版模式（推荐）: 先 `opencode serve --port 4096`（设 OPENCODE_SERVER_PASSWORD），再 -ServerPort 4096 -ServerPassword <密码> 连接；
 #   桌面版 Settings → Servers → Add server 填同一 URL/密码，即可在桌面版 UI 实时查看循环会话。或 -SpawnServer 让脚本自动起服务。
 # 独立模式: 不带 -Server* 参数 = 每轮独立 opencode run（无共享 server）
@@ -193,10 +193,9 @@ $script:footprintFile = Join-Path $StateDir "足迹.md"
 $templateState = Join-Path $Dir ".moa/longloop/state.template.json" # 用户项目自带模板
 $templateFoot = Join-Path $Dir ".moa/longloop/足迹模板.md"
 if (-not (Test-Path $templateState)) {
-    # 回退1: 脚本所在仓库自带模板（安装 opencode-moa 后 scripts/ 与 .moa/ 同根）
-    $repoRoot = Split-Path $PSScriptRoot -Parent
-    $alt = Join-Path $repoRoot ".moa/longloop/state.template.json"
-    if (Test-Path $alt) { $templateState = $alt; $templateFoot = Join-Path (Split-Path $alt -Parent) "足迹模板.md" }
+    # 回退1: 脚本所在仓库自带模板（opencode-moa 仓库的 longloop/templates/）
+    $alt = Join-Path $PSScriptRoot "templates/state.template.json"
+    if (Test-Path $alt) { $templateState = $alt; $templateFoot = Join-Path $PSScriptRoot "templates/足迹模板.md" }
 }
 if (-not (Test-Path $templateState)) {
     # 回退2: 内联默认模板（脚本可独立运行，不依赖仓库目录）

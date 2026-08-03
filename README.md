@@ -8,7 +8,7 @@
 
 > 🔥 **Hot (2026-07):** **DeepSeek-V4-Flash-0731** official release — agentic capability sharply upgraded, beating the pricier **GLM-5.2** on agent benchmarks (Terminal Bench 82.7 vs 81.0, DeepSWE 54.4 vs 46.2, Toolathlon 70.3 vs 59.9) at far lower cost. MoA's Flash tier (tool + opinion layers) got much stronger at the same low price.
 
-> 🔄 **LongLoop (24h unattended):** Keep your project iterating for days — no forgetting, no stopping, no repeating. The concierge wakes every round, routes through the full MoA pipeline, and writes progress to disk. One command to run it on your project: **[▶ Get started →](docs/LongLoop.md)**
+> 🔄 **LongLoop (24h unattended):** Keep your project iterating for days — no forgetting, no stopping, no repeating. The concierge wakes every round, routes through the full MoA pipeline, and writes progress to disk. One command to run it on your project: **[▶ Get started →](longloop/docs/LongLoop.md)**
 
 > **One conversation entry point, 22 specialized models collaborating automatically. Simple tasks use Flash (cheap), complex tasks call the flagship (expensive). Cost down up to ~90% (vs all-flagship) when simple tasks dominate the workload and flagship calls are minimized — actual savings depend on task mix; code quality significantly up.**
 
