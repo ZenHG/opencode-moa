@@ -55,7 +55,7 @@ Consolidate all LongLoop maintenance files into a single top-level `longloop/` d
 
 ### Critical (P0)
 
-- **Permission hardening — opinion/fusion layers can no longer self-fetch**: 15 agents (中级·工程/创意/码农/融合, 旗舰·架构/规划/工程/融合/质检, 前端·逻辑/动效/总工, 融合·保底, 残差提取, 置信度评估) now `deny` `read`/`bash`/`grep`/`glob`/`list`/`webfetch`/`websearch`/`edit` — they must obtain all material via `task(@工具人)` instead of reaching for files/tools themselves (prevents burning tokens bypassing the tool layer). 旗舰·执行 keeps `read`/`bash` (executor). Docs Block 5 is now an exact mirror of `opencode.json` (sync-docs new Gen-Block5; removed old TASK_WHITELIST/PER_AGENT_CONFIG generation). T0 asserts the 15-agent isolation set + executor exception.
+- **Permission hardening — opinion/fusion layers can no longer self-fetch**: 15 agents (中级·工程/创意/码农/融合, 旗舰·架构/规划/工程/融合/质检, 前端·逻辑/动效/总工, 融合·保底, 残差提取, 置信度评估) now `deny` `read`/`bash`/`grep`/`glob`/`list`/`webfetch`/`websearch`/`edit` via `opencode.json` agent overrides (prevents burning tokens bypassing the tool layer). Agent YAML `task` whitelists are untouched — opinion layers keep `task: {工具人, 视觉翻译: allow}` for evidence gathering, 旗舰·质检 keeps `task: {工具人: allow}` for independent verification, fusion/analysis layers stay `task: deny` (material inlined by 门童). 旗舰·执行 keeps `read`/`bash` (executor). Docs Block 5 is now an exact mirror of `opencode.json` (sync-docs new Gen-Block5; removed old TASK_WHITELIST/PER_AGENT_CONFIG generation). T0 asserts the 15-agent isolation set + executor exception + YAML task-whitelist contract.
 
 ### Restructure
 
@@ -72,7 +72,7 @@ Consolidate all LongLoop maintenance files into a single top-level `longloop/` d
 
 ### 致命（P0）
 
-- **权限加固——意见层/融合层禁止自行取料**：15 个 agent（中级·工程/创意/码农/融合、旗舰·架构/规划/工程/融合/质检、前端·逻辑/动效/总工、融合·保底、残差提取、置信度评估）一律 `deny` `read`/`bash`/`grep`/`glob`/`list`/`webfetch`/`websearch`/`edit`——所有材料必须经 `task(@工具人)` 获取，不得自己读文件/调工具（防绕过工具层烧 token）。旗舰·执行保留 `read`/`bash`（执行者身份）。docs Block 5 改为 opencode.json 的精确镜像（sync-docs 新增 Gen-Block5，删除旧 TASK_WHITELIST/PER_AGENT_CONFIG 生成）。T0 断言 15 个隔离 agent 集合 + 执行者例外。
+- **权限加固——意见层/融合层禁止自行取料**：15 个 agent（中级·工程/创意/码农/融合、旗舰·架构/规划/工程/融合/质检、前端·逻辑/动效/总工、融合·保底、残差提取、置信度评估）经 `opencode.json` agent override 一律 `deny` `read`/`bash`/`grep`/`glob`/`list`/`webfetch`/`websearch`/`edit`（防绕过工具层烧 token）。agent YAML 的 `task` 白名单未动——意见层保留 `task: {工具人, 视觉翻译: allow}` 取证、旗舰·质检保留 `task: {工具人: allow}` 独立复跑、融合层/分析层保持 `task: deny`（材料由门童内联）。旗舰·执行保留 `read`/`bash`（执行者身份）。docs Block 5 改为 opencode.json 的精确镜像（sync-docs 新增 Gen-Block5，删除旧 TASK_WHITELIST/PER_AGENT_CONFIG 生成）。T0 断言 15 个隔离 agent 集合 + 执行者例外 + YAML task 白名单契约。
 
 ### 结构整合
 
