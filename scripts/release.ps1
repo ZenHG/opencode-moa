@@ -18,7 +18,8 @@ $dirty = git status --porcelain
 if ($dirty) { throw "工作区有未提交改动，先 commit 再发版：`n$($dirty -join "`n")" }
 
 # 3. 本地若有同名 tag 先删（手动 tag 会让 workflow 的 Create tag 步骤在 set -e 下失败）
-if (git rev-parse "refs/tags/$ver" 2>$null) {
+git rev-parse --verify --quiet "refs/tags/$ver" >$null 2>$null
+if ($LASTEXITCODE -eq 0) {
     Write-Host "⚠ 本地已存在 tag $ver（疑似手动打过）——自动删除本地 tag；remote 若有同 tag 请先 gh release view $ver 确认" -ForegroundColor Yellow
     git tag -d $ver | Out-Null
 }

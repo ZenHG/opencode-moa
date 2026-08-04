@@ -127,6 +127,7 @@ jobs:
             p { print }
           ' CHANGELOG.md > release-notes.md
           # 核心包附件（clone-core.ps1 同款清单）；全量源码包由 GitHub 对 tag 自动生成
+          # 注意：附件走位置参数（--attach 不是 gh 的 flag）
           gh release create "$VER" --title "$VER" \
             --notes-file release-notes.md \
-            --attach "dist/opencode-moa-core-$VER.tar.gz"
+            "dist/opencode-moa-core-$VER.tar.gz"
