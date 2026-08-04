@@ -97,10 +97,15 @@ jobs:
           VER=${{ steps.ver.outputs.version }}
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$VER" -m "$VER"
-          git push origin "$VER" \
-            || (git rev-parse "$VER" >/dev/null 2>&1 && echo "tag 已存在（并发），视为成功" && exit 0) \
-            || exit 1
+          # set -e 下不能用裸 `git tag -a || fallback`（失败直接 exit 128，fallback 不执行）；
+          # 用 if 捕获：tag 已存在（首次失败遗留/并发）则复用，否则新建并 push
+          if git tag -a "$VER" -m "$VER" 2>/dev/null; then
+            echo "创建本地 tag $VER"
+            git push origin "$VER" || { echo "::error::push tag $VER 失败"; exit 1; }
+          else
+            echo "tag $VER 已存在（首次失败遗留或并发），复用本地 tag"
+          fi
+          git rev-parse --verify -q "refs/tags/$VER" >/dev/null || { echo "::error::本地无 tag $VER"; exit 1; }
 
       - name: Build core archive (mirror of scripts/clone-core.ps1)
         if: steps.decide.outputs.skip == '0' && github.event.inputs.dry_run != 'true'
