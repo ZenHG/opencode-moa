@@ -8,9 +8,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 # 1. 解析版本（CHANGELOG 顶部）
-$verLine = Select-String -Path CHANGELOG.md -Pattern '^## +v[0-9]+\.[0-9]+\.[0-9]+' | Select-Object -First 1
+$verLine = Select-String -Path CHANGELOG.md -Pattern '^##\s+(v[0-9]+\.[0-9]+\.[0-9]+)' | Select-Object -First 1
 if (-not $verLine) { throw "CHANGELOG.md 顶部没有版本号条目（## vX.Y.Z），先写好再发版" }
-$ver = ($verLine.Line -replace '^## +', '').Trim()
+$ver = $verLine.Matches[0].Groups[1].Value
 Write-Host "将发布版本: $ver" -ForegroundColor Cyan
 
 # 2. 工作区必须干净（防止漏发未提交改动）
@@ -25,6 +25,7 @@ if (git rev-parse "refs/tags/$ver" 2>$null) {
 
 # 4. 推送（只推 master，不推 tag）
 git push origin master
+if ($LASTEXITCODE -ne 0) { throw "git push 失败（exit $LASTEXITCODE）——Release workflow 未触发，检查网络后重试" }
 Write-Host "已推送 master，Release workflow 触发中..." -ForegroundColor Green
 
 if ($NoWatch) { exit 0 }
