@@ -22,6 +22,21 @@ const lockFile = path.join(stateDir, ".lock");
 fs.mkdirSync(stateDir, { recursive: true });
 
 const VALID_STATUS = ["open", "in_progress", "done", "blocked"];
+const VALID_SOURCE = ["user", "self-discovery"];
+const VALID_FAILURE_TYPE = ["infra", "code", "permission", "resource", "deadlock", "unknown"];
+const VALID_WAIT_REASON = ["user", "external", "resource", "internal"];
+
+// 证据正则单一事实源（P0-4/P1-10 同源）：从 .opencode/tests/manifest.json 运行时读取，禁止各自另写
+let EVIDENCE_RE = /^- 证据：(commit:|smoke:|pr:|run:)\S+/; // 回退默认值
+try {
+  const manifestFile = path.join(baseDir, ".opencode", "tests", "manifest.json");
+  if (fs.existsSync(manifestFile)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+    if (manifest.evidence_regex) EVIDENCE_RE = new RegExp(manifest.evidence_regex);
+  }
+} catch (e) {
+  console.error(`moa-loop: 读取 manifest.json 失败，回退默认证据正则（${e.message}）`);
+}
 
 function readState() {
   if (!fs.existsSync(stateFile)) {
@@ -40,6 +55,23 @@ function writeState(state) {
     try { fs.unlinkSync(tmp); } catch (_) { /* tmp 清理失败忽略 */ }
     throw new Error(`moa-loop: 写 state.json 失败（${e.code}）—— 文件可能被其他进程占用，请重试`);
   }
+}
+
+// 从足迹.md 提取指定任务 id 的足迹条目块（## <id> 开头，到下一个 ## 前）
+function matchFootprintBlock(text, id) {
+  const lines = text.split("\n");
+  const out = [];
+  let inBlock = false;
+  for (const ln of lines) {
+    const head = ln.match(/^## (\S+)/);
+    if (head) {
+      if (inBlock) break;
+      if (head[1] === id) { inBlock = true; continue; }
+      continue;
+    }
+    if (inBlock) out.push(ln);
+  }
+  return inBlock ? out.join("\n") : null;
 }
 
 function withLock(fn) {
@@ -71,10 +103,15 @@ const tools = [
   },
   {
     name: "moa_roadmap_add",
-    description: "按 goal 新开一项 roadmap 任务（status=open）。返回新任务 id（t1、t2…）。",
+    description: "按 goal 新开一项 roadmap 任务（status=open）。返回新任务 id（t1、t2…）。可选：source（user|self-discovery，默认 user）、depends_on（前置任务 id 数组，必须已存在，防悬空依赖）、repro（完成判据：验收命令或可复现描述）。",
     inputSchema: {
       type: "object",
-      properties: { title: { type: "string", description: "任务标题（含验收要点）" } },
+      properties: {
+        title: { type: "string", description: "任务标题（含验收要点）" },
+        source: { type: "string", enum: VALID_SOURCE, description: "任务来源（默认 user）：user=用户指令 / self-discovery=自举/自发现" },
+        depends_on: { type: "array", items: { type: "string" }, description: "前置任务 id 列表（必须已存在，防悬空依赖）" },
+        repro: { type: "string", description: "完成判据：怎么算完成（验收命令或可复现描述）" },
+      },
       required: ["title"], additionalProperties: false,
     },
   },
@@ -93,7 +130,7 @@ const tools = [
   },
   {
     name: "moa_blockers_add",
-    description: "挂起一个拦路虎（要人决策/外部凭证/破坏性操作）。任务保持 open 换别的做。question 三段式：具体阻塞条件+已尝试的诊断+精确恢复条件（等谁/等什么）。",
+    description: "挂起一个拦路虎（要人决策/外部凭证/破坏性操作）。任务保持 open 换别的做。question 三段式：具体阻塞条件+已尝试的诊断+精确恢复条件（等谁/等什么）。可选分类：failure_type（infra/code/permission/resource/deadlock/unknown）与 wait_reason（user/external/resource/internal），机器可读支撑自动决策。",
     inputSchema: {
       type: "object",
       properties: {
@@ -101,6 +138,8 @@ const tools = [
         context: { type: "string", description: "背景证据（简短）" },
         attempted: { type: "string", description: "已尝试的诊断（可选，缺失时兜底为未尝试）" },
         resume: { type: "string", description: "精确恢复条件（可选，等什么信号恢复）" },
+        failure_type: { type: "string", enum: VALID_FAILURE_TYPE, description: "阻塞类型（默认 unknown）：infra=基础设施/code=代码缺陷/permission=权限/resource=资源/deadlock=死锁" },
+        wait_reason: { type: "string", enum: VALID_WAIT_REASON, description: "等待对象（默认 user）：user=等用户/external=等外部/resource=等资源/internal=等内部" },
       },
       required: ["question"], additionalProperties: false,
     },
@@ -127,6 +166,7 @@ const tools = [
         evidence: { type: "string", description: "证据 ref（可选）：commit:<sha> / smoke:<用例名> / pr:<编号> / run:<运行id>；todo 完成/自述不算证据" },
         negative: { type: "string", description: "负结果（可选）：失败尝试/未达成的验收；无进展轮次必须写明，禁止省略或粉饰" },
         next: { type: "string", description: "下一步决策（可选）：留给下一轮的问题或建议" },
+        boundary: { type: "string", description: "本轮改动边界（可选，P1-7 范围蔓延检测用）：预期文件清单，如 src/a.js, docs/b.md" },
       },
       required: ["task", "did", "result"], additionalProperties: false,
     },
@@ -157,9 +197,22 @@ function callTool(name, args) {
         const s = readState();
         const next = s.roadmap.length + 1;
         const id = "t" + next;
-        s.roadmap.push({ id, title: args.title, status: "open", note: "" });
+        const deps = args.depends_on || [];
+        if (!Array.isArray(deps)) throw new Error("depends_on 必须是数组");
+        const existing = new Set(s.roadmap.map((x) => x.id));
+        for (const d of deps) {
+          if (!existing.has(d)) throw new Error(`depends_on 引用不存在的任务: ${d}（悬空依赖被拒）`);
+        }
+        const source = args.source || "user";
+        if (!VALID_SOURCE.includes(source)) throw new Error(`非法 source: ${source}（合法值: ${VALID_SOURCE.join("|")}）`);
+        s.roadmap.push({
+          id, title: args.title, status: "open", note: "",
+          source,
+          depends_on: deps,
+          repro: args.repro || "",
+        });
         writeState(s);
-        return ok(`已新增任务 ${id}: ${args.title}`);
+        return ok(`已新增任务 ${id}: ${args.title}（source=${source}${deps.length ? `, 依赖=${deps.join(",")}` : ""}${args.repro ? ", 带完成判据" : ""}）`);
       });
     }
     case "moa_roadmap_update": {
@@ -175,12 +228,16 @@ function callTool(name, args) {
     }
     case "moa_blockers_add": {
       return withLock(() => {
+        if (args.failure_type && !VALID_FAILURE_TYPE.includes(args.failure_type)) throw new Error(`非法 failure_type: ${args.failure_type}（合法值: ${VALID_FAILURE_TYPE.join("|")}）`);
+        if (args.wait_reason && !VALID_WAIT_REASON.includes(args.wait_reason)) throw new Error(`非法 wait_reason: ${args.wait_reason}（合法值: ${VALID_WAIT_REASON.join("|")}）`);
         const s = readState();
         s.blockers.push({
           question: args.question,
           context: args.context || "",
           attempted: args.attempted || "",
           resume: args.resume || "",
+          failure_type: args.failure_type || "unknown",
+          wait_reason: args.wait_reason || "user",
           since: new Date().toISOString(),
         });
         writeState(s);
@@ -204,6 +261,7 @@ function callTool(name, args) {
           `- 验证：${args.verify || "未验证"}`,
           `- 证据：${args.evidence || "无 ref（todo 完成/自述不算证据）"}`,
           `- 结果：${args.result}${args.result === "partial" ? "（note 保留进度）" : ""}`,
+          `- 边界：${args.boundary || "未声明"}`,
           `- 负结果：${args.negative || "无"}`,
           `- 下一步：${args.next || "—"}`,
         ].join("\n");
@@ -218,6 +276,18 @@ function callTool(name, args) {
         const open = s.roadmap.filter((t) => t.status === "open" || t.status === "in_progress");
         if (open.length > 0) throw new Error(`拒绝收官：仍有 ${open.length} 个 open/in_progress 任务（${open.map((t) => t.id).join(",")}）`);
         if (s.blockers.length > 0) throw new Error(`拒绝收官：仍有 ${s.blockers.length} 个未决拦路虎`);
+        // Evidence-gated Done（P0-4）：done 任务必须可溯源证据；note 含 legacy 的历史条目豁免
+        const done = s.roadmap.filter((t) => t.status === "done");
+        const footprint = fs.existsSync(footprintFile) ? fs.readFileSync(footprintFile, "utf8") : "";
+        const missing = [];
+        for (const t of done) {
+          if ((t.note || "").includes("legacy")) continue;
+          const block = matchFootprintBlock(footprint, t.id);
+          if (!block || !EVIDENCE_RE.test(block)) missing.push(t.id);
+        }
+        if (missing.length > 0) {
+          throw new Error(`拒绝收官：${missing.length} 个 done 任务缺少可解析证据（足迹「- 证据：」行须为 commit:/smoke:/pr:/run: ref）：${missing.join(",")}。补足迹证据或对历史条目在 note 标 legacy 后重试。`);
+        }
         s.finished = true;
         s.phase = "finished";
         writeState(s);
@@ -225,7 +295,7 @@ function callTool(name, args) {
           fs.mkdirSync(stateDir, { recursive: true });
           fs.appendFileSync(footprintFile, `\n## 终态收官（${new Date().toISOString()}）\n- 理由：${args.note}\n`, "utf8");
         }
-        return ok(`已收官：roadmap 全 done/blocked + blockers 空 → finished=true。循环将在下轮停止。`);
+        return ok(`已收官：roadmap 全 done/blocked + blockers 空 + done 证据齐 → finished=true。循环将在下轮停止。`);
       });
     }
     case "moa_heartbeat": {

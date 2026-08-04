@@ -69,7 +69,13 @@ pwsh longloop/long-loop.ps1 -Goal "..." -ServerPort 4096 -ServerPassword "your-p
 
 ### moa-loop MCP control plane (how agents maintain state)
 
-`opencode.json` registers `mcp.moa-loop` (`node longloop/server.js`, zero-dependency), exposing 8 tools: `moa_state_read` / `moa_roadmap_add` / `moa_roadmap_update` / `moa_blockers_add` (with `attempted` diagnosis + `resume` condition fields) / `moa_blockers_resolve` / `moa_footprint_append` (with optional `evidence` ref: commit:/smoke:/pr:/run:) / `moa_heartbeat` / `moa_finish` (guarded finalization: only sets `finished=true` when all tasks are done/blocked and no blockers remain). Any agent with tool permissions can call them in-session (no CLI/desktop distinction).
+`opencode.json` registers `mcp.moa-loop` (`node longloop/server.js`, zero-dependency), exposing 8 tools:
+- `moa_state_read` / `moa_roadmap_add` (optional `source`=user|self-discovery, `depends_on` prerequisite id array — dangling references rejected, `repro` completion criterion) / `moa_roadmap_update` (never mutates source/depends_on — frozen fields)
+- `moa_blockers_add` (attempted/resume three-part question + **required classification**: `failure_type`=infra|code|permission|resource|deadlock|unknown, `wait_reason`=user|external|resource|internal) / `moa_blockers_resolve`
+- `moa_footprint_append` (evidence ref: commit:/smoke:/pr:/run: + optional `boundary` — this round's expected change scope, for scope-expansion detection)
+- `moa_heartbeat` / `moa_finish` (guarded finalization: all done/blocked, no blockers **and every done task has a resolvable evidence ref in 足迹.md** (note containing `legacy` exempts historical entries) before `finished=true`; the evidence regex single source of truth = `evidence_regex` in `.opencode/tests/manifest.json`, read at runtime by server.js)
+
+Any agent with tool permissions can call them in-session (no CLI/desktop distinction).
 
 The state directory defaults to `.moa/longloop/` under the MCP server's working directory (the project root — the relative command `node longloop/server.js` starts with cwd = project root, consistent across platforms). To point it elsewhere, set the `MOA_LOOP_DIR` environment variable to an absolute path. It is **independent** from the loop's `-Dir` parameter: when driving the loop from another directory, make sure both point at the same project root (the MCP's cwd is decided by the directory opencode starts in).
 
@@ -98,8 +104,8 @@ The templates under `.moa/` already carry these: 界线.json (frozen acceptance 
 {
   "goal": "the long-running goal",
   "phase": "working | waiting_user | finished",
-  "roadmap": [{ "id": "t1", "title": "...", "status": "open|in_progress|done|blocked", "note": "resume point" }],
-  "blockers": [{ "question": "question needing a human decision", "context": "...", "since": "ISO time" }],
+  "roadmap": [{ "id": "t1", "title": "...", "status": "open|in_progress|done|blocked", "note": "resume point", "source": "user|self-discovery", "depends_on": [], "repro": "completion criterion" }],
+  "blockers": [{ "question": "question needing a human decision", "context": "...", "attempted": "...", "resume": "...", "failure_type": "unknown", "wait_reason": "user", "since": "ISO time" }],
   "finished": false,
   "onboarding": { "run_command": "how to run (bootstrap question)", "auth_boundary": "L1|L2|L3", "budget_rounds": 100, "pref_reviewed": true },
   "baseline": { "file": ".moa/longloop/health-baseline.json", "score": 7.5 }
@@ -109,7 +115,9 @@ The templates under `.moa/` already carry these: 界线.json (frozen acceptance 
 - State initialized by `bootstrap.ps1` carries `onboarding`/`baseline` fields — long-loop.ps1 detects them and enables the **bootstrap protocol** (each round: evidence gathering runs probes + ScanOnly snapshot; "done" requires probes all-green and no regression; authorization tiers; three-element round validity; soft-wall pre-review). Manual `-Goal` init skips these fields and uses the original protocol
 - The baseline file `health-baseline.json` holds a `history` array (last 30 scores); `-ScanOnly` appends the current score and prints `{score, delta, regressed}` (regression = 2 consecutive drops, tolerating single-round noise)
 
-- `phase=waiting_user`: all tasks blocked — edit state.json to answer the blockers (turn the question into an answer, or delete it and reopen the task); the loop resumes next round
+- `phase=waiting_user`: all tasks blocked — edit state.json to answer the blockers (turn the question into an answer, or delete it and reopen the task); the loop resumes next round. **Classification rules**: only `wait_reason=user` with non-empty blockers enters waiting_user; external/resource blockers keep switching tasks; infra/deadlock get one retry first
+- **Evidence-gated Done**: `moa_finish` requires every done task to have a resolvable evidence line (`- 证据：commit:/smoke:/pr:/run:`) in 足迹.md — missing evidence rejects finalization and lists the task ids; historical entries exempted by `legacy` in note
+- **Scope-expansion detection**: the `- 边界：` line declares this round's expected change scope; the concierge compares the round-start snapshot delta (`git rev-parse HEAD`) at round end and files a blocker on overflow; skipped when no `.git` exists
 - Machine fields (iteration/updated_at/last_round_change) are maintained by the script, not the agents
 - 足迹.md template: `.moa/longloop/足迹模板.md`; the 「弃选」 (discarded) section records abandoned routes to avoid retrying them later
 

@@ -1,0 +1,15 @@
+{
+  "schema": "opencode-moa.tests-manifest",
+  "version": 1,
+  "updated": "2026-08-04",
+  "note": "验证命令单一事实源（仿 oh-my-cli product.yml/quality-gates.yml）。evidence_regex 为足迹证据行正则唯一来源：server.js（moa_finish 校验）与 verify-evidence-refs.ps1 同源读取，禁止各自另写。",
+  "evidence_regex": "^- 证据：(commit:|smoke:|pr:|run:)\\S+",
+  "layer0": [
+    { "name": "T0-static-verify", "file": "T0-static-verify.ps1", "zero_token": true },
+    { "name": "T1-readme-consistency", "file": "T1-readme-consistency.ps1", "zero_token": true },
+    { "name": "T3-permission-security", "file": "T3-permission-security.ps1", "zero_token": true },
+    { "name": "verify-protocols", "file": "verify-protocols.ps1", "zero_token": true },
+    { "name": "verify-frontmatter", "file": "verify-frontmatter.ps1", "zero_token": true },
+    { "name": "verify-evidence-refs", "file": "verify-evidence-refs.ps1", "zero_token": true }
+  ]
+}

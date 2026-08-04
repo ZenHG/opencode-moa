@@ -19,3 +19,5 @@
 *.md text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+# 钩子无扩展名，不受上述规则覆盖（实测 eol: unspecified）；强制 LF 防 Windows autocrlf 检出 CRLF 致 shebang 失效
+.githooks/* text eol=lf

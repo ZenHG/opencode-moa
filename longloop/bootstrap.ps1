@@ -223,7 +223,7 @@ if ($ScanOnly) {
         $regressed = $dropStreak -ge 2
         $base | Add-Member -NotePropertyName history -NotePropertyValue $hist -Force
         $base | Add-Member -NotePropertyName scan -NotePropertyValue $scan -Force
-        $base | ConvertTo-Json -Depth 8 | Set-Content $baselineFile -Encoding utf8
+        $base | ConvertTo-Json -Depth 8 | Set-Content $baselineFile -Encoding utf8NoBOM
         $out.delta = $delta
         $out.baseline = [double]$base.score
         $out.regressed = $regressed
@@ -253,7 +253,7 @@ $baseline = [pscustomobject]@{
     history    = @($health.score)
     scan       = $scan
 }
-$baseline | ConvertTo-Json -Depth 8 | Set-Content $baselineFile -Encoding utf8
+$baseline | ConvertTo-Json -Depth 8 | Set-Content $baselineFile -Encoding utf8NoBOM
 
 Write-Host "`n=== 健康快照（基线）===" -ForegroundColor Cyan
 Write-Host "  files=$($scan.total_files) lines=$($scan.total_lines) lang=$((($scan.languages.GetEnumerator() | ForEach-Object { "$($_.Key):$($_.Value)" }) -join ','))"
@@ -279,6 +279,8 @@ foreach ($c in $accepted) {
         id     = "t$i"
         title  = "$($c.title)（验收：对应 marker 回退至阈值内 + 探针全绿）"
         status = "open"
+        source = "self-discovery"
+        repro  = "$($c.desc)（验收：$($c.title) 对应 marker 回退至阈值内 + 探针全绿）"
         note   = "来源: bootstrap 自举候选 $($c.id) | 风险: $($c.risk) | 证据: $($c.evidence)"
     }
 }
@@ -304,7 +306,7 @@ $state = [pscustomobject]@{
     }
 }
 if (-not (Test-Path $stateDir)) { New-Item -ItemType Directory -Path $stateDir -Force | Out-Null }
-$state | ConvertTo-Json -Depth 6 | Set-Content $stateFile -Encoding utf8
+$state | ConvertTo-Json -Depth 6 | Set-Content $stateFile -Encoding utf8NoBOM
 
 # 足迹初始化
 if (-not (Test-Path (Join-Path $stateDir "足迹.md"))) {

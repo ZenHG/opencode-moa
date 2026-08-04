@@ -1,0 +1,14 @@
+#!/bin/sh
+# 治理防顺手钩子：敏感路径（opencode.json/.opencode/install.*/.githooks/）改动须人工确认
+# 放行条件：commit message 含 [governance] 标记；只读检查，不修改任何文件
+msg_file="$1"
+[ -f "$msg_file" ] || exit 0
+
+if git diff --cached --name-only | grep -Eq '^(\.opencode/(agents|tests|commands|skills)/|opencode\.json|install\.(ps1|sh)|\.githooks/)'; then
+  if grep -q '\[governance\]' "$msg_file"; then
+    exit 0
+  fi
+  printf >&2 "\n%s\n\n" "治理文件改动被拦截：本次提交包含 opencode.json/.opencode//install.*/.githooks/ 敏感路径（治理/权限/测试基线）。若非人工确认，请拆分提交；若确为人工治理变更，请在 commit message 中加 [governance] 标记放行。"
+  exit 1
+fi
+exit 0

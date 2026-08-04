@@ -61,7 +61,7 @@ function New-LogLine {
 function Save-State {
     param($State)
     $State.updated_at = (Get-Date -Format o)
-    $State | ConvertTo-Json -Depth 6 | Set-Content -Path $script:stateFile -Encoding utf8
+    $State | ConvertTo-Json -Depth 6 | Set-Content -Path $script:stateFile -Encoding utf8NoBOM
 }
 
 function Get-FileSha {
@@ -255,7 +255,7 @@ if (-not (Test-Path $templateState)) {
   "finished": false
 }
 "@
-    $inlineState | Set-Content -Path $templateState -Encoding utf8
+    $inlineState | Set-Content -Path $templateState -Encoding utf8NoBOM
     if (-not (Test-Path $templateFoot)) {
         Set-Content -Path $templateFoot -Value "# 长程足迹（append-only）`n`n> 每轮追加一行：任务/做了什么/验证/结果。`n" -Encoding utf8
     }

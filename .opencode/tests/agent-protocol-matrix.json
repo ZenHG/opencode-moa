@@ -1,0 +1,30 @@
+{
+  "schema": "opencode-moa.agent-protocol-matrix",
+  "version": 1,
+  "updated": "2026-08-04",
+  "note": "实测来源：工具人实读 22 个 .opencode/agents/*.md（行号见 docs/oh-my-cli-启发实施方案.md P0-5 节）。conditional=条件节（降级场景可缺）；inline=行内格式协议（非 --- 包裹节）。",
+  "agents": {
+    "中级·创意": { "protocol": ["---记忆层---", "---方案---", "---红线---"], "conditional": ["---记忆层---"] },
+    "中级·工程": { "protocol": ["---记忆层---", "---方案---", "---红线---"], "conditional": ["---记忆层---"] },
+    "中级·码农": { "protocol": ["---记忆层---", "---方案---", "---红线---"], "conditional": ["---记忆层---"] },
+    "旗舰·架构": { "protocol": ["---架构设计---", "---红线---"], "conditional": [] },
+    "旗舰·规划": { "protocol": ["---规划方案---", "---红线---"], "conditional": [] },
+    "旗舰·工程": { "protocol": ["---工程方案---", "---红线---"], "conditional": [] },
+    "旗舰·融合": { "protocol": ["---融合方案---", "---分歧裁决---", "---白名单---", "---红线---", "---验收标准---"], "conditional": [] },
+    "中级·融合": { "protocol": ["---融合方案---", "---红线---", "---验收标准---"], "conditional": [] },
+    "融合·保底": { "protocol": ["---融合方案---", "---红线---", "---验收标准---"], "conditional": [] },
+    "旗舰·执行": { "protocol": ["---实现说明---", "---代码---", "---拆分请求---", "---实现进度---", "---自验结果---"], "conditional": [] },
+    "旗舰·质检": { "protocol": [], "conditional": [], "inline": [] },
+    "前端·逻辑": { "protocol": ["---逻辑方案---", "---红线---"], "conditional": [] },
+    "前端·动效": { "protocol": ["---动效方案---", "---红线---"], "conditional": [] },
+    "前端·还原": { "protocol": ["---红线---"], "conditional": [] },
+    "前端·总工": { "protocol": ["---最终代码---"], "conditional": [] },
+    "残差提取": { "protocol": ["---残差报告---"], "conditional": [] },
+    "置信度评估": { "protocol": ["---置信度报告---", "---处置建议---"], "conditional": [] },
+    "闪电侠": { "protocol": ["---红线---"], "conditional": [] },
+    "门童": { "protocol": [], "conditional": [], "inline": ["\\[Stage: 工具层→意见层→融合层→执行层\\]", "\\[Pipeline\\]"] },
+    "工具人": { "protocol": [], "conditional": [] },
+    "工具人-mimo": { "protocol": [], "conditional": [] },
+    "视觉翻译": { "protocol": [], "conditional": [] }
+  }
+}
