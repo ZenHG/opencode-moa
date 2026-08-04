@@ -45,6 +45,68 @@
 </details>
 ---
 
+## v0.0.23（2026-08-05）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+LongLoop state machine upgrade (M1+P0): roadmap gains source tiers + dependency constraints + repro acceptance criteria, blockers gain machine-readable failure classification, footprints gain boundary lines, and `moa_finish` is now evidence-gated with a single source of truth for evidence regexes. Also ships the one-shot release script, core-file-list single source of truth, and first-run experience fixes for cross-platform users.
+
+### New
+
+- **LongLoop M1+P0 (roadmap source tiers / dependencies / evidence gate)**:
+  - `moa_roadmap_add`: `source` (user|self-discovery), `depends_on` (dangling refs rejected), `repro` (acceptance criteria) — 门童 selects tasks honoring dependency constraints + user-source priority
+  - `moa_blockers_add`: `failure_type` (infra/code/permission/resource/deadlock/unknown) + `wait_reason` (user/external/resource/internal) — machine-readable, drives waiting-user / retry decisions
+  - `moa_footprint_append`: `boundary` param + boundary line in output (scope-creep detection, diffed against round-start HEAD)
+  - `moa_finish`: evidence-gated — done tasks must have a resolvable evidence ref in 足迹 (commit:/smoke:/pr:/run:), `legacy` note exempts
+  - **Evidence regex single source of truth**: `.opencode/tests/manifest.json` `evidence_regex` — read by both `server.js` finish validation and `verify-evidence-refs.ps1` (no separate copies)
+  - `verify-evidence-refs.ps1` (new): resolves footprint refs (commit sha via rev-parse, artifact paths non-empty); `verify-protocols.ps1` / `verify-frontmatter.ps1` / `verify-moa-output.ps1` (new) + `manifest.json` Layer0 driver
+  - `.githooks/commit-msg` governance hook (new): commits touching sensitive paths (`opencode.json` / `.opencode/` / `install.*` / `.githooks/`) require the `[governance]` marker; `.gitattributes` registers `.githooks/*` eol=lf
+- **Release tooling**: `scripts/release.ps1` one-shot release (push master → auto tag → create Release → poll workflow to URL; never hand-tag); `scripts/core-paths.txt` single source of truth shared by `clone-core.ps1` sparse clone and `release.yml` archive (prevents missing files in shipped tarballs)
+
+### Fix
+
+- **First-run experience (cross-platform)**: `scripts/core-paths.txt` adds `.opencode/tests` (sparse-clone users lost the test system + evidence regex source that `server.js` needs at runtime); `install.ps1` adds an `[1.5/3]` opencode CLI check (missing → guidance, non-blocking); `install.sh` adds a pwsh/opencode environment check (Windows must use official MSI; opencode missing → npm/curl guidance)
+- `clone-core.ps1`: `|| throw` → `|| { throw }` (throw is a keyword, not a command); sparse-checkout switched to `--no-cone` for exact matching (strict minimal — core list + `.gitattributes` only, no parent-dir expansion)
+- Docs: `longloop/docs/长程自完善-自举设计草案.md` removed
+
+### Docs
+
+- `README.md`: dependency table now mandates official MSI for PowerShell 7+ on Windows (no zip builds — missing installer/PATH handling breaks scripts); macOS `brew install --cask powershell`
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+LongLoop 状态机升级（M1+P0）：roadmap 增加来源分级 + 依赖约束 + repro 验收判据，blockers 增加机器可读失败分类，足迹增加边界行，`moa_finish` 改为证据门（证据正则单一事实源）。另含一键发版脚本、核心文件清单单一事实源、以及跨平台用户的首次运行体验修复。
+
+### 新增
+
+- **LongLoop M1+P0（来源分级 / 依赖约束 / 证据门）**：
+  - `moa_roadmap_add`：`source`（user/self-discovery）、`depends_on`（悬空引用拒绝）、`repro`（验收判据）——门童按依赖约束 + user 来源优先选任务
+  - `moa_blockers_add`：`failure_type`（infra/code/permission/resource/deadlock/unknown）+ `wait_reason`（user/external/resource/internal）——机器可读，驱动 waiting_user / 重试决策
+  - `moa_footprint_append`：`boundary` 参数 + 输出边界行（范围蔓延检测，与轮初 HEAD 快照比对）
+  - `moa_finish`：证据门——done 任务须在足迹有可解析证据 ref（commit:/smoke:/pr:/run:），note 含 legacy 豁免
+  - **证据正则单一事实源**：`.opencode/tests/manifest.json` 的 `evidence_regex`——`server.js` finish 校验与 `verify-evidence-refs.ps1` 同源读取（禁止各自另写）
+  - `verify-evidence-refs.ps1`（新增）：解析足迹 ref（commit sha 经 rev-parse、产物路径非空）；`verify-protocols.ps1` / `verify-frontmatter.ps1` / `verify-moa-output.ps1`（新增）+ `manifest.json` Layer0 驱动
+  - `.githooks/commit-msg` 治理钩子（新增）：改动敏感路径（`opencode.json` / `.opencode/` / `install.*` / `.githooks/`）的 commit 须含 `[governance]` 标记；`.gitattributes` 登记 `.githooks/*` eol=lf
+- **发版基建**：`scripts/release.ps1` 一键发版（推送 master → 自动打 tag → 建 Release → 轮询到 URL；严禁手动 tag）；`scripts/core-paths.txt` 单一事实源（`clone-core.ps1` 稀疏克隆与 `release.yml` 归档共享，防发版漏文件）
+
+### 修复
+
+- **首次运行体验（跨平台）**：`scripts/core-paths.txt` 补 `.opencode/tests`（稀疏克隆用户丢失测试体系 + `server.js` 运行时依赖的证据正则源）；`install.ps1` 加 `[1.5/3]` opencode CLI 检查（缺失给指引不阻断）；`install.sh` 加 pwsh/opencode 环境检查（Windows 必须官方 MSI；opencode 缺失给 npm/curl 指引）
+- `clone-core.ps1`：`|| throw` 改 `|| { throw }`（throw 是关键字不能作命令）；稀疏克隆改 `--no-cone` 精确匹配（严格最小——仅 core 清单 + `.gitattributes`，不展开父目录）
+- 文档：删除 `longloop/docs/长程自完善-自举设计草案.md`
+
+### 文档
+
+- `README.md`：依赖表明确 Windows 上 PowerShell 7+ 必须官方 MSI 安装（勿用 zip 构建——缺安装器/PATH 处理会弄坏脚本）；macOS `brew install --cask powershell`
+
+</details>
+
+---
+
 ## v0.0.22（2026-08-03）
 
 <details open>
