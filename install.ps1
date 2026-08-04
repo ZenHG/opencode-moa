@@ -127,6 +127,17 @@ if (Test-Path $moaDir) {
     exit 1
 }
 
+# 1.5 检查 opencode CLI（缺失给指引，不阻断合并——配置可先行，CLI 后装）
+Write-Step "1.5/3" "检查 opencode CLI..."
+$oc = Get-Command opencode -ErrorAction SilentlyContinue
+if ($oc) {
+    Write-Ok "opencode: $($oc.Source)"
+} else {
+    Write-Host "  ⚠ 未找到 opencode CLI —— MoA 流水线与 LongLoop 都依赖它驱动每轮会话。" -ForegroundColor Yellow
+    Write-Host "  安装：npm install -g opencode-ai（或 curl -fsSL https://opencode.ai/install | bash）" -ForegroundColor Cyan
+    Write-Host "  装好后若仍找不到，设置环境变量 OPENCODE_BIN 指向 opencode 可执行文件。" -ForegroundColor Gray
+}
+
 # 2. 合并 opencode.json
 Write-Step "2/3" "合并 opencode.json..."
 

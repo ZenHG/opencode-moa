@@ -27,6 +27,26 @@ ok() { echo -e "  ${GREEN}✓ $1${NC}"; }
 skip() { echo -e "  ${GRAY}- $1${NC}"; }
 fail() { echo -e "  ${RED}✗ $1${NC}"; }
 
+# 0. 运行环境检查（缺失给指引，不阻断合并——配置可先行，运行时后装）
+echo "--- 环境检查 ---"
+if ! command -v pwsh >/dev/null 2>&1; then
+  echo -e "  ${YELLOW}⚠ 未找到 pwsh（PowerShell 7+）—— run-all 验证 / bootstrap 自举 / long-loop 循环均需 pwsh。${NC}"
+  case "$(uname -s)" in
+    Darwin)
+      echo -e "  ${CYAN}  安装: brew install --cask powershell${NC}" ;;
+    MINGW*|MSYS*|CYGWIN*)
+      echo -e "  ${CYAN}  安装（Windows 必须官方 MSI）: winget install Microsoft.PowerShell${NC}"
+      echo -e "  ${CYAN}  或自动 MSI: powershell -File install.ps1 -InstallPwsh（勿用 zip 解压版）${NC}" ;;
+    *)
+      echo -e "  ${CYAN}  安装: 见 https://learn.microsoft.com/powershell${NC}" ;;
+  esac
+fi
+if ! command -v opencode >/dev/null 2>&1; then
+  echo -e "  ${YELLOW}⚠ 未找到 opencode CLI —— MoA 流水线与 LongLoop 都依赖它驱动每轮会话。${NC}"
+  echo -e "  ${CYAN}  安装: npm install -g opencode-ai 或 curl -fsSL https://opencode.ai/install | bash${NC}"
+  echo -e "  ${GRAY}  装好后若仍找不到，设置环境变量 OPENCODE_BIN 指向 opencode 可执行文件。${NC}"
+fi
+
 gen_placeholder() {
     if jq -e '.provider["opencode-go"]' "$OPENCODE_JSON" >/dev/null 2>&1; then
         skip "opencode-go provider 已存在，未覆盖"

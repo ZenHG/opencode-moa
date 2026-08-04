@@ -59,7 +59,7 @@ Three independent plans from three different models naturally form a "consensus 
 | OpenCode **>= 1.3.4** | agent-level `reasoningEffort`/`hidden`/`task` support, [install](https://opencode.ai/install) |
 | OpenCode Go plan   | [Subscribe](https://opencode.ai/auth), first month $5, then $10/month                           |
 | Git                | used to clone the repo                                                                         |
-| PowerShell 7+ (`pwsh`) | drives LongLoop (`long-loop.ps1`) & `install.ps1` — Windows ships 5.1, install PS7 (`winget install Microsoft.PowerShell`, or auto-MSI: `powershell -File install.ps1 -InstallPwsh`), macOS `brew install powershell`, Linux see [LongLoop docs](longloop/docs/LongLoop.md) |
+| PowerShell 7+ (`pwsh`) | drives LongLoop (`long-loop.ps1`) & `install.ps1` — Windows ships 5.1; **install PS7 via official MSI only** (`winget install Microsoft.PowerShell` — MSI-based — or auto-MSI `powershell -File install.ps1 -InstallPwsh`); **do not use zip builds** (missing installer/PATH handling breaks scripts); macOS `brew install --cask powershell`; Linux see [LongLoop docs](longloop/docs/LongLoop.md) |
 | Node.js >= 14      | runs the `moa-loop` MCP server (`longloop/server.js`) — [nodejs.org](https://nodejs.org)                                                                       |
 
 `install.sh` additionally needs `jq` (Linux/macOS) — without them use Method 1 or Method 3 below.

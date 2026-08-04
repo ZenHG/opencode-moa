@@ -4,6 +4,7 @@ docs/README-details.md
 .opencode/agents
 .opencode/commands
 .opencode/skills
+.opencode/tests
 longloop/long-loop.ps1
 longloop/server.js
 longloop/package.json
