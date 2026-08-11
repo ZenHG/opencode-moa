@@ -120,6 +120,9 @@ MOA_JSON='{
       "cd *": "allow",
       "npm run *": "allow",
       "pwsh .opencode/tests/*": "allow",
+      "*$env:TEMP*": "allow",
+      "*$env:TMP*": "allow",
+      "*/tmp/*": "allow",
       "rm *": "deny"
     },
     "task": {

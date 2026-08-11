@@ -45,6 +45,36 @@
 </details>
 ---
 
+## v0.0.24（2026-08-11）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Permission fix: executors (旗舰·执行 etc.) were blocked from writing temp files because the global bash whitelist only covered read-only commands — any other command (e.g. `Set-Content $env:TEMP\...`) fell to the `*: ask` fallback and was denied unattended. Adds three temp-write allow rules (`*$env:TEMP*` / `*$env:TMP*` / `*/tmp/*`) to the global bash section in `opencode.json` + both installers, keeping delete commands (`rm`/`del`/`Remove-Item`/`rd`/`rmdir`) as ask/deny on top so temp deletion still requires confirmation.
+
+### Fix
+
+- Global bash whitelist: allow writes under `$env:TEMP` / `$env:TMP` (Windows) and `/tmp/` (Unix) — shared by all executor agents (旗舰·执行 / 闪电侠 / 工具人×2 / 前端·还原); delete rules still override (temp deletion stays ask/deny)
+- Sync: `install.ps1` uses single-quoted keys (`'*$env:TEMP*'`) to prevent PowerShell variable expansion; `install.sh` MOA_JSON (single-quoted heredoc) written literally
+- Test: T3 baseline comment updated 13 allow → 16 allow (no assertion changes)
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+权限修复：执行类 agent（旗舰·执行等）写临时文件被拦截——全局 bash 白名单只覆盖只读命令，其余命令（如 `Set-Content $env:TEMP\...`）落到 `*: ask` 兜底，无人值守时即被拒。全局 bash 段（opencode.json + 两个安装脚本）新增三条临时目录写入 allow（`*$env:TEMP*` / `*$env:TMP*` / `*/tmp/*`），删除类命令（`rm`/`del`/`Remove-Item`/`rd`/`rmdir`）仍压在其上保持 ask/deny——临时目录内删除依旧需要确认。
+
+### 修复
+
+- 全局 bash 白名单：允许写入 `$env:TEMP` / `$env:TMP`（Windows）与 `/tmp/`（Unix）——对所有执行类 agent（旗舰·执行 / 闪电侠 / 工具人×2 / 前端·还原）生效；删除规则仍在后覆盖（temp 内删除保持 ask/deny）
+- 同步面：`install.ps1` 用单引号键（`'*$env:TEMP*'`）防 PowerShell 变量展开；`install.sh` 的 MOA_JSON（单引号 heredoc）直接书写
+- 测试：T3 基线注释 13 allow → 16 allow（断言逻辑未改）
+
+</details>
+
+---
+
 ## v0.0.23（2026-08-05）
 
 <details open>

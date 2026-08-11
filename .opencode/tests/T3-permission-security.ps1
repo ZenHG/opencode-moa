@@ -2,8 +2,8 @@
 # 用 opencode Wildcard 语义 (Test-CmdPattern) 验证 bash 规则的实际匹配行为，
 # 覆盖 T0 字符串断言做不到的形态: 命令+参数组合、`cmd *` 尾部特判、平台命令别名。
 # 断言基线 = 白名单单源全局版 (opencode.json 全局 bash 段):
-#   13 allow (git status/diff/log、grep/rg/Select-String、ls/Get-ChildItem、Get-Content、
-#             cd、npm run、pwsh .opencode/tests/*) + 5 ask (rm/del/Remove-Item/rd/rmdir, 删除前询问用户)
+#   16 allow (git status/diff/log、grep/rg/Select-String、ls/Get-ChildItem、Get-Content、
+#             cd、npm run、pwsh .opencode/tests/*、*$env:TEMP*/*$env:TMP*/*/tmp/*) + 5 ask (rm/del/Remove-Item/rd/rmdir, 删除前询问用户)
 #   + "*": "ask" 兜底; 执行层 frontmatter 无 bash 段。
 # Usage: pwsh .opencode/tests/T3-permission-security.ps1
 
