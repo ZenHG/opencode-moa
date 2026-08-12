@@ -45,6 +45,34 @@
 </details>
 ---
 
+## v0.0.25（2026-08-12）
+
+<details open>
+<summary>🇬🇧 English</summary>
+
+Executor temp-file policy tightened: random external writes (e.g. `$env:TEMP\...`) were being blocked by the `external_directory` permission (default `ask`) and pushed 旗舰·执行 into un-auditable workarounds (inline `python -c` injection). New implementation rule 4: intermediate artifacts default to project-local `.moa/tmp/` (gitignored, cleaned at delivery); external writes allowed only in opencode's pre-approved temp directory; inline-injection workarounds banned so commands stay auditable.
+
+### Fix
+
+- 旗舰·执行 implementation rule 4: temp artifacts default to `.moa/tmp/`; external paths limited to opencode pre-approved temp directory; inline-injection workarounds banned (auditability)
+- `.gitignore`: register `.moa/tmp/` (keeps LongLoop footprint boundary diff clean)
+
+</details>
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+执行层临时文件策略收口：随机外部路径写入（如 `$env:TEMP\...`）会被 `external_directory` 权限（默认 ask）拦截，把旗舰·执行逼进不可审计的绕行（python -c 内联注入）。新增实现规则 4：中间产物默认写项目内 `.moa/tmp/`（gitignore 不入库，交付清理）；确需项目外仅限 opencode 预批准临时目录；禁止内联注入绕行权限，命令必须可审计。
+
+### 修复
+
+- 旗舰·执行实现规则 4：临时产物默认 `.moa/tmp/`；外部路径仅限 opencode 预批准临时目录；禁止内联注入绕行（可审计性）
+- `.gitignore` 登记 `.moa/tmp/`（防污染 LongLoop 足迹边界比对）
+
+</details>
+
+---
+
 ## v0.0.24（2026-08-11）
 
 <details open>

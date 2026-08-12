@@ -52,6 +52,9 @@ docs/opencode-moa-出图方案.md
 # 长程自完善循环 — 运行时状态目录（模板在 longloop/templates/，必须提交）
 .moa/longloop/
 
+# 执行层临时产物（.moa/tmp/ 由旗舰·执行提示词约定，交付时清理）
+.moa/tmp/
+
 # AGENTS.md 本地工作流文件，不推送
 AGENTS.md
 
